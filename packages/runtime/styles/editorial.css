@@ -1,0 +1,57 @@
+/* Style preset: editorial — large display or serif type if the brand has one, slower 1.0–1.4 s moves, generous whitespace (SPEC §10.5). */
+:root {
+  --dm-ease-out: cubic-bezier(0.25, 1, 0.5, 1); /* quart.out, used slowly */
+  --dm-duration: 1.2s;
+  --dm-title-size: calc(var(--dm-unit) * 8.6);
+  --dm-title-weight: 500;
+  --dm-title-tracking: -0.04em;
+  --dm-subtitle-size: calc(var(--dm-unit) * 3.6);
+  --dm-kicker-size: calc(var(--dm-unit) * 3);
+  --dm-rule: color-mix(in srgb, var(--dm-fg) 18%, transparent);
+  --dm-screen-shadow: 0 30px 70px -40px rgb(15 23 42 / 0.3);
+}
+
+.dm-bg {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--dm-bg) 96%, #f5f0e6);
+}
+
+.dm-title {
+  margin: 0;
+  text-wrap: balance;
+  font: var(--dm-title-weight) var(--dm-title-size) / 1 var(--dm-font-heading);
+  letter-spacing: var(--dm-title-tracking);
+  color: var(--dm-fg);
+}
+
+.dm-subtitle {
+  margin: 0;
+  text-wrap: pretty;
+  max-width: 28ch;
+  font: 400 var(--dm-subtitle-size) / 1.45 var(--dm-font-body);
+  color: var(--dm-muted-fg);
+}
+
+.dm-kicker {
+  margin: 0;
+  padding-bottom: 0.6em;
+  border-bottom: 1px solid var(--dm-rule);
+  font: 500 var(--dm-kicker-size) / 1.2 var(--dm-font-body);
+  letter-spacing: 0.01em;
+  color: var(--dm-fg);
+}
+
+.dm-accent {
+  color: var(--dm-primary);
+}
+
+.dm-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding-bottom: 0.25em;
+  border-bottom: 2px solid var(--dm-primary);
+  color: var(--dm-fg);
+  font: 500 calc(var(--dm-unit) * 3.6) / 1.1 var(--dm-font-body);
+}

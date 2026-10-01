@@ -1,6 +1,6 @@
 /** Helpers for integration tests that need the Harborly fixture running (SPEC §18). */
 import { spawn } from "node:child_process";
-import { cpSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { repoRoot } from "../lib/repo.ts";
 
@@ -95,4 +95,19 @@ export function harborlyProject(name: string): string {
   config.demo.seed = `pnpm --dir ${JSON.stringify(HARBORLY_DIR)} demo:seed`;
   writeFileSync(configFile, `${JSON.stringify(config, null, 2)}\n`);
   return dir;
+}
+
+/** Make sure the given Harborly capture states exist (captures are gitignored; regenerate them when missing). */
+export async function ensureHarborlyCaptures(ids: string[]): Promise<void> {
+  const missing = ids.filter((id) => !existsSync(path.join(HARBORLY_DIR, ".demovie", "captures", id, "screen.png")));
+  if (missing.length === 0) return;
+  const { loadProject } = await import("../../packages/core/src/index.ts");
+  const { runCapture } = await import("../../packages/capture/src/index.ts");
+  const saved = { ...process.env };
+  Object.assign(process.env, FIXTURE_ENV);
+  try {
+    await runCapture(await loadProject(HARBORLY_DIR), {});
+  } finally {
+    process.env = saved;
+  }
 }

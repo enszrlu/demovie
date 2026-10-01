@@ -14,7 +14,8 @@
       "!**/.next",
       "!**/.tmp",
       "!**/*.min.js",
-      "!plugins/demovie/skills"
+      "!plugins/demovie/skills",
+      "!**/goldens"
     ]
   },
   "formatter": {
@@ -65,6 +66,16 @@
         "rules": {
           "suspicious": {
             "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/runtime/styles/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
           }
         }
       }

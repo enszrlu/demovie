@@ -1,0 +1,60 @@
+/* Style preset: clean — neutral brand background, one accent, expo/quart-out easing, subtle depth (SPEC §10.5). */
+:root {
+  --dm-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* expo.out */
+  --dm-duration: 0.7s;
+  --dm-title-size: calc(var(--dm-unit) * 7.2);
+  --dm-title-weight: 650;
+  --dm-title-tracking: -0.035em;
+  --dm-subtitle-size: calc(var(--dm-unit) * 3.4);
+  --dm-kicker-size: calc(var(--dm-unit) * 3);
+  --dm-surface: color-mix(in srgb, var(--dm-bg) 94%, var(--dm-fg));
+  --dm-grid-line: color-mix(in srgb, var(--dm-fg) 6%, transparent);
+  --dm-screen-shadow: 0 60px 120px -40px rgb(15 23 42 / 0.28), 0 30px 60px -30px rgb(15 23 42 / 0.22);
+}
+
+.dm-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--dm-primary) 7%, var(--dm-bg)) 0%, var(--dm-bg) 60%),
+    var(--dm-bg);
+}
+
+.dm-title {
+  margin: 0;
+  text-wrap: balance;
+  font: var(--dm-title-weight) var(--dm-title-size) / 1.04 var(--dm-font-heading);
+  letter-spacing: var(--dm-title-tracking);
+  color: var(--dm-fg);
+}
+
+.dm-subtitle {
+  margin: 0;
+  text-wrap: pretty;
+  font: 450 var(--dm-subtitle-size) / 1.35 var(--dm-font-body);
+  letter-spacing: -0.01em;
+  color: var(--dm-muted-fg);
+}
+
+.dm-kicker {
+  margin: 0;
+  font: 600 var(--dm-kicker-size) / 1.2 var(--dm-font-body);
+  letter-spacing: -0.005em;
+  color: var(--dm-primary);
+}
+
+.dm-accent {
+  color: var(--dm-primary);
+}
+
+.dm-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 1.3em;
+  border-radius: var(--dm-radius);
+  background: var(--dm-primary);
+  color: var(--dm-primary-fg);
+  font: 600 calc(var(--dm-unit) * 3.4) / 1 var(--dm-font-body);
+  letter-spacing: -0.01em;
+}

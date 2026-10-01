@@ -1,0 +1,14 @@
+{
+  "platform": "darwin-arm64",
+  "times": [
+    2,
+    7.5,
+    12.5,
+    16,
+    24,
+    33
+  ],
+  "scale": 0.5,
+  "threshold": 0.1,
+  "maxDiffRatio": 0.002
+}

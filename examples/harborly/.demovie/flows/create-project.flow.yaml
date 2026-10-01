@@ -10,7 +10,6 @@ steps:
   - waitFor: { role: dialog }
   - capture: dialog
   - fill: { label: Project name, value: Q4 Launch }
-  - select: { label: Customer, value: cmp_northwind }
   - capture: dialog-filled
   - click: { role: button, name: Create project }
   - waitFor: { url: /app/projects/prj_q4-launch }

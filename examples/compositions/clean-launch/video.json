@@ -1,0 +1,33 @@
+{
+  "slug": "clean-launch",
+  "title": "Harborly — Projects board",
+  "type": "launch",
+  "fps": 30,
+  "duration": 35,
+  "formats": ["16:9", "9:16"],
+  "style": "clean",
+  "poster": 12.5,
+  "status": "rendered",
+  "audio": {
+    "music": null,
+    "voice": null,
+    "sfx": [],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": [
+    "flows/create-project@desktop/board",
+    "flows/create-project@desktop/dialog",
+    "flows/create-project@desktop/created",
+    "routes/app@desktop"
+  ],
+  "qa": {
+    "ignore": []
+  }
+}

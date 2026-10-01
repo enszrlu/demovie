@@ -21,6 +21,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "@types/node": "^22.15.0",
+    "@types/pngjs": "^6.0.5",
     "playwright-core": "1.60.0",
     "tsdown": "0.23.0",
     "tsx": "^4.23.15",

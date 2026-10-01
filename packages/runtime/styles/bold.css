@@ -1,0 +1,62 @@
+/* Style preset: bold — kinetic type at 10–16% of frame height, brand-primary backgrounds, hard cuts on the beat (SPEC §10.5). */
+:root {
+  --dm-ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* quart.out */
+  --dm-duration: 0.45s;
+  --dm-title-size: calc(var(--dm-h) * 0.12);
+  --dm-title-weight: 800;
+  --dm-title-tracking: -0.045em;
+  --dm-subtitle-size: calc(var(--dm-unit) * 4);
+  --dm-kicker-size: calc(var(--dm-unit) * 3.2);
+  --dm-screen-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.45);
+}
+
+:root[data-format="9:16"],
+:root[data-format="4:5"] {
+  --dm-title-size: calc(var(--dm-w) * 0.13);
+}
+
+.dm-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--dm-primary);
+}
+
+.dm-bg--ink {
+  background: var(--dm-fg);
+}
+
+.dm-title {
+  margin: 0;
+  text-wrap: balance;
+  font: var(--dm-title-weight) var(--dm-title-size) / 0.92 var(--dm-font-heading);
+  letter-spacing: var(--dm-title-tracking);
+  color: var(--dm-primary-fg);
+  text-transform: none;
+}
+
+.dm-subtitle {
+  margin: 0;
+  text-wrap: pretty;
+  font: 600 var(--dm-subtitle-size) / 1.25 var(--dm-font-body);
+  color: color-mix(in srgb, var(--dm-primary-fg) 82%, transparent);
+}
+
+.dm-kicker {
+  margin: 0;
+  font: 700 var(--dm-kicker-size) / 1.1 var(--dm-font-body);
+  color: var(--dm-primary-fg);
+}
+
+.dm-accent {
+  color: var(--dm-primary-fg);
+}
+
+.dm-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6em 1.2em;
+  border-radius: 999px;
+  background: var(--dm-primary-fg);
+  color: var(--dm-primary);
+  font: 800 calc(var(--dm-unit) * 4) / 1 var(--dm-font-body);
+}

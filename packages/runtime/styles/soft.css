@@ -1,0 +1,71 @@
+/* Style preset: soft — rounded shapes, gentle springs (back.out 1.2–1.5), soft shadows, light tints (SPEC §10.5). */
+:root {
+  --dm-ease-out: cubic-bezier(0.34, 1.56, 0.64, 1); /* back.out(1.4) */
+  --dm-duration: 0.8s;
+  --dm-title-size: calc(var(--dm-unit) * 7);
+  --dm-title-weight: 600;
+  --dm-title-tracking: -0.025em;
+  --dm-subtitle-size: calc(var(--dm-unit) * 3.4);
+  --dm-kicker-size: calc(var(--dm-unit) * 3);
+  --dm-tint: color-mix(in srgb, var(--dm-primary) 10%, var(--dm-bg));
+  --dm-tint-2: color-mix(in srgb, var(--dm-primary) 18%, var(--dm-bg));
+  --dm-screen-shadow:
+    0 40px 90px -30px color-mix(in srgb, var(--dm-primary) 35%, transparent), 0 20px 40px -20px rgb(15 23 42 / 0.18);
+}
+
+.dm-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--dm-tint) 0%, var(--dm-bg) 55%, var(--dm-tint) 100%);
+}
+
+.dm-blob {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--dm-tint-2);
+  filter: blur(calc(var(--dm-unit) * 4));
+}
+
+.dm-screen__frame {
+  border-radius: calc(var(--dm-unit) * 2.4) !important;
+}
+
+.dm-title {
+  margin: 0;
+  text-wrap: balance;
+  font: var(--dm-title-weight) var(--dm-title-size) / 1.08 var(--dm-font-heading);
+  letter-spacing: var(--dm-title-tracking);
+  color: var(--dm-fg);
+}
+
+.dm-subtitle {
+  margin: 0;
+  text-wrap: pretty;
+  font: 450 var(--dm-subtitle-size) / 1.4 var(--dm-font-body);
+  color: var(--dm-muted-fg);
+}
+
+.dm-kicker {
+  display: inline-block;
+  margin: 0;
+  padding: 0.35em 0.9em;
+  border-radius: 999px;
+  background: var(--dm-tint-2);
+  font: 600 var(--dm-kicker-size) / 1.2 var(--dm-font-body);
+  color: var(--dm-primary);
+}
+
+.dm-accent {
+  color: var(--dm-primary);
+}
+
+.dm-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75em 1.5em;
+  border-radius: 999px;
+  background: var(--dm-primary);
+  color: var(--dm-primary-fg);
+  font: 600 calc(var(--dm-unit) * 3.4) / 1 var(--dm-font-body);
+  box-shadow: 0 16px 32px -14px color-mix(in srgb, var(--dm-primary) 70%, transparent);
+}

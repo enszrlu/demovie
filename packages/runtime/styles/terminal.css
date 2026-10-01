@@ -1,0 +1,64 @@
+/* Style preset: terminal — a dev-tool feel: mono type, code/CLI reveals, grid backgrounds (SPEC §10.5). */
+:root {
+  --dm-ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* quart.out */
+  --dm-duration: 0.5s;
+  --dm-title-size: calc(var(--dm-unit) * 6.4);
+  --dm-title-weight: 600;
+  --dm-title-tracking: -0.02em;
+  --dm-subtitle-size: calc(var(--dm-unit) * 3.2);
+  --dm-kicker-size: calc(var(--dm-unit) * 3);
+  --dm-term-bg: color-mix(in srgb, var(--dm-fg) 94%, var(--dm-primary));
+  --dm-term-fg: color-mix(in srgb, var(--dm-bg) 92%, var(--dm-primary));
+  --dm-grid: color-mix(in srgb, var(--dm-primary) 14%, transparent);
+  --dm-screen-shadow:
+    0 0 0 1px color-mix(in srgb, var(--dm-primary) 30%, transparent), 0 40px 80px -30px rgb(0 0 0 / 0.6);
+}
+
+.dm-bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--dm-term-bg);
+  background-image:
+    linear-gradient(var(--dm-grid) 1px, transparent 1px), linear-gradient(90deg, var(--dm-grid) 1px, transparent 1px);
+  background-size: calc(var(--dm-unit) * 6) calc(var(--dm-unit) * 6);
+}
+
+.dm-title {
+  margin: 0;
+  text-wrap: balance;
+  font: var(--dm-title-weight) var(--dm-title-size) / 1.1 var(--dm-font-mono);
+  letter-spacing: var(--dm-title-tracking);
+  color: var(--dm-term-fg);
+}
+
+.dm-subtitle {
+  margin: 0;
+  text-wrap: pretty;
+  font: 400 var(--dm-subtitle-size) / 1.45 var(--dm-font-mono);
+  color: color-mix(in srgb, var(--dm-term-fg) 70%, transparent);
+}
+
+.dm-kicker {
+  margin: 0;
+  font: 500 var(--dm-kicker-size) / 1.2 var(--dm-font-mono);
+  color: var(--dm-primary);
+}
+
+.dm-prompt::before {
+  content: "$ ";
+  color: var(--dm-primary);
+}
+
+.dm-accent {
+  color: var(--dm-primary);
+}
+
+.dm-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6em 1.1em;
+  border: 1px solid var(--dm-primary);
+  border-radius: 6px;
+  color: var(--dm-term-fg);
+  font: 500 calc(var(--dm-unit) * 3.3) / 1 var(--dm-font-mono);
+}

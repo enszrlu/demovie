@@ -1,0 +1,80 @@
+/* clean-launch: layout only — colors, type and motion tokens come from the brand and the clean preset. */
+
+.headline {
+  position: absolute;
+  left: var(--dm-safe-left);
+  right: var(--dm-safe-right);
+  top: var(--dm-safe-top);
+  text-align: center;
+  font-size: calc(var(--dm-unit) * 5.4);
+  line-height: 1.08;
+}
+
+[data-format="9:16"] .headline {
+  top: auto;
+  font-size: calc(var(--dm-unit) * 6.6);
+}
+
+.center {
+  position: absolute;
+  inset: var(--dm-safe-top) var(--dm-safe-right) var(--dm-safe-bottom) var(--dm-safe-left);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--dm-unit) * 4);
+}
+
+.intro-mark .dm-logo__img {
+  height: calc(var(--dm-unit) * 11);
+}
+
+.intro-title {
+  font-size: calc(var(--dm-unit) * 8);
+}
+
+[data-format="9:16"] .intro-title {
+  max-width: 9ch;
+  font-size: calc(var(--dm-unit) * 10);
+}
+
+.tagline {
+  max-width: 19ch;
+  font-size: calc(var(--dm-unit) * 8.4);
+  line-height: 1.04;
+}
+
+[data-format="9:16"] .tagline {
+  max-width: 9ch;
+  font-size: calc(var(--dm-unit) * 9.6);
+}
+
+.end {
+  gap: calc(var(--dm-unit) * 4);
+}
+
+.end-logo .dm-logo__img {
+  height: calc(var(--dm-unit) * 13);
+}
+
+.end .dm-cta {
+  font-size: calc(var(--dm-unit) * 4);
+  padding: 0.75em 1.4em;
+}
+
+.end .url {
+  margin: 0;
+  font: 500 calc(var(--dm-unit) * 3.6) / 1.2 var(--dm-font-body);
+  color: var(--dm-muted-fg);
+  letter-spacing: -0.01em;
+}

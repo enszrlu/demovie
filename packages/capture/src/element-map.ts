@@ -187,7 +187,7 @@ export const ELEMENT_MAP_SCRIPT = String.raw`() => {
 }`;
 
 /** Bounding boxes of the main content, compared across two animation frames to detect layout stability. */
-export const STABILITY_SCRIPT = String.raw`() => new Promise((resolve) => {
+export const STABILITY_SCRIPT = `() => new Promise((resolve) => {
   const snap = () => {
     const root = document.querySelector("main") || document.body;
     return [...root.querySelectorAll("*")].slice(0, 600).map((e) => { const r = e.getBoundingClientRect(); return Math.round(r.x) + "," + Math.round(r.y) + "," + Math.round(r.width) + "," + Math.round(r.height); }).join(";");
@@ -197,7 +197,7 @@ export const STABILITY_SCRIPT = String.raw`() => new Promise((resolve) => {
 })`;
 
 /** Resolve after fonts are ready and every image has decoded. */
-export const DECODE_SCRIPT = String.raw`async () => {
+export const DECODE_SCRIPT = `async () => {
   await document.fonts.ready;
   await Promise.all([...document.images].map((img) => (img.complete && img.naturalWidth > 0 ? Promise.resolve() : img.decode().catch(() => {}))));
   return true;

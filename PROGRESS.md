@@ -6,8 +6,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 |---|---|---|
 | M0 Scaffold | done | `7c5e7b1` |
 | M1 Core & init | done | `3a8d7f2` |
-| M2 Capture | done | see `git log` (`feat(m2)`) |
-| M3 Runtime, renderer, preview, stills | not started | |
+| M2 Capture | done | `068532d` |
+| M3 Runtime, renderer, preview, stills | done | see `git log` (`feat(m3)`) |
 | M4 QA | not started | |
 | M5 Audio | not started | |
 | M6 Agent layer | not started | |
@@ -38,11 +38,11 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] Capture within budget (time: 9.3 s) — all 12 routes + the create-project flow at desktop (2×) in 9.0–9.3 s against a warm `next dev` (budget 60 s); a cold start of `next dev` adds ~2 s
 
 ## M3 — Runtime, renderer, preview, stills
-- [ ] `clock.js` + runtime API (screen, cursor, typeText, text, callout, captions, transition, logo) + style CSS
-- [ ] Renderer, stills + contact sheet, preview server with hot reload, `new` scaffolding
-- [ ] `examples/compositions/clean-launch` renders 16:9 + 9:16 final MP4s; ffprobe assertions pass
-- [ ] Determinism tests pass
-- [ ] Budgets: stills ___ s · draft ___ s · final ___ s (or deviations recorded in DECISIONS.md)
+- [x] `clock.js` + runtime API (screen, cursor, typeText, text, callout, captions, transition, logo) + style CSS — `packages/runtime` (14.4 KB min+gz, budget 60 KB); `packages/render/test/runtime.test.ts` covers the clock (performance.now/Date/rAF/seeded random/timers after ready), order-independent seeks, inspect(), nearest-id errors, stray tweens, and every helper (callout, counter, karaoke captions, all 5 transitions, logo); 5 style presets in `packages/runtime/styles/`
+- [x] Renderer, stills + contact sheet, preview server with hot reload, `new` scaffolding — `packages/render` (sandboxed 127.0.0.1 server, CDP frame stepping with N workers + resume, x264/BT.709/AAC encode, GIF/WebM, posters); `render.int.test.ts` (draft + final × 2 formats, stills + sheet, preview SSE reload); `new` + `add` unit tests
+- [x] `examples/compositions/clean-launch` renders 16:9 + 9:16 final MP4s; ffprobe assertions pass — `pnpm verify` check 8: `clean-launch-16x9.mp4` h264 High yuv420p 1920×1080 30 fps 35.000 s + AAC 48 kHz stereo, BT.709; `clean-launch-9x16.mp4` 1080×1920, same
+- [x] Determinism tests pass — same frame twice and shuffled seek orders are byte-identical (synthetic composition and clean-launch at 6.9/11.8/14.6/31.2 s); golden stills match (pixelmatch)
+- [x] Budgets: stills 2.6 s · draft 11.4 s · final 62 s (clean-launch is 35 s, longer than the 30 s budget video: `stills --every 1` 35 stills in 2.6 s < 20 s; `render --quality draft` 16:9 in 11.4 s < 60 s; `render --quality final` one format in 62 s < 4 min)
 
 ## M4 — QA
 - [ ] Every rule in SPEC §12 with passing + failing synthetic tests
