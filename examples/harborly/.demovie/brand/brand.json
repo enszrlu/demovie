@@ -1,0 +1,112 @@
+{
+  "name": "Harborly",
+  "tagline": "Plan, ship and measure every launch.",
+  "url": "https://harborly.example",
+  "colors": {
+    "light": {
+      "background": "#ffffff",
+      "foreground": "#0a0f1b",
+      "primary": "#155dfc",
+      "primaryForeground": "#ffffff",
+      "secondary": "#f3f4f7",
+      "accent": "#f0f2f5",
+      "muted": "#f3f4f7",
+      "mutedForeground": "#6a7282",
+      "border": "#e5e7eb",
+      "ring": "#2b7fff",
+      "chart": ["#155dfc", "#8ec5ff", "#00bc7d", "#fe9a00", "#ff2056"]
+    },
+    "dark": {
+      "background": "#0a0c11",
+      "foreground": "#f3f4f6",
+      "primary": "#2b7fff",
+      "primaryForeground": "#ffffff",
+      "secondary": "#21242b",
+      "accent": "#202329",
+      "muted": "#1c1f25",
+      "mutedForeground": "#9ba2ad",
+      "border": "#24282e",
+      "ring": "#51a2ff",
+      "chart": ["#2b7fff", "#8ec5ff", "#00d492", "#ffb900", "#ff637e"]
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Geist",
+      "weights": [400, 500, 600, 700],
+      "files": ["brand/fonts/geist-variable.woff2"]
+    },
+    "body": {
+      "family": "Geist",
+      "weights": [400, 500, 600, 700],
+      "files": ["brand/fonts/geist-variable.woff2"]
+    },
+    "mono": {
+      "family": "Geist Mono",
+      "weights": [400, 500],
+      "files": ["brand/fonts/geist-mono-variable.woff2"]
+    }
+  },
+  "radius": {
+    "sm": "4px",
+    "md": "6px",
+    "lg": "8px"
+  },
+  "shadows": [
+    "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px",
+    "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.128998 -0.0038857 -0.0418156 / 0.05) 0px 0px 0px 1px, oklab(0.128998 -0.0038857 -0.0418156 / 0.1) 0px 25px 50px -12px"
+  ],
+  "logo": {
+    "mark": "brand/logo-mark.svg",
+    "wordmark": "brand/logo.svg",
+    "onDark": null
+  },
+  "og": {
+    "image": null,
+    "title": "Harborly",
+    "description": "Plan, ship and measure every launch."
+  },
+  "provenance": {
+    "colors.light.background": "css-var --background @ src/app/globals.css:7 (oklch(1 0 0)) (runtime-confirmed)",
+    "colors.light.foreground": "css-var --foreground @ src/app/globals.css:8 (oklch(0.17 0.026 265)) (runtime-confirmed)",
+    "colors.light.primary": "css-var --primary @ src/app/globals.css:13 (oklch(0.546 0.245 262.881)) (runtime-confirmed)",
+    "colors.light.primaryForeground": "css-var --primary-foreground @ src/app/globals.css:14 (oklch(1 0 0)) (runtime-confirmed)",
+    "colors.light.secondary": "css-var --secondary @ src/app/globals.css:15 (oklch(0.967 0.004 264.5))",
+    "colors.light.accent": "css-var --accent @ src/app/globals.css:19 (oklch(0.96 0.005 264.5))",
+    "colors.light.muted": "css-var --muted @ src/app/globals.css:17 (oklch(0.967 0.004 264.5))",
+    "colors.light.mutedForeground": "css-var --muted-foreground @ src/app/globals.css:18 (oklch(0.551 0.027 264.364))",
+    "colors.light.border": "css-var --border @ src/app/globals.css:22 (oklch(0.928 0.006 264.531)) (runtime-confirmed)",
+    "colors.light.ring": "css-var --ring @ src/app/globals.css:24 (oklch(0.623 0.214 259.815))",
+    "colors.light.chart.0": "css-var --chart-1 @ src/app/globals.css:25 (oklch(0.546 0.245 262.881))",
+    "colors.light.chart.1": "css-var --chart-2 @ src/app/globals.css:26 (oklch(0.809 0.105 251.813))",
+    "colors.light.chart.2": "css-var --chart-3 @ src/app/globals.css:27 (oklch(0.696 0.17 162.48))",
+    "colors.light.chart.3": "css-var --chart-4 @ src/app/globals.css:28 (oklch(0.769 0.188 70.08))",
+    "colors.light.chart.4": "css-var --chart-5 @ src/app/globals.css:29 (oklch(0.645 0.246 16.439))",
+    "colors.dark.background": "css-var --background @ src/app/globals.css:37 (oklch(0.155 0.01 265))",
+    "colors.dark.foreground": "css-var --foreground @ src/app/globals.css:38 (oklch(0.967 0.003 264.542))",
+    "colors.dark.primary": "css-var --primary @ src/app/globals.css:43 (oklch(0.623 0.214 259.815))",
+    "colors.dark.primaryForeground": "css-var --primary-foreground @ src/app/globals.css:44 (oklch(1 0 0))",
+    "colors.dark.secondary": "css-var --secondary @ src/app/globals.css:45 (oklch(0.26 0.014 265))",
+    "colors.dark.accent": "css-var --accent @ src/app/globals.css:49 (oklch(0.255 0.013 265))",
+    "colors.dark.muted": "css-var --muted @ src/app/globals.css:47 (oklch(0.24 0.012 265))",
+    "colors.dark.mutedForeground": "css-var --muted-foreground @ src/app/globals.css:48 (oklch(0.71 0.018 262))",
+    "colors.dark.border": "css-var --border @ src/app/globals.css:52 (oklch(0.275 0.013 265))",
+    "colors.dark.ring": "css-var --ring @ src/app/globals.css:54 (oklch(0.707 0.165 254.624))",
+    "colors.dark.chart.0": "css-var --chart-1 @ src/app/globals.css:55 (oklch(0.623 0.214 259.815))",
+    "colors.dark.chart.1": "css-var --chart-2 @ src/app/globals.css:56 (oklch(0.809 0.105 251.813))",
+    "colors.dark.chart.2": "css-var --chart-3 @ src/app/globals.css:57 (oklch(0.765 0.177 163.223))",
+    "colors.dark.chart.3": "css-var --chart-4 @ src/app/globals.css:58 (oklch(0.828 0.189 84.429))",
+    "colors.dark.chart.4": "css-var --chart-5 @ src/app/globals.css:59 (oklch(0.712 0.194 13.428))",
+    "fonts.heading": "geist/font/sans @ src/app/layout.tsx (runtime-confirmed)",
+    "fonts.body": "geist/font/sans @ src/app/layout.tsx (runtime-confirmed)",
+    "fonts.mono": "geist/font/mono @ src/app/layout.tsx",
+    "radius": "css-var --radius-sm/md/lg",
+    "logo.mark": "public/logo-mark.svg",
+    "logo.wordmark": "public/logo.svg",
+    "name": "metadata.title @ src/app/layout.tsx",
+    "fonts.heading.files": "runtime: downloaded same-origin font files",
+    "fonts.body.files": "runtime: downloaded same-origin font files",
+    "fonts.mono.files": "runtime: downloaded same-origin font files"
+  },
+  "warnings": []
+}

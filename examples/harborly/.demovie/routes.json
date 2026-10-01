@@ -1,0 +1,126 @@
+{
+  "generatedAt": "2026-10-01T22:42:56.757Z",
+  "routes": [
+    {
+      "path": "/",
+      "file": "src/app/(marketing)/page.tsx",
+      "dynamic": false,
+      "protected": false,
+      "protectedReason": "outside src/proxy.ts matcher",
+      "source": "fs",
+      "router": "app",
+      "title": "Plan, ship and measure every launch."
+    },
+    {
+      "path": "/app",
+      "file": "src/app/app/page.tsx",
+      "dynamic": false,
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Dashboard"
+    },
+    {
+      "path": "/app/projects",
+      "file": "src/app/app/projects/page.tsx",
+      "dynamic": false,
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Projects"
+    },
+    {
+      "path": "/app/projects/[id]",
+      "file": "src/app/app/projects/[id]/page.tsx",
+      "dynamic": true,
+      "params": ["prj_launch"],
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Q3 Launch"
+    },
+    {
+      "path": "/app/projects/new",
+      "file": "src/app/app/projects/new/page.tsx",
+      "dynamic": false,
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Projects"
+    },
+    {
+      "path": "/app/reports",
+      "file": "src/app/app/reports/page.tsx",
+      "dynamic": false,
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Reports"
+    },
+    {
+      "path": "/app/settings",
+      "file": "src/app/app/settings/page.tsx",
+      "dynamic": false,
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Settings"
+    },
+    {
+      "path": "/app/team",
+      "file": "src/app/app/team/page.tsx",
+      "dynamic": false,
+      "protected": true,
+      "protectedReason": "src/proxy.ts matcher /app/:path*",
+      "source": "fs",
+      "router": "app",
+      "title": "Team"
+    },
+    {
+      "path": "/changelog",
+      "file": "src/app/(marketing)/changelog/page.tsx",
+      "dynamic": false,
+      "protected": false,
+      "protectedReason": "outside src/proxy.ts matcher",
+      "source": "fs",
+      "router": "app",
+      "title": "What’s new in Harborly"
+    },
+    {
+      "path": "/customers",
+      "file": "src/app/(marketing)/customers/page.tsx",
+      "dynamic": false,
+      "protected": false,
+      "protectedReason": "outside src/proxy.ts matcher",
+      "source": "fs",
+      "router": "app",
+      "title": "Launch teams ship with Harborly"
+    },
+    {
+      "path": "/login",
+      "file": "src/app/(auth)/login/page.tsx",
+      "dynamic": false,
+      "protected": false,
+      "protectedReason": "auth page",
+      "source": "fs",
+      "router": "app",
+      "title": "Sign in to Harborly"
+    },
+    {
+      "path": "/pricing",
+      "file": "src/app/(marketing)/pricing/page.tsx",
+      "dynamic": false,
+      "protected": false,
+      "protectedReason": "outside src/proxy.ts matcher",
+      "source": "fs",
+      "router": "app",
+      "title": "Simple pricing for every launch team"
+    }
+  ]
+}

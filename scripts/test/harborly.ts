@@ -1,6 +1,6 @@
 /** Helpers for integration tests that need the Harborly fixture running (SPEC §18). */
 import { spawn } from "node:child_process";
-import { cpSync, mkdirSync, openSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { repoRoot } from "../lib/repo.ts";
 
@@ -82,4 +82,17 @@ export function harborlyCopy(name: string, options: { keepDemovie?: boolean } = 
     },
   });
   return dest;
+}
+
+/**
+ * A Harborly copy with the committed `.demovie/` whose seed resets the *running* app's data (the dev server serves
+ * examples/harborly, so seeding the copy's own .data/ would not reset what flows change).
+ */
+export function harborlyProject(name: string): string {
+  const dir = harborlyCopy(name, { keepDemovie: true });
+  const configFile = path.join(dir, ".demovie", "config.json");
+  const config = JSON.parse(readFileSync(configFile, "utf8"));
+  config.demo.seed = `pnpm --dir ${JSON.stringify(HARBORLY_DIR)} demo:seed`;
+  writeFileSync(configFile, `${JSON.stringify(config, null, 2)}\n`);
+  return dir;
 }

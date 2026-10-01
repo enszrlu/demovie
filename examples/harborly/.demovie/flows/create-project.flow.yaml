@@ -1,0 +1,23 @@
+# create-project: open the Projects board, create "Q4 Launch" through the dialog, land on the new project,
+# then return to the board where it now sits in Planning. Demo data is re-seeded before every capture run.
+name: create-project
+start: /app/projects
+viewport: desktop
+description: Create a project from the Projects board
+steps:
+  - capture: board
+  - click: { testId: new-project }
+  - waitFor: { role: dialog }
+  - capture: dialog
+  - fill: { label: Project name, value: Q4 Launch }
+  - select: { label: Customer, value: cmp_northwind }
+  - capture: dialog-filled
+  - click: { role: button, name: Create project }
+  - waitFor: { url: /app/projects/prj_q4-launch }
+  - waitFor: { text: Launch checklist }
+  - capture: created
+  - hover: { testId: project-checklist }
+  - capture: checklist-hover
+  - goto: /app/projects
+  - waitFor: { text: Q4 Launch }
+  - capture: board-after

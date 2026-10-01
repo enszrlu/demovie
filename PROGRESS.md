@@ -5,8 +5,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | Milestone | Status | Commit |
 |---|---|---|
 | M0 Scaffold | done | `7c5e7b1` |
-| M1 Core & init | done | see `git log` (`feat(m1)`) |
-| M2 Capture | not started | |
+| M1 Core & init | done | `3a8d7f2` |
+| M2 Capture | done | see `git log` (`feat(m2)`) |
 | M3 Runtime, renderer, preview, stills | not started | |
 | M4 QA | not started | |
 | M5 Audio | not started | |
@@ -30,12 +30,12 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] pages-minimal and static-site fixtures detected correctly — Pages Router + Tailwind v3 (`hsl(var(--primary))` → `#10b77f`), and generic mode with crawl-only routes (`packages/cli/test/generic.int.test.ts`; logout/delete links never followed)
 
 ## M2 — Capture
-- [ ] `up`/`down`, seed, frozen clock, hide/block requests
-- [ ] Auth: none, form, storageState (`auth record`), script; `auth test`
-- [ ] Route capture, flows (YAML + TS), element maps, redaction, freshness, `--changed`
-- [ ] Harborly: all static routes + `[id]` + `create-project` flow (desktop) + 2 mobile routes
-- [ ] Element ids stable across two runs; settings email/API key redacted
-- [ ] Capture within budget (time: ___ s)
+- [x] `up`/`down`, seed, frozen clock, hide/block requests — `packages/capture/test/lifecycle.int.test.ts` (seed → start → ready → reuse → tree-kill; failing start prints the app log + fix); `page.clock.setFixedTime(demo.now)`; capture CSS hides `demo.hide` + Next dev indicators (verified in screenshots: no cookie banner, no "N" bubble)
+- [x] Auth: none, form, storageState (`auth record`), script; `auth test` — `packages/capture/test/auth.int.test.ts` (form, storageState from a saved state, `.demovie/auth.ts` script, wrong password → `E_AUTH` + fix); `auth test` prints cookie names only (`harborly_session`)
+- [x] Route capture, flows (YAML + TS), element maps, redaction, freshness, `--changed` — `packages/capture/test/capture.int.test.ts` (7 tests) + unit tests for element maps/redaction in real Chromium; touching `src/app/app/team/page.tsx` makes exactly `routes/app-team@desktop` stale and `capture --changed` re-captures only it
+- [x] Harborly: all static routes + `[id]` + `create-project` flow (desktop) + 2 mobile routes — 12 route states (`[id]` → `prj_launch`) + 6 flow states (`board, dialog, dialog-filled, created, checklist-hover, board-after`) + `routes/index@mobile`, `routes/app-projects@mobile` (1170×2532); flow.json records `link:new-project` / `textbox:project-name` / `button:create-project` with boxes from the latest captured state
+- [x] Element ids stable across two runs; settings email/API key redacted — 640 ids in 18 element maps identical across two captures; `maya.chen@acme-rockets.example` → `morgan.blake@example.org`, `sk_live_…` → `sk_live_••••` (meta.redactions `{email: 1, secret: 1}`)
+- [x] Capture within budget (time: 9.3 s) — all 12 routes + the create-project flow at desktop (2×) in 9.0–9.3 s against a warm `next dev` (budget 60 s); a cold start of `next dev` adds ~2 s
 
 ## M3 — Runtime, renderer, preview, stills
 - [ ] `clock.js` + runtime API (screen, cursor, typeText, text, callout, captions, transition, logo) + style CSS

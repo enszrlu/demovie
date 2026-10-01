@@ -20,6 +20,8 @@ describe("glossary", () => {
     uiTexts: [
       { text: "Projects 9", kind: "nav", route: "/app", href: "/app/projects" },
       { text: "Team", kind: "nav", route: "/app", href: "/app/team" },
+      { text: "Sign in", kind: "nav", route: "/", href: "/login" },
+      { text: "Sign in to Harborly", kind: "heading", level: 1, route: "/login" },
       { text: "Simple pricing for every launch team", kind: "heading", level: 1, route: "/pricing" },
       { text: "Projects board", kind: "heading", level: 1, route: "/app/projects" },
       { text: "Launch checklist", kind: "heading", level: 3, route: "/" },
@@ -38,6 +40,8 @@ describe("glossary", () => {
     expect(glossary.uiLabels).toEqual([
       "Projects",
       "Team",
+      "Sign in",
+      "Sign in to Harborly",
       "Simple pricing for every launch team",
       "Projects board",
       "Launch checklist",
@@ -57,6 +61,7 @@ describe("glossary", () => {
       ]),
     );
     expect(glossary.features.map((f) => f.term)).not.toContain("Simple pricing for every launch team");
+    expect(glossary.features.map((f) => f.term)).not.toContain("Sign in to Harborly");
     expect(readmeFeatures("## Features\n- **Plant journal**: log every watering.\n")).toEqual([
       { term: "Plant journal", source: "README features" },
     ]);

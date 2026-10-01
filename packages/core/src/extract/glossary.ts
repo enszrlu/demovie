@@ -117,12 +117,14 @@ export function readmeFeatures(readme: string): { term: string; source: string }
  * Feature terms (SPEC §8.4): a nav link whose target page's h1 extends the nav label ("Projects" → "Projects board"),
  * and a feature grid on the landing page (three or more short h3 headings on "/").
  */
+const AUTH_HREF = /(^|\/)(log-?in|sign-?in|sign-?up|register|log-?out|sign-?out)(\/|$)/i;
+
 export function navFeatures(uiTexts: UiText[]): { term: string; source: string }[] {
   const out: { term: string; source: string }[] = [];
   const h1ByRoute = new Map<string, string>();
   for (const t of uiTexts)
     if (t.kind === "heading" && (t.level ?? 1) === 1 && !h1ByRoute.has(t.route)) h1ByRoute.set(t.route, t.text);
-  for (const nav of uiTexts.filter((t) => t.kind === "nav" && t.href)) {
+  for (const nav of uiTexts.filter((t) => t.kind === "nav" && t.href && !AUTH_HREF.test(t.href))) {
     const h1 = h1ByRoute.get(nav.href!);
     if (!h1 || isGenericLabel(h1)) continue;
     const label = stripCount(nav.text).toLowerCase();

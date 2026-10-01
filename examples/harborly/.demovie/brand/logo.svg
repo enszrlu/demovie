@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="304" height="64" viewBox="0 0 152 32" fill="none">
+  <title>Harborly</title>
+  <rect width="32" height="32" rx="8" fill="#2563EB"/>
+  <path d="M7 13.25c1.75 0 2.75-2 4.5-2s2.75 2 4.5 2 2.75-2 4.5-2 2.75 2 4.5 2" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7 20.75c1.75 0 2.75-2 4.5-2s2.75 2 4.5 2 2.75-2 4.5-2 2.75 2 4.5 2" stroke="#FFFFFF" stroke-opacity="0.62" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="42" y="23.5" fill="#0B1220" font-family="Geist, 'Geist Sans', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="600" letter-spacing="-0.4">Harborly</text>
+</svg>
