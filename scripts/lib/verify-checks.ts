@@ -2,6 +2,7 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import type { Check, CheckContext, CheckOutcome } from "../verify.ts";
 import { listRepoFiles, repoRoot } from "./repo.ts";
+import { tarballSmoke } from "./smoke.ts";
 
 const exists = (rel: string): boolean => existsSync(path.join(repoRoot, rel));
 const missing = (rel: string, feature: string): string | undefined =>
@@ -132,6 +133,6 @@ export const verifyChecks: Check[] = [
   {
     name: "Package tarball smoke test",
     pendingReason: () => missing("packages/cli/src/commands/init.ts", "init/doctor (M1)"),
-    run: async () => fail("not wired yet"),
+    run: (ctx) => tarballSmoke(ctx),
   },
 ];

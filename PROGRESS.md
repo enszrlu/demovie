@@ -4,8 +4,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 
 | Milestone | Status | Commit |
 |---|---|---|
-| M0 Scaffold | done | see `git log` (`feat(m0)`) |
-| M1 Core & init | not started | |
+| M0 Scaffold | done | `7c5e7b1` |
+| M1 Core & init | done | see `git log` (`feat(m1)`) |
 | M2 Capture | not started | |
 | M3 Runtime, renderer, preview, stills | not started | |
 | M4 QA | not started | |
@@ -23,11 +23,11 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] Built CLI runs `demovie --version` and `--help` — `node packages/cli/dist/index.js --version` → `0.1.0`; `--help` lists every SPEC §7 command; unknown commands exit 2
 
 ## M1 — Core & init
-- [ ] zod schemas for all `.demovie/` files + generated JSON Schemas
-- [ ] Detection, route discovery, brand, glossary, metadata extractors
-- [ ] `init` (interactive + `--yes`), `doctor [--fix]`, `status`, `extract`, `glossary sync`
-- [ ] Harborly: valid config/brand/glossary/routes; correct primary color, Geist fonts, logo; ≥ 10 routes with correct `protected` flags
-- [ ] pages-minimal and static-site fixtures detected correctly
+- [x] zod schemas for all `.demovie/` files + generated JSON Schemas — 18 schemas in `packages/core/src/schemas/` (config, brand, glossary, routes, flow, assets, video, brief, storyboard, beats, voice, provenance, qa, capture-index, elements, capture-meta, flow-run, changes); `z.toJSONSchema` writes `packages/cli/schema/*.schema.json` at build (published with the package)
+- [x] Detection, route discovery, brand, glossary, metadata extractors — static (esbuild + acorn, never executes project code) and runtime (Playwright: computed styles, same-origin fonts, header logo, crawl); fixtures in `packages/core/test/fixtures/` cover monorepos, route groups, parallel/intercepting routes, `[[...slug]]`, basePath/i18n, oklch tokens, local fonts
+- [x] `init` (interactive + `--yes`), `doctor [--fix]`, `status`, `extract`, `glossary sync` — interactive init driven through a pseudo-TTY (prompts → `.demovie/.env` + `.auth/state.json`); `--yes` covered by unit + integration tests; glossary edits survive re-extraction
+- [x] Harborly: valid config/brand/glossary/routes; correct primary color, Geist fonts, logo; ≥ 10 routes with correct `protected` flags — `packages/cli/test/init.int.test.ts`: primary `#155dfc` (css-var `--primary`, runtime-confirmed), Geist / Geist Mono with woff2 files, `logo-mark.svg` + `logo.svg`, 12 routes (7 protected via `src/proxy.ts` matcher `/app/:path*`, `[id]` params filled by the logged-in crawl), 7 people + 17 entities from the seed file
+- [x] pages-minimal and static-site fixtures detected correctly — Pages Router + Tailwind v3 (`hsl(var(--primary))` → `#10b77f`), and generic mode with crawl-only routes (`packages/cli/test/generic.int.test.ts`; logout/delete links never followed)
 
 ## M2 — Capture
 - [ ] `up`/`down`, seed, frozen clock, hide/block requests

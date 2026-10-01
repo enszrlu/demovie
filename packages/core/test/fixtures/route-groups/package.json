@@ -1,0 +1,9 @@
+{
+  "name": "route-groups",
+  "scripts": {
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "next": "16.3.8"
+  }
+}

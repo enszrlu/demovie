@@ -1,0 +1,6 @@
+{
+  "name": "local-fonts",
+  "dependencies": {
+    "next": "15.5.0"
+  }
+}

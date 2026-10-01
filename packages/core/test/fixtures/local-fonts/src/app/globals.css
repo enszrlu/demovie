@@ -1,0 +1,16 @@
+@font-face {
+  font-family: "Brand Display";
+  src: url("./fonts/BrandDisplay-700.woff2") format("woff2");
+  font-weight: 700;
+}
+
+:root {
+  --background: #fafafa;
+  --foreground: hsl(222.2 84% 4.9%);
+  --primary: rgb(124 58 237);
+  --font-heading: "Brand Display", serif;
+}
+
+@theme {
+  --font-sans: var(--font-brand-sans);
+}

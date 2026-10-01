@@ -1,0 +1,19 @@
+{
+  "name": "pages-minimal",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pages Router detection fixture for demovie (Tailwind v3 config + CSS variables). Not installed or run; read statically.",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001"
+  },
+  "dependencies": {
+    "next": "15.5.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

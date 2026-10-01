@@ -1,7 +1,19 @@
 /**
- * Global setup for integration tests: prepares shared fixtures once per run.
- * Individual suites start the apps they need through the helpers in scripts/test/harborly.ts.
+ * Global setup for integration tests: seed and start (or reuse) the Harborly dev server once per run.
  */
-export default async function setup(): Promise<() => Promise<void>> {
-  return async () => {};
+import type { TestProject } from "vitest/node";
+import { ensureHarborly } from "./harborly.ts";
+
+declare module "vitest" {
+  export interface ProvidedContext {
+    harborlyUrl: string;
+  }
+}
+
+export default async function setup(project: TestProject): Promise<() => Promise<void>> {
+  const harborly = await ensureHarborly();
+  project.provide("harborlyUrl", harborly.url);
+  return async () => {
+    await harborly.stop();
+  };
 }

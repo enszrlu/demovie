@@ -7,15 +7,15 @@ export interface CommandModule {
 
 /** Lazy loaders for every command, so startup only loads what a command needs. */
 export const commandLoaders = {
-  status: () => import("./pending.ts").then((m) => m.pending("status", "M1")),
-  init: () => import("./pending.ts").then((m) => m.pending("init", "M1")),
-  doctor: () => import("./pending.ts").then((m) => m.pending("doctor", "M1")),
+  status: () => import("./status.ts"),
+  init: () => import("./init.ts"),
+  doctor: () => import("./doctor.ts"),
   up: () => import("./pending.ts").then((m) => m.pending("up", "M2")),
   down: () => import("./pending.ts").then((m) => m.pending("down", "M2")),
   "auth-test": () => import("./pending.ts").then((m) => m.pending("auth test", "M2")),
   "auth-record": () => import("./pending.ts").then((m) => m.pending("auth record", "M2")),
-  extract: () => import("./pending.ts").then((m) => m.pending("extract", "M1")),
-  "glossary-sync": () => import("./pending.ts").then((m) => m.pending("glossary sync", "M1")),
+  extract: () => import("./extract.ts"),
+  "glossary-sync": () => import("./glossary-sync.ts"),
   capture: () => import("./pending.ts").then((m) => m.pending("capture", "M2")),
   "flow-new": () => import("./pending.ts").then((m) => m.pending("flow new", "M2")),
   "flow-run": () => import("./pending.ts").then((m) => m.pending("flow run", "M2")),
