@@ -1,0 +1,10 @@
+{
+  "slug": "bad-pacing",
+  "title": "Bad pacing",
+  "type": "changelog",
+  "fps": 30,
+  "duration": 9,
+  "formats": ["16:9"],
+  "style": "clean",
+  "captures": []
+}

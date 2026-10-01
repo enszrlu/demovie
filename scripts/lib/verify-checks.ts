@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import type { Check, CheckContext, CheckOutcome } from "../verify.ts";
 import { assertVideo, describeMedia, summarize } from "./media.ts";
@@ -121,7 +121,64 @@ export const verifyChecks: Check[] = [
     pendingReason: () =>
       missing("packages/qa/src/engine.ts", "QA engine (M4)") ??
       missing("examples/compositions/clean-launch/video.json", "clean-launch"),
-    run: async () => fail("not wired yet"),
+    run: async (ctx) => {
+      const root = path.join(repoRoot, "examples/compositions");
+      const dirs = readdirSync(root)
+        .filter((d) => existsSync(path.join(root, d, "video.json")))
+        .sort();
+      const good: string[] = [];
+      const bad: string[] = [];
+      let intended = 0;
+      for (const dir of dirs) {
+        const ready = await ensureHarborlyCaptures(ctx, dir);
+        if (!ready.ok) return fail(ready.detail);
+        const expectedFile = path.join(root, dir, "expected-qa.json");
+        const expected = existsSync(expectedFile)
+          ? (JSON.parse(readFileSync(expectedFile, "utf8")) as { format: string; rules: string[] })
+          : null;
+        const r = await ctx.sh(
+          "node",
+          [
+            CLI,
+            "--cwd",
+            "examples/harborly",
+            "--json",
+            "qa",
+            `../compositions/${dir}`,
+            "--format",
+            expected?.format ?? "all",
+            // Fixtures may target warn rules; --strict makes them fail the run too.
+            ...(expected ? ["--strict"] : []),
+          ],
+          { timeoutMs: 20 * 60_000 },
+        );
+        let qa: {
+          summary: { errors: number; warnings: number };
+          reports: { format: string; rules: { id: string; status: string }[] }[];
+        };
+        try {
+          qa = JSON.parse(r.stdout);
+        } catch {
+          return fail(`${dir}: qa did not return JSON (exit ${r.code})`);
+        }
+        if (!expected) {
+          if (qa.summary.errors !== 0 || r.code !== 0)
+            return fail(`${dir}: ${qa.summary.errors} QA error(s) (expected 0)`);
+          good.push(`${dir} 0 errors/${qa.summary.warnings} warnings (${qa.reports.map((x) => x.format).join(", ")})`);
+        } else {
+          const failed = new Set(
+            qa.reports.flatMap((x) => x.rules.filter((rule) => rule.status === "fail").map((rule) => rule.id)),
+          );
+          const missingRules = expected.rules.filter((id) => !failed.has(id));
+          if (missingRules.length > 0 || r.code === 0)
+            return fail(`${dir}: intended rules not triggered: ${missingRules.join(", ") || "(qa exited 0)"}`);
+          intended += expected.rules.length;
+          bad.push(dir);
+        }
+      }
+      if (good.length === 0) return fail("no reference composition passed");
+      return pass(`${good.join("; ")}; ${bad.length} bad-* fixtures trigger all ${intended} intended rules`);
+    },
   },
   {
     name: "Render smoke test",

@@ -24,7 +24,7 @@ export const commandLoaders = {
   new: () => import("./new.ts"),
   preview: () => import("./preview.ts"),
   stills: () => import("./stills.ts"),
-  qa: () => import("./pending.ts").then((m) => m.pending("qa", "M4")),
+  qa: () => import("./qa.ts"),
   "audio-music": () => import("./pending.ts").then((m) => m.pending("audio music", "M5")),
   "audio-sfx": () => import("./pending.ts").then((m) => m.pending("audio sfx", "M5")),
   "audio-voice": () => import("./pending.ts").then((m) => m.pending("audio voice", "M5")),

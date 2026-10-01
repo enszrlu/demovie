@@ -215,3 +215,35 @@ export async function probe(file: string): Promise<ProbeResult> {
     size: Number(data.format.size ?? 0),
   };
 }
+
+/** Integrated loudness (LUFS) and true peak (dBTP) via ffmpeg's EBU R128 scanner. */
+export async function measureLoudness(file: string): Promise<{ integrated: number; truePeak: number; range: number }> {
+  const result = await execa(
+    ffmpegBin(),
+    ["-hide_banner", "-nostats", "-i", file, "-filter_complex", "ebur128=peak=true:framelog=quiet", "-f", "null", "-"],
+    {
+      reject: false,
+      all: true,
+    },
+  );
+  const text = String(result.all ?? "");
+  const summary = text.slice(text.lastIndexOf("Summary:"));
+  const num = (re: RegExp) => {
+    const m = summary.match(re);
+    return m ? Number(m[1]) : Number.NaN;
+  };
+  const integrated = num(/I:\s+(-?[\d.]+|-inf)\s+LUFS/);
+  const truePeak = num(/True peak:[\s\S]*?Peak:\s+(-?[\d.]+|-inf)\s+dBFS/);
+  const range = num(/LRA:\s+(-?[\d.]+)\s+LU/);
+  if (!Number.isFinite(integrated))
+    throw new DemovieError(
+      "E_AUDIO",
+      `could not measure loudness of ${file}`,
+      "check that the file is a valid audio file",
+    );
+  return {
+    integrated,
+    truePeak: Number.isFinite(truePeak) ? truePeak : -120,
+    range: Number.isFinite(range) ? range : 0,
+  };
+}

@@ -1,0 +1,25 @@
+.edge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font: 600 56px / 1.2 var(--dm-font-heading);
+}
+.a {
+  position: absolute;
+  left: 30%;
+  top: 45%;
+  font: 600 64px / 1.2 var(--dm-font-heading);
+}
+.b {
+  position: absolute;
+  left: 32%;
+  top: 47%;
+  font: 600 64px / 1.2 var(--dm-font-heading);
+  color: var(--dm-primary);
+}
+.away {
+  position: absolute;
+  left: 2400px;
+  top: 40%;
+  font: 600 56px / 1.2 var(--dm-font-heading);
+}

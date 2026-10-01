@@ -1,0 +1,10 @@
+{
+  "slug": "bad-assets",
+  "title": "Bad assets",
+  "type": "teaser",
+  "fps": 30,
+  "duration": 8,
+  "formats": ["16:9"],
+  "style": "clean",
+  "captures": []
+}

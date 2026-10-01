@@ -4,7 +4,7 @@
   position: absolute;
   left: var(--dm-safe-left);
   right: var(--dm-safe-right);
-  top: var(--dm-safe-top);
+  top: calc(var(--dm-safe-top) + var(--dm-unit) * 1.2);
   text-align: center;
   font-size: calc(var(--dm-unit) * 5.4);
   line-height: 1.08;

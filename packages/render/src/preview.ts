@@ -104,7 +104,7 @@ function drawQa() {
   for (const rule of rep.rules) {
     if (rule.status !== "fail") continue;
     for (const o of rule.occurrences) {
-      if (Math.abs(o.t - t) > 0.051 || !o.bbox) continue;
+      if (!o.bbox || t < o.t - 0.051 || t > (o.until ?? o.t) + 0.051) continue;
       const d = document.createElement("div"); d.className = "qa" + (rule.severity === "warn" ? " warn" : "");
       Object.assign(d.style, { left: o.bbox.x + "px", top: o.bbox.y + "px", width: o.bbox.width + "px", height: o.bbox.height + "px" });
       const s = document.createElement("span"); s.textContent = rule.id + " · " + o.detail; d.appendChild(s); box.appendChild(d);

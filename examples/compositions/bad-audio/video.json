@@ -1,0 +1,12 @@
+{
+  "slug": "bad-audio",
+  "title": "Bad audio",
+  "type": "teaser",
+  "fps": 30,
+  "duration": 8,
+  "formats": ["16:9"],
+  "style": "clean",
+  "captures": [],
+  "audio": { "voice": { "manifest": "audio/voice.json" } },
+  "captions": { "enabled": false }
+}

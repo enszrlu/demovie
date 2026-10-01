@@ -7,8 +7,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | M0 Scaffold | done | `7c5e7b1` |
 | M1 Core & init | done | `3a8d7f2` |
 | M2 Capture | done | `068532d` |
-| M3 Runtime, renderer, preview, stills | done | see `git log` (`feat(m3)`) |
-| M4 QA | not started | |
+| M3 Runtime, renderer, preview, stills | done | `5d43820` |
+| M4 QA | done | see `git log` (`feat(m4)`) |
 | M5 Audio | not started | |
 | M6 Agent layer | not started | |
 | M7 Changelog & CI | not started | |
@@ -45,9 +45,9 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] Budgets: stills 2.6 s · draft 11.4 s · final 62 s (clean-launch is 35 s, longer than the 30 s budget video: `stills --every 1` 35 stills in 2.6 s < 20 s; `render --quality draft` 16:9 in 11.4 s < 60 s; `render --quality final` one format in 62 s < 4 min)
 
 ## M4 — QA
-- [ ] Every rule in SPEC §12 with passing + failing synthetic tests
-- [ ] `qa.json`, fix hints, waivers, `--strict`, preview QA overlay
-- [ ] `clean-launch` passes with 0 errors; each `bad-*` fixture triggers its intended rules
+- [x] Every rule in SPEC §12 with passing + failing synthetic tests — `packages/qa/src/rules.ts` (30 rules, each with measurement + fix); `packages/qa/test/rules.test.ts`: 34 tests (one passing and one failing synthetic case per rule, a clean baseline, strict/waivers, reading-time and entrance-frame edge cases)
+- [x] `qa.json`, fix hints, waivers, `--strict`, preview QA overlay — `demovie qa <slug> [--format f|all] [--strict] [--fps n]` writes `qa.json` (SPEC §12 structure + `until` spans) and exits 1 on errors; `video.json qa.ignore` → `waived`; `packages/qa/test/qa.int.test.ts` opens the preview player and finds the DM-T02 overlay box
+- [x] `clean-launch` passes with 0 errors; each `bad-*` fixture triggers its intended rules — `pnpm verify` check 7: clean-launch 0 errors / 0 warnings in 16:9 and 9:16; 9 fixtures (bad-text, bad-layout, bad-pacing, bad-truth, bad-assets, bad-determinism, bad-ai-look, bad-loop, bad-audio) trigger all 30 intended rules (run with `--strict` so warn-level targets count)
 
 ## M5 — Audio
 - [ ] Music synth + `beats.json`; SFX generation script + bundled set

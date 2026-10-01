@@ -1,0 +1,10 @@
+{
+  "slug": "bad-loop",
+  "title": "Bad loop",
+  "type": "hero-loop",
+  "fps": 30,
+  "duration": 6,
+  "formats": ["16:9"],
+  "style": "clean",
+  "captures": []
+}

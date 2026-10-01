@@ -1,0 +1,24 @@
+.hud {
+  position: absolute;
+  left: 8%;
+  top: 10%;
+  font: 500 40px / 1.2 var(--dm-font-mono);
+}
+.chip {
+  position: absolute;
+  left: 40%;
+  top: 45%;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: #dcfce7;
+  font:
+    600 48px / 1.2 "Inter",
+    sans-serif;
+  color: #166534;
+}
+.title {
+  position: absolute;
+  left: 8%;
+  top: 70%;
+  font: 700 64px / 1.2 var(--dm-font-heading);
+}

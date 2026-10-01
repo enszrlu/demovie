@@ -1,0 +1,34 @@
+.flash {
+  position: absolute;
+  left: 10%;
+  top: 12%;
+  font: 600 64px / 1.1 var(--dm-font-heading);
+}
+.tiny {
+  position: absolute;
+  left: 10%;
+  top: 40%;
+  font: 400 18px / 1.2 var(--dm-font-body);
+}
+.clip {
+  position: absolute;
+  left: 10%;
+  top: 55%;
+  width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  font: 600 56px / 1.2 var(--dm-font-body);
+}
+.faint {
+  position: absolute;
+  left: 10%;
+  top: 75%;
+  font: 500 48px / 1.2 var(--dm-font-body);
+  color: #d4d4d8;
+}
+.extra {
+  position: absolute;
+  right: 10%;
+  top: 40%;
+  font: 500 40px / 1.2 var(--dm-font-body);
+}

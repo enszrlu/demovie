@@ -1,0 +1,17 @@
+.claim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40%;
+  text-align: center;
+  font: 600 64px / 1.2 var(--dm-font-heading);
+}
+.fake-ui {
+  position: absolute;
+  left: 25%;
+  top: 25%;
+  width: 50%;
+  height: 50%;
+  border-radius: 16px;
+  background: #f4f4f5;
+}

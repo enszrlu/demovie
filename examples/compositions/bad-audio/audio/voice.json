@@ -1,0 +1,16 @@
+{
+  "provider": "openai",
+  "voice": "marin",
+  "model": "gpt-4o-mini-tts",
+  "lines": [
+    {
+      "id": "vo-1",
+      "text": "Plan every launch on one board.",
+      "start": 0.5,
+      "duration": 4,
+      "file": "voice/vo-1.mp3",
+      "words": []
+    },
+    { "id": "vo-2", "text": "Ship it on time.", "start": 3.5, "duration": 5.5, "file": "voice/vo-2.mp3", "words": [] }
+  ]
+}

@@ -7,7 +7,16 @@ export const QaRuleResultSchema = z.object({
   status: z.enum(["pass", "fail", "waived", "skipped"]),
   title: z.string(),
   message: z.string(),
-  occurrences: z.array(z.object({ t: z.number(), bbox: Rect.optional(), detail: z.string() })).default([]),
+  occurrences: z
+    .array(
+      z.object({
+        t: z.number(),
+        until: z.number().optional().describe("end of a persistent violation"),
+        bbox: Rect.optional(),
+        detail: z.string(),
+      }),
+    )
+    .default([]),
   fix: z.string(),
 });
 export type QaRuleResult = z.infer<typeof QaRuleResultSchema>;

@@ -98,7 +98,10 @@ function main(): void {
   }
 
   // 3. Audio assets must come from demovie generators.
-  const audioFiles = listRepoFiles().filter((f) => /\.(wav|mp3|aac|m4a|ogg|flac|opus)$/i.test(f));
+  // The bad-audio QA fixture deliberately ships locally generated test tones (ffmpeg lavfi sine) without provenance,
+  // so that QA rule DM-A04 has something to catch. Nothing else is exempt.
+  const EXEMPT = /^examples\/compositions\/bad-audio\/audio\//;
+  const audioFiles = listRepoFiles().filter((f) => /\.(wav|mp3|aac|m4a|ogg|flac|opus)$/i.test(f) && !EXEMPT.test(f));
   for (const file of audioFiles) {
     const provenance = path.join(repoRoot, path.dirname(file), "provenance.json");
     const listed =

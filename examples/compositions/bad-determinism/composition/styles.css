@@ -1,0 +1,33 @@
+.jitter {
+  position: absolute;
+  left: 30%;
+  top: 40%;
+  width: 200px;
+  height: 200px;
+  border-radius: 24px;
+  background: var(--dm-primary);
+}
+.pulse {
+  position: absolute;
+  left: 60%;
+  top: 40%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse 1s infinite alternate;
+}
+.title {
+  position: absolute;
+  left: 10%;
+  top: 15%;
+  font: 600 64px / 1.2 var(--dm-font-heading);
+}
+@keyframes pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.4);
+  }
+}

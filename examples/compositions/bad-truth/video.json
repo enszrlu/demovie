@@ -1,0 +1,10 @@
+{
+  "slug": "bad-truth",
+  "title": "Bad truth",
+  "type": "teaser",
+  "fps": 30,
+  "duration": 10,
+  "formats": ["16:9"],
+  "style": "clean",
+  "captures": ["routes/app@desktop"]
+}
