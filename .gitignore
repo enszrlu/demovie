@@ -1,0 +1,34 @@
+node_modules/
+dist/
+.tmp/
+coverage/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+*.tgz
+.turbo/
+.vscode/
+.idea/
+
+# Next.js fixtures
+.next/
+next-env.d.ts
+examples/*/.data/
+
+# demovie project state that is never committed (mirrors the generated .demovie/.gitignore)
+**/.demovie/.env
+**/.demovie/.auth/
+**/.demovie/.cache/
+**/.demovie/captures/
+**/.demovie/videos/*/out/
+**/.demovie/videos/*/qa.json
+examples/compositions/*/out/
+examples/compositions/*/qa.json
+
+# generated into the demovie package at build time
+packages/cli/schema/
+packages/cli/assets/
+packages/cli/skill/
+packages/cli/LICENSE

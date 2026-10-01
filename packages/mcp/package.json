@@ -1,0 +1,16 @@
+{
+  "name": "@demovie/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "demovie MCP server (stdio).",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@demovie/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "zod": "^4.6.5"
+  }
+}

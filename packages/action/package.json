@@ -1,0 +1,11 @@
+{
+  "name": "@demovie/action",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "demovie GitHub Action (composite): produces a clip per release.",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

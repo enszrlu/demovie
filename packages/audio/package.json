@@ -1,0 +1,15 @@
+{
+  "name": "@demovie/audio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "demovie audio: music synth, SFX, TTS providers, captions, mixing.",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@demovie/core": "workspace:*",
+    "execa": "^9.6.1"
+  }
+}

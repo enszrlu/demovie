@@ -1,0 +1,58 @@
+{
+  "name": "demovie",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Accurate, on-brand motion-graphics videos of your real web app, made by your AI coding agent. Your agent animates. demovie makes it true.",
+  "license": "MIT",
+  "keywords": [
+    "video",
+    "product-video",
+    "motion-graphics",
+    "nextjs",
+    "agent-skills",
+    "mcp",
+    "claude-code",
+    "codex",
+    "cursor",
+    "playwright",
+    "gsap"
+  ],
+  "bin": {
+    "demovie": "./dist/index.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "schema",
+    "skill",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.8.1",
+    "commander": "^14.0.3",
+    "picocolors": "^1.1.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@demovie/action": "workspace:*",
+    "@demovie/audio": "workspace:*",
+    "@demovie/capture": "workspace:*",
+    "@demovie/core": "workspace:*",
+    "@demovie/mcp": "workspace:*",
+    "@demovie/qa": "workspace:*",
+    "@demovie/render": "workspace:*",
+    "@demovie/runtime": "workspace:*",
+    "@demovie/skill": "workspace:*"
+  }
+}
