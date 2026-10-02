@@ -104,9 +104,39 @@ export async function loadProject(cwd: string): Promise<Project> {
   );
   const env = { ...loadDotEnv(paths.env), ...process.env };
   const missing = new Set<string>();
-  const resolved = resolveEnvRefs(config, env, missing);
+  const resolved = applyEnvOverrides(resolveEnvRefs(config, env, missing), env);
   for (const value of Object.values(loadDotEnv(paths.env))) logger.addSecret(value);
   return { paths, config, resolved, env, missingEnv: [...missing] };
+}
+
+/**
+ * CI overrides (DECISIONS): `DEMOVIE_APP_URL` points at an already running app (e.g. a preview deployment),
+ * `DEMOVIE_APP_START` replaces the start command, `DEMOVIE_APP_HEADERS` (a JSON object) adds request headers such as
+ * Vercel's protection bypass. Header values are treated as secrets.
+ */
+export function applyEnvOverrides(config: Config, env: Record<string, string | undefined>): Config {
+  const app = { ...config.app };
+  if (env.DEMOVIE_APP_URL) {
+    app.url = env.DEMOVIE_APP_URL;
+    app.start = null;
+  }
+  if (env.DEMOVIE_APP_START && !env.DEMOVIE_APP_URL)
+    app.start = { cwd: ".", env: {}, readyPath: "/", timeoutMs: 120_000, ...app.start, command: env.DEMOVIE_APP_START };
+  if (env.DEMOVIE_APP_HEADERS) {
+    let headers: Record<string, string>;
+    try {
+      headers = JSON.parse(env.DEMOVIE_APP_HEADERS) as Record<string, string>;
+    } catch {
+      throw new DemovieError(
+        "E_CONFIG",
+        "DEMOVIE_APP_HEADERS is not a JSON object",
+        'set it like {"x-vercel-protection-bypass":"…"}',
+      );
+    }
+    for (const value of Object.values(headers)) logger.addSecret(String(value));
+    app.headers = { ...app.headers, ...headers };
+  }
+  return app === config.app ? config : { ...config, app };
 }
 
 export async function saveConfig(paths: ProjectPaths, config: Config): Promise<void> {

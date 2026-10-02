@@ -10,8 +10,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | M3 Runtime, renderer, preview, stills | done | `5d43820` |
 | M4 QA | done | `35fa823` |
 | M5 Audio | done | `83e76e6` |
-| M6 Agent layer | done | see `git log` (`feat(m6)`) |
-| M7 Changelog & CI | not started | |
+| M6 Agent layer | done | `5ed6603` |
+| M7 Changelog & CI | done | see `git log` (`feat(m7)`) |
 | M8 Dogfood | not started | |
 | M9 Docs & release readiness | not started | |
 
@@ -63,9 +63,9 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] `make` adapters (claude, codex, cursor, custom), interactive + headless; `--dry-run` verified against the real CLIs' `--help` — `packages/cli/src/adapters/*`; `packages/cli/test/make.test.ts` checks every adapter's interactive/headless arguments, the SPEC prompt, `--dry-run` output, exit-code passthrough, and greps the installed `claude` 2.1.247, `codex` 0.156.1 and `cursor-agent` 2026.10.01 `--help` for every flag used (DECISIONS)
 
 ## M7 — Changelog & CI
-- [ ] `changes` with import-graph route mapping; `capture --changed`
-- [ ] GitHub Action + `ci init`
-- [ ] Harborly test branch: correct affected routes; action scripts run locally end-to-end with the mocked agent
+- [x] `changes` with import-graph route mapping; `capture --changed` — `packages/core/src/changes/` (conventional commits + PR numbers, optional `gh` details, three-dot diff scoped to the app folder, a static reverse import graph with tsconfig `paths`, depth 6, direct vs import reasons with the `via` chain, capture/flow/story suggestions) → `.demovie/.cache/changes.json`; `capture --changed --since <ref>` re-captures stale states plus routes and flows affected by commits and uncommitted changes. Unit tests: commit parsing, story line, JSONC, alias resolution, Harborly graph (`packages/core/test/changes.test.ts`)
+- [x] GitHub Action + `ci init` — `packages/action/action.yml` (composite; inputs agent, agent-version, type, formats, since, app-url, start, working-directory, comment, upload-release-asset) + dependency-free `scripts/demovie-action.mjs` (install-agent, run, report; Vercel bypass headers; PR comment, release assets, job summary; dry-run and local modes); `demovie ci init` writes `.github/workflows/demovie.yml` at the git root (release + workflow_dispatch, commented deployment_status) after confirmation. verify check 12 validates action.yml against its zod schema (declared inputs, pinned actions, existing scripts) and dry-runs the scripts against Harborly
+- [x] Harborly test branch: correct affected routes; action scripts run locally end-to-end with the mocked agent — Harborly's shared HealthBadge now shows an icon per health; `packages/cli/test/changes.int.test.ts` replays it as `feat(projects): health badges show an icon (#42)` on a branch over the previous version in a temp git repo → exactly /app, /app/projects, /app/projects/[id], /app/projects/new via the import graph, flow `create-project`, story "1 user-visible change: health badges show an icon."; `packages/action/test/action.int.test.ts` runs `run` + `report` against Harborly with a mock agent that copies clean-launch, passes QA and renders a draft clip (summary, outputs, comment checked)
 
 ## M8 — Dogfood
 - [ ] Launch video (30–40 s, 16:9 + 9:16, `clean`), QA 0 errors

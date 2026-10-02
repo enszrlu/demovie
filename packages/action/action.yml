@@ -1,0 +1,124 @@
+name: demovie
+description: Make an accurate changelog or launch clip of your web app on every release, with your own coding agent.
+author: demovie contributors
+branding:
+  icon: film
+  color: blue
+
+inputs:
+  agent:
+    description: "Agent CLI that makes the video: claude or codex (API keys only: ANTHROPIC_API_KEY / OPENAI_API_KEY)."
+    required: false
+    default: claude
+  agent-version:
+    description: Pinned version of the agent CLI package (@anthropic-ai/claude-code or @openai/codex).
+    required: false
+    default: latest
+  type:
+    description: "Video type: changelog, teaser, feature, launch, walkthrough or hero-loop."
+    required: false
+    default: changelog
+  formats:
+    description: "Comma-separated formats (default: the type's defaults), e.g. \"16:9,1:1\"."
+    required: false
+    default: ""
+  since:
+    description: "Git ref to summarize changes from (default: the previous tag)."
+    required: false
+    default: ""
+  app-url:
+    description: URL of an already running app, e.g. a preview deployment (instead of starting it).
+    required: false
+    default: ""
+  start:
+    description: "Build + start command for the app when there is no app-url (default: the one in .demovie/config.json)."
+    required: false
+    default: ""
+  working-directory:
+    description: The app folder (the one with .demovie/).
+    required: false
+    default: "."
+  comment:
+    description: Comment on the pull request (or write the release job summary) with the poster, links and QA summary.
+    required: false
+    default: "true"
+  upload-release-asset:
+    description: On release events, attach the MP4s and posters to the release.
+    required: false
+    default: "true"
+  node-version:
+    description: Node.js version.
+    required: false
+    default: "22"
+
+outputs:
+  videos:
+    description: JSON list of the rendered MP4 paths.
+    value: ${{ steps.make.outputs.videos }}
+  summary:
+    description: Path of the run summary JSON.
+    value: ${{ steps.make.outputs.summary }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pnpm
+      if: hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) != ''
+      uses: pnpm/action-setup@v4
+      with:
+        run_install: false
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) != '' && 'pnpm' || '' }}
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile
+        elif [ -f package-lock.json ]; then npm ci
+        elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
+        else npm install; fi
+    - name: Install the agent CLI (pinned)
+      shell: bash
+      env:
+        AGENT: ${{ inputs.agent }}
+        AGENT_VERSION: ${{ inputs.agent-version }}
+      run: node "${{ github.action_path }}/scripts/demovie-action.mjs" install-agent
+    - name: Install Chromium
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npx -y playwright@1.60.0 install --with-deps chromium
+    - name: Ensure ffmpeg
+      shell: bash
+      run: command -v ffmpeg >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+    - name: Capture changes and make the video
+      id: make
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DEMOVIE_ACTION_AGENT: ${{ inputs.agent }}
+        DEMOVIE_ACTION_TYPE: ${{ inputs.type }}
+        DEMOVIE_ACTION_FORMATS: ${{ inputs.formats }}
+        DEMOVIE_ACTION_SINCE: ${{ inputs.since }}
+        DEMOVIE_APP_URL: ${{ inputs.app-url }}
+        DEMOVIE_APP_START: ${{ inputs.start }}
+      run: node "${{ github.action_path }}/scripts/demovie-action.mjs" run
+    - name: Upload the video folder
+      if: always() && steps.make.outputs.out-dir != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: demovie-video
+        path: ${{ steps.make.outputs.out-dir }}
+        if-no-files-found: warn
+    - name: Comment and attach to the release
+      if: always() && steps.make.outputs.summary != ''
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DEMOVIE_ACTION_COMMENT: ${{ inputs.comment }}
+        DEMOVIE_ACTION_UPLOAD_RELEASE: ${{ inputs.upload-release-asset }}
+        GH_TOKEN: ${{ github.token }}
+      run: node "${{ github.action_path }}/scripts/demovie-action.mjs" report

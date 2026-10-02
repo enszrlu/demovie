@@ -16,6 +16,7 @@ import {
 
 export * from "./brand.ts";
 export * from "./capture.ts";
+export * from "./ci.ts";
 export * from "./common.ts";
 export * from "./config.ts";
 export * from "./flow.ts";

@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
+  analyzeChanges,
   appendDiscovered,
   type CaptureIndexEntry,
   configHash,
@@ -9,7 +10,6 @@ import {
   detectProject,
   discoverRoutes,
   type ElementMap,
-  execCapture,
   fillParams,
   logger,
   matchesAny,
@@ -104,23 +104,6 @@ function schemes(project: Project, dark: boolean | undefined): ("light" | "dark"
   return list;
 }
 
-/** States affected by git changes since a ref (direct mapping: page file or layout chain changed). */
-async function changedFiles(root: string, since: string): Promise<Set<string>> {
-  const files = new Set<string>();
-  const diff = await execCapture("git", ["diff", "--name-only", `${since}...HEAD`], { cwd: root });
-  if (diff.code !== 0)
-    throw new DemovieError(
-      "E_GIT",
-      `git diff ${since}...HEAD failed: ${diff.stderr.trim()}`,
-      "check that the ref exists (`git log --oneline`)",
-    );
-  const top = (await execCapture("git", ["rev-parse", "--show-toplevel"], { cwd: root })).stdout.trim();
-  const status = await execCapture("git", ["status", "--porcelain"], { cwd: root });
-  const all = [...diff.stdout.split("\n"), ...status.stdout.split("\n").map((l) => l.slice(3))].filter(Boolean);
-  for (const f of all) files.add(toPosix(path.relative(root, path.join(top, f))));
-  return files;
-}
-
 export async function runCapture(project: Project, request: CaptureRequest): Promise<CaptureReport> {
   const started = Date.now();
   const config = project.resolved;
@@ -204,10 +187,14 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
     const known = new Set(
       (await import("./freshness.ts").then((m) => m.readCaptureIndex(project)))?.states.map((s) => s.id) ?? [],
     );
-    const changed = request.since ? await changedFiles(project.paths.root, request.since) : new Set<string>();
-    const routerRoot = config.project.nextjs?.appDir ?? config.project.nextjs?.pagesDir ?? null;
-    const affected = (route: Route) =>
-      layoutChain(project.paths.root, route.file, routerRoot).some((f) => changed.has(f));
+    // with --since: routes reached from the changed files directly or through the import graph (SPEC §15.1)
+    const analysis = request.since
+      ? await analyzeChanges(project, { since: request.since, gh: false, workingTree: true })
+      : null;
+    const changed = new Set(analysis?.files.map((f) => f.path) ?? []);
+    const affectedPaths = new Set(analysis?.routes.map((r) => r.path) ?? []);
+    const affectedFlows = new Set(analysis?.suggestions.flows ?? []);
+    const affected = (route: Route) => affectedPaths.has(route.path);
     const idOf = (j: RouteJob) => `routes/${routeSlug(j.path)}@${j.viewport}${j.scheme === "dark" ? ".dark" : ""}`;
     const kept = jobs.filter((j) => staleIds.has(idOf(j)) || !known.has(idOf(j)) || affected(j.route));
     for (const j of jobs) if (!kept.includes(j)) report.skipped.push({ what: idOf(j), reason: "fresh" });
@@ -217,6 +204,7 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
       const stale =
         ids.length === 0 ||
         ids.some((id) => staleIds.has(id)) ||
+        affectedFlows.has(f.name) ||
         changed.has(toPosix(path.relative(project.paths.root, f.file)));
       if (!stale) report.skipped.push({ what: `flow ${f.name}`, reason: "fresh" });
       return stale;

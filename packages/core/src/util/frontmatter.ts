@@ -1,5 +1,8 @@
 import { parse, stringify } from "yaml";
 
+/** Parse a YAML document (flows, GitHub workflow/action files). */
+export const parseYaml = (text: string): unknown => parse(text);
+
 export interface Frontmatter<T = Record<string, unknown>> {
   data: T;
   body: string;

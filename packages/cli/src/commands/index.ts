@@ -19,7 +19,7 @@ export const commandLoaders = {
   capture: () => import("./capture.ts"),
   "flow-new": () => import("./flow-new.ts"),
   "flow-run": () => import("./flow-run.ts"),
-  changes: () => import("./pending.ts").then((m) => m.pending("changes", "M7")),
+  changes: () => import("./changes.ts"),
   add: () => import("./add.ts"),
   new: () => import("./new.ts"),
   preview: () => import("./preview.ts"),
@@ -33,7 +33,7 @@ export const commandLoaders = {
   make: () => import("./make.ts"),
   mcp: () => import("./mcp.ts"),
   "skill-install": () => import("./skill-install.ts"),
-  "ci-init": () => import("./pending.ts").then((m) => m.pending("ci init", "M7")),
+  "ci-init": () => import("./ci-init.ts"),
 } satisfies Record<string, () => Promise<CommandModule>>;
 
 export type CommandName = keyof typeof commandLoaders;

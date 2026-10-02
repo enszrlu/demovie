@@ -30,6 +30,10 @@ examples/compositions/*/qa.json
 examples/compositions/*/audio/*.wav
 !examples/compositions/bad-audio/audio/*.wav
 
+# skill copies installed into the fixture by `demovie skill install` / `make` (source: packages/skill/demovie)
+examples/harborly/.claude/
+examples/harborly/.agents/
+
 # generated into the demovie package at build time
 packages/cli/schema/
 packages/cli/assets/

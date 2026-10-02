@@ -314,7 +314,14 @@ export const verifyChecks: Check[] = [
   {
     name: "Action + scripts dry-run",
     pendingReason: () => missing("packages/action/action.yml", "GitHub Action (M7)"),
-    run: async () => fail("not wired yet"),
+    run: async () => {
+      const { dryRunAction, validateAction } = await import("./action-check.ts");
+      const valid = validateAction();
+      if (!valid.ok) return fail(valid.detail);
+      const dry = dryRunAction(CLI);
+      if (!dry.ok) return fail(dry.detail);
+      return pass(`action.yml valid (${valid.inputs} inputs, ${valid.steps} composite steps); ${dry.detail}`);
+    },
   },
   {
     name: "Docs check",

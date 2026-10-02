@@ -1,4 +1,5 @@
 export * from "./assets.ts";
+export * from "./changes/index.ts";
 export * from "./detect/framework.ts";
 export * from "./detect/routes.ts";
 export * from "./errors.ts";
@@ -14,6 +15,7 @@ export * from "./util/env.ts";
 export * from "./util/frontmatter.ts";
 export * from "./util/fs.ts";
 export * from "./util/glob.ts";
+export * from "./util/jsonc.ts";
 export * from "./util/markdown.ts";
 export * from "./util/net.ts";
 export * from "./util/proc.ts";

@@ -82,7 +82,14 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  packages/action: {}
+  packages/action:
+    devDependencies:
+      '@demovie/core':
+        specifier: workspace:*
+        version: link:../core
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
 
   packages/audio:
     dependencies:

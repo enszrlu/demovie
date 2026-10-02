@@ -5,6 +5,7 @@ import type { NextjsDetection, PackageJson } from "../detect/framework.ts";
 import type { Brand, ColorSet, FontSpec } from "../schemas/brand.ts";
 import { toHex } from "../util/color.ts";
 import { toPosix } from "../util/fs.ts";
+import { parseJsonc } from "../util/jsonc.ts";
 import { slugify } from "../util/slug.ts";
 import {
   type AnyNode,
@@ -68,8 +69,7 @@ function tsconfigPaths(appRoot: string): { baseUrl: string; paths: Record<string
     const text = readIf(path.join(appRoot, name));
     if (!text) continue;
     try {
-      // tsconfig allows comments and trailing commas.
-      const json = JSON.parse(text.replace(/\/\*[\s\S]*?\*\/|(?<!:)\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")) as {
+      const json = parseJsonc(text) as {
         compilerOptions?: { baseUrl?: string; paths?: Record<string, string[]> };
       };
       return {
