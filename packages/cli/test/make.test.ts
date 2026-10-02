@@ -1,8 +1,8 @@
 import { execFileSync } from "node:child_process";
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { which } from "@demovie/core";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { syntheticProject } from "../../render/test/synthetic.ts";
 import {
   ADAPTERS,
@@ -15,6 +15,7 @@ import { run as make, makePrompt, shellQuote } from "../src/commands/make.ts";
 import { createContext } from "../src/context.ts";
 
 const PROMPT = "Use the demovie skill to make a launch video.";
+const REPO = path.resolve(import.meta.dirname, "../../..");
 const originalPath = process.env.PATH;
 afterEach(() => {
   process.env.PATH = originalPath;
@@ -168,6 +169,69 @@ describe("demovie make", () => {
       await expect(make(ctx, { agentCmd: "curl https://example.invalid" })).rejects.toMatchObject({ code: "E_USAGE" });
     } finally {
       delete process.env.DEMOVIE_MAKE_SESSION;
+    }
+  });
+
+  it("headless: prints readable progress, keeps the raw log and lists the new videos", async () => {
+    const p = syntheticProject("unit-make-headless", "");
+    const bin = path.join(p.root, "bin");
+    mkdirSync(bin, { recursive: true });
+    const script = path.join(bin, "fake-claude.mjs");
+    writeFileSync(
+      script,
+      [
+        `import { mkdirSync, writeFileSync } from "node:fs";`,
+        `const ev = (e) => console.log(JSON.stringify(e));`,
+        `ev({ type: "system", subtype: "init" });`,
+        `ev({ type: "assistant", message: { content: [{ type: "text", text: "Capturing the board." }, { type: "tool_use", name: "Bash", input: { command: "npx demovie capture" } }] } });`,
+        `mkdirSync(".demovie/videos/shapes/out", { recursive: true });`,
+        `writeFileSync(".demovie/videos/shapes/out/shapes-16x9.mp4", "");`,
+        `ev({ type: "result", subtype: "success", duration_ms: 65000, num_turns: 7, total_cost_usd: 0.42, result: "Rendered." });`,
+      ].join("\n"),
+    );
+    writeFileSync(path.join(bin, "claude"), `#!/bin/sh\nexec "${process.execPath}" "${script}" "$@"\n`);
+    chmodSync(path.join(bin, "claude"), 0o755);
+    process.env.PATH = `${bin}${path.delimiter}${originalPath}`;
+    const written: string[] = [];
+    const spy = vi.spyOn(process.stderr, "write").mockImplementation((chunk) => {
+      written.push(String(chunk));
+      return true;
+    });
+    let result: Awaited<ReturnType<typeof make>>;
+    try {
+      result = await make(createContext({ cwd: p.root, yes: true, json: true }), { agent: "claude", about: "Shapes" });
+    } finally {
+      spy.mockRestore();
+    }
+    const data = result.data as { turns: number; costUsd: number; durationMs: number; videos: string[]; log: string };
+    expect(result.exitCode).toBe(0);
+    expect(data).toMatchObject({
+      turns: 7,
+      costUsd: 0.42,
+      durationMs: 65000,
+      videos: [".demovie/videos/shapes/out/shapes-16x9.mp4"],
+    });
+    const progress = written.join("");
+    expect(progress).toContain("Capturing the board.");
+    expect(progress).toContain("→ Bash npx demovie capture");
+    expect(progress).not.toContain('"type":"system"');
+    expect(readFileSync(path.join(p.root, data.log), "utf8").trim().split("\n")).toHaveLength(3);
+    expect(result.human).toContain("Claude Code finished · 1m 05s · 7 turns · $0.42 (as reported by Claude Code)");
+  });
+
+  it("runs init first in a repo without .demovie/", async () => {
+    const tmp = path.join(REPO, ".tmp", "unit-make-init");
+    rmSync(tmp, { recursive: true, force: true });
+    cpSync(path.join(REPO, "examples/pages-minimal"), tmp, { recursive: true });
+    const agent = path.join(tmp, "fake-agent.mjs");
+    writeFileSync(agent, "process.exit(0);\n");
+    try {
+      const ctx = createContext({ cwd: tmp, yes: true, json: true });
+      const result = await make(ctx, { agentCmd: `${process.execPath} ${agent} {prompt}`, about: "Pages" });
+      expect(result.exitCode).toBe(0);
+      expect(existsSync(path.join(tmp, ".demovie/config.json"))).toBe(true);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
     }
   });
 });

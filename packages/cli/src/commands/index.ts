@@ -12,6 +12,7 @@ export const commandLoaders = {
   doctor: () => import("./doctor.ts"),
   up: () => import("./up.ts"),
   down: () => import("./down.ts"),
+  clean: () => import("./clean.ts"),
   "auth-test": () => import("./auth-test.ts"),
   "auth-record": () => import("./auth-record.ts"),
   extract: () => import("./extract.ts"),

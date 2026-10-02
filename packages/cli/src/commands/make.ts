@@ -1,9 +1,21 @@
-import { existsSync } from "node:fs";
+import { createWriteStream, existsSync, readdirSync, statSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import { DemovieError, findProjectRoot, loadProject, TYPE_PRESETS, type VideoType, which } from "@demovie/core";
+import { createInterface } from "node:readline";
+import {
+  DemovieError,
+  findProjectRoot,
+  loadProject,
+  projectPaths,
+  TYPE_PRESETS,
+  toPosix,
+  type VideoType,
+  which,
+} from "@demovie/core";
 import { execa } from "execa";
 import { ADAPTERS, type AgentAdapter, customAdapter } from "../adapters/index.ts";
 import { type CommandContext, isCI } from "../context.ts";
+import { AgentProgress, type AgentRunSummary, formatDuration } from "../lib/agent-progress.ts";
 import { installSkill, SKILL_DIRS } from "../lib/skill.ts";
 import type { CommandResult } from "../output.ts";
 
@@ -64,8 +76,8 @@ export async function run(ctx: CommandContext, options: MakeOptions): Promise<Co
       "demovie make is already running: an agent it started can't start another agent",
       "make the video in this session with the demovie skill instead (capture, new, stills, qa, render)",
     );
-  const root = findProjectRoot(ctx.cwd) ?? ctx.cwd;
-  const project = findProjectRoot(ctx.cwd) ? await loadProject(ctx.cwd) : null;
+  let root = findProjectRoot(ctx.cwd) ?? ctx.cwd;
+  let project = findProjectRoot(ctx.cwd) ? await loadProject(ctx.cwd) : null;
 
   // agent selection: explicit, else the project's configured agents, else whatever is installed
   const available = Object.values(ADAPTERS)
@@ -101,6 +113,23 @@ export async function run(ctx: CommandContext, options: MakeOptions): Promise<Co
       `${adapter.label} (${adapter.binaries.join(" or ")}) is not installed or not on PATH`,
       `install ${adapter.label} and sign in to it yourself, then re-run; or pick another --agent`,
     );
+
+  // A repo without .demovie/: set it up first, since the agent isn't allowed to run `init` itself.
+  if (!project && !options.dryRun) {
+    ctx.logger.step("no .demovie/ here yet: running `demovie init` first");
+    const init = await import("./init.ts");
+    const setup = await init.run(ctx, adapter.id === "custom" ? {} : { agents: [adapter.id] });
+    for (const line of [setup.human].flat()) if (line) ctx.logger.info(line);
+    const initialized = findProjectRoot(ctx.cwd);
+    if (!initialized)
+      throw new DemovieError(
+        "E_CONFIG",
+        "`demovie init` did not create .demovie/config.json",
+        "run `npx demovie init` yourself, then `npx demovie make` again",
+      );
+    root = initialized;
+    project = await loadProject(ctx.cwd);
+  }
 
   const type = options.type ?? "launch";
   const preset = TYPE_PRESETS[type];
@@ -155,18 +184,89 @@ export async function run(ctx: CommandContext, options: MakeOptions): Promise<Co
   }
   ctx.logger.step(`launching ${adapter.label} (${mode})…`);
   ctx.logger.debug(command);
-  const child = await execa(binary, args, {
-    cwd: root,
-    env: { [MAKE_ENV]: "1" },
-    reject: false,
-    stdin: "inherit",
-    stdout: ctx.json ? process.stderr : "inherit",
-    stderr: "inherit",
-  });
-  const exitCode = typeof child.exitCode === "number" ? child.exitCode : 1;
+  const started = Date.now();
+  let exitCode: number;
+  let summary: AgentRunSummary | null = null;
+  let log: string | null = null;
+  if (mode === "headless" && adapter.id !== "custom") {
+    // Readable progress instead of the agent's raw JSON event stream, which is kept as a log.
+    const logDir = path.join(projectPaths(root).cacheDir, "make");
+    await mkdir(logDir, { recursive: true });
+    log = path.join(logDir, `${new Date(started).toISOString().replace(/[:.]/g, "-")}.jsonl`);
+    const raw = createWriteStream(log);
+    const out = ctx.json ? process.stderr : process.stdout;
+    const progress = new AgentProgress((line) => out.write(`${line}\n`));
+    const child = execa(binary, args, {
+      cwd: root,
+      env: { [MAKE_ENV]: "1" },
+      reject: false,
+      stdin: "ignore",
+      stdout: "pipe",
+      stderr: "inherit",
+      buffer: false,
+    });
+    const lines = createInterface({ input: child.stdout! });
+    lines.on("line", (line) => {
+      raw.write(`${line}\n`);
+      progress.line(line);
+    });
+    const [finished] = await Promise.all([child, new Promise((resolve) => lines.once("close", resolve))]);
+    await new Promise((resolve) => raw.end(resolve));
+    exitCode = typeof finished.exitCode === "number" ? finished.exitCode : 1;
+    summary = progress.summary();
+  } else {
+    const child = await execa(binary, args, {
+      cwd: root,
+      env: { [MAKE_ENV]: "1" },
+      reject: false,
+      stdin: "inherit",
+      stdout: ctx.json ? process.stderr : "inherit",
+      stderr: "inherit",
+    });
+    exitCode = typeof child.exitCode === "number" ? child.exitCode : 1;
+  }
+
+  const durationMs = summary?.durationMs ?? Date.now() - started;
+  const videos = videosSince(root, started).map((f) => toPosix(path.relative(ctx.cwd, f)));
+  const facts = [
+    formatDuration(durationMs),
+    ...(summary?.turns ? [`${summary.turns} turns`] : []),
+    ...(summary?.costUsd ? [`$${summary.costUsd.toFixed(2)} (as reported by ${adapter.label})`] : []),
+  ];
   return {
-    data: { agent: adapter.id, mode, command, exitCode },
-    human: [`${adapter.label} exited with ${exitCode}`],
+    data: {
+      agent: adapter.id,
+      mode,
+      command,
+      exitCode,
+      durationMs,
+      turns: summary?.turns ?? null,
+      costUsd: summary?.costUsd ?? null,
+      videos,
+      log: log ? toPosix(path.relative(ctx.cwd, log)) : null,
+    },
+    human: [
+      exitCode === 0
+        ? `${adapter.label} finished · ${facts.join(" · ")}`
+        : `${adapter.label} exited with ${exitCode} · ${facts.join(" · ")}`,
+      videos.length ? `videos: ${videos.join(", ")}` : "no new MP4 in .demovie/videos/*/out",
+      ...(log ? [`full agent log: ${toPosix(path.relative(ctx.cwd, log))}`] : []),
+    ],
     exitCode,
   };
+}
+
+/** MP4s written under .demovie/videos/<slug>/out since `since` (ms). */
+function videosSince(root: string, since: number): string[] {
+  const dir = projectPaths(root).videosDir;
+  if (!existsSync(dir)) return [];
+  const found: string[] = [];
+  for (const slug of readdirSync(dir)) {
+    const outDir = path.join(dir, slug, "out");
+    if (!existsSync(outDir)) continue;
+    for (const file of readdirSync(outDir))
+      if (file.endsWith(".mp4") && statSync(path.join(outDir, file)).mtimeMs >= since)
+        found.push(path.join(outDir, file));
+  }
+  return found.sort();
 }

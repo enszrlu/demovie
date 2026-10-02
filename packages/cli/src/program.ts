@@ -2,6 +2,7 @@ import { VERSION } from "@demovie/core";
 import { Command, InvalidArgumentError, Option } from "commander";
 import { type CommandName, commandLoaders } from "./commands/index.ts";
 import { type CommandContext, createContext, type GlobalOptions } from "./context.ts";
+import { EXAMPLES, examplesHelp } from "./help-examples.ts";
 import { type CommandResult, emitError, emitResult } from "./output.ts";
 
 type Handler = (ctx: CommandContext, ...args: any[]) => Promise<CommandResult>;
@@ -74,7 +75,7 @@ export function buildProgram(): Command {
     .version(VERSION, "-v, --version", "print the demovie version")
     .option("--cwd <dir>", "run as if demovie was started in <dir>")
     .option("--json", "machine-readable output on stdout; logs go to stderr")
-    .option("--verbose", "verbose logging")
+    .option("--verbose", "print debug logs")
     .option("-y, --yes", "accept defaults and never prompt")
     .option("--no-color", "disable colors")
     .showHelpAfterError("(run with --help for usage)")
@@ -94,15 +95,22 @@ export function buildProgram(): Command {
     .command("init")
     .description("detect the app, extract brand/glossary/routes, set up demo mode + login, install the agent skill")
     .option("--url <url>", "app URL; selects generic mode unless --framework nextjs is given")
-    .addOption(new Option("--framework <name>", "force a framework").choices(["nextjs", "generic"]))
+    .addOption(new Option("--framework <name>", "skip detection and use this framework").choices(["nextjs", "generic"]))
     .option("--app <path>", "app folder inside a monorepo")
-    .option("--agents <list>", "agents to set up: claude,codex,cursor", commaList)
+    .option("--agents <list>", "agents to install the skill for, comma separated (claude,codex,cursor)", commaList)
     .option("--about <text>", "one-line product description used to seed glossary.md")
-    .option("--start <command>", "command that starts the app")
-    .option("--seed <command>", "demo data seed command")
-    .addOption(new Option("--auth <strategy>", "auth strategy").choices(["none", "form", "storageState", "script"]))
-    .option("--login-path <path>", "login page path")
-    .option("--success-path <path>", "path reached after login")
+    .option("--start <command>", "command that starts the app (default: detected, e.g. next dev)")
+    .option("--seed <command>", "command that loads demo data before captures")
+    .addOption(
+      new Option("--auth <strategy>", "how demovie logs in to the app").choices([
+        "none",
+        "form",
+        "storageState",
+        "script",
+      ]),
+    )
+    .option("--login-path <path>", "path of the login page (form login)")
+    .option("--success-path <path>", "path the app opens after a successful login")
     .option("--no-extract", "skip brand/glossary/routes extraction")
     .option("--no-skill", "skip installing the agent skill")
     .option("--force", "regenerate an existing .demovie/config.json")
@@ -127,6 +135,12 @@ export function buildProgram(): Command {
     .command("down")
     .description("stop what `up` started")
     .action(action(load("down")));
+  program
+    .command("clean")
+    .description("free disk space: delete rendered frames in .demovie/.cache (the next render redraws them)")
+    .option("--all", "also delete logs and other caches (never the voiceover cache)")
+    .option("--dry-run", "show what would be deleted, and how much space it would free")
+    .action(action(load("clean")));
 
   const auth = program.command("auth").description("verify or record the login");
   auth
@@ -153,12 +167,12 @@ export function buildProgram(): Command {
   program
     .command("capture")
     .description("capture real screens, flows and element maps")
-    .option("--route <glob...>", "route globs to capture")
-    .option("--flow <name...>", "flows to run")
-    .option("--viewport <name...>", "viewports to use")
+    .option("--route <glob...>", 'routes to capture, as paths or globs ("/app/*")')
+    .option("--flow <name...>", "flows to run (names of files in .demovie/flows)")
+    .option("--viewport <name...>", "viewports from the config, e.g. desktop or mobile")
     .option("--dark", "also capture dark mode")
-    .option("--full-page", "also write full-page screenshots")
-    .option("--changed", "only re-capture stale or affected states")
+    .option("--full-page", "also write full-page screenshots (for scrolling shots)")
+    .option("--changed", "only re-capture states that are stale or that your code changes affect")
     .option("--since <ref>", "with --changed: git ref to compare against")
     .action(action(load("capture")));
 
@@ -167,7 +181,7 @@ export function buildProgram(): Command {
     .command("new")
     .description("scaffold a flow file")
     .argument("<name>", "flow name")
-    .option("--start <path>", "start path")
+    .option("--start <path>", "page the flow starts on")
     .option("--ts", "write a TypeScript flow instead of YAML")
     .action(action(load("flow-new")));
   flow
@@ -186,7 +200,7 @@ export function buildProgram(): Command {
     .command("add")
     .description("import resources into .demovie/assets")
     .argument("<files...>", "files to import")
-    .option("--describe <text>", "what the resource is")
+    .option("--describe <text>", "a short description your agent can read")
     .option("--licensed", "confirm you hold a license for imported audio")
     .action(action(load("add")));
 
@@ -195,14 +209,20 @@ export function buildProgram(): Command {
     .description("scaffold a video folder from a type preset and style template")
     .argument("<slug>", "video slug")
     .addOption(
-      new Option("--type <type>", "video type")
+      new Option("--type <type>", "video type: sets the default length and formats")
         .choices(["launch", "feature", "changelog", "teaser", "walkthrough", "hero-loop"])
         .makeOptionMandatory(),
     )
     .option("--duration <seconds>", "duration in seconds", seconds)
     .option("--format <list>", "formats: 16:9,9:16,1:1,4:5", commaList)
     .addOption(
-      new Option("--style <style>", "style preset").choices(["clean", "bold", "soft", "editorial", "terminal"]),
+      new Option("--style <style>", "style preset (look and motion)").choices([
+        "clean",
+        "bold",
+        "soft",
+        "editorial",
+        "terminal",
+      ]),
     )
     .option("--about <text>", "what the video is about")
     .option("--force", "overwrite an existing video folder")
@@ -212,7 +232,7 @@ export function buildProgram(): Command {
     .command("preview")
     .description("preview player with scrubbing, safe areas and QA overlay")
     .argument("<slug>", "video slug or path")
-    .option("--port <port>", "port", numberIn(1, 65535, true), 4400)
+    .option("--port <port>", "port for the preview server", numberIn(1, 65535, true), 4400)
     .option("--no-open", "do not open the browser")
     .action(action(load("preview")));
 
@@ -233,7 +253,7 @@ export function buildProgram(): Command {
     .argument("<slug>", "video slug or path")
     .option("--format <format>", "format or `all`", "all")
     .option("--strict", "treat warnings as errors")
-    .option("--fps <n>", "sampling rate", numberIn(1, 60, true))
+    .option("--fps <n>", "frames per second QA samples (default 10)", numberIn(1, 60, true))
     .action(action(load("qa")));
 
   const audio = program.command("audio").description("music, SFX, voice and mixing");
@@ -242,7 +262,15 @@ export function buildProgram(): Command {
     .description("synthesize music plus beats.json")
     .argument("<slug>", "video slug or path")
     .option("--bpm <n>", "tempo (80–140)", numberIn(80, 140))
-    .addOption(new Option("--mood <mood>", "mood").choices(["uplifting", "tech", "calm", "energetic", "minimal"]))
+    .addOption(
+      new Option("--mood <mood>", "mood preset (tempo and instruments)").choices([
+        "uplifting",
+        "tech",
+        "calm",
+        "energetic",
+        "minimal",
+      ]),
+    )
     .addOption(
       new Option("--provider <provider>", "music provider (file = a track imported with add --licensed)").choices([
         "synth",
@@ -262,9 +290,14 @@ export function buildProgram(): Command {
     .command("voice")
     .description("synthesize voiceover lines from the storyboard (prints a cost estimate first)")
     .argument("<slug>", "video slug or path")
-    .addOption(new Option("--provider <provider>", "TTS provider").choices(["elevenlabs", "openai"]))
-    .option("--voice <id>", "voice id")
-    .option("--model <id>", "model id")
+    .addOption(
+      new Option("--provider <provider>", "text-to-speech provider (with your own API key)").choices([
+        "elevenlabs",
+        "openai",
+      ]),
+    )
+    .option("--voice <id>", "the provider's voice id")
+    .option("--model <id>", "the provider's model id")
     .option("--script <file>", "VO script instead of the storyboard (one line per VO line, optional `[12.5]` start)")
     .action(action(load("audio-voice")));
   audio
@@ -278,22 +311,33 @@ export function buildProgram(): Command {
     .description("render MP4s (and optional GIF/WebM)")
     .argument("<slug>", "video slug or path")
     .option("--format <format>", "format or `all`", "all")
-    .addOption(new Option("--quality <quality>", "quality").choices(["draft", "final"]).default("final"))
+    .addOption(
+      new Option("--quality <quality>", "draft is fast, for checking; final is for sharing")
+        .choices(["draft", "final"])
+        .default("final"),
+    )
     .option("--scale <n>", "render scale (0.1–4)", numberIn(0.1, 4))
     .option("--fps <n>", "frames per second", numberIn(1, 120, true))
     .option("--gif", "also write preview.gif")
     .option("--webm", "also write a VP9 WebM")
-    .option("--workers <n>", "parallel browser pages", numberIn(1, 32, true))
+    .option("--workers <n>", "parallel browser pages (default: from your CPU cores)", numberIn(1, 32, true))
     .action(action(load("render")));
 
   program
     .command("make")
     .description("launch your own agent CLI with the demovie skill")
-    .addOption(new Option("--agent <agent>", "agent").choices(["claude", "codex", "cursor", "custom"]))
+    .addOption(
+      new Option("--agent <agent>", "agent CLI to launch (default: the first one installed)").choices([
+        "claude",
+        "codex",
+        "cursor",
+        "custom",
+      ]),
+    )
     .option("--agent-cmd <template>", 'custom agent command, e.g. "mytool run {prompt}"')
     .option("--model <model>", "model passed to the agent")
     .addOption(
-      new Option("--type <type>", "video type").choices([
+      new Option("--type <type>", "video type: sets the default length and formats").choices([
         "launch",
         "feature",
         "changelog",
@@ -303,12 +347,12 @@ export function buildProgram(): Command {
       ]),
     )
     .option("--duration <seconds>", "duration in seconds", seconds)
-    .option("--format <list>", "formats", commaList)
+    .option("--format <list>", "formats, comma separated (16:9,9:16,1:1,4:5)", commaList)
     .option("--about <text>", "what the video is about")
-    .option("--resources <files>", "resource files", commaList)
-    .option("--voice", "voiceover on")
+    .option("--resources <files>", "files the agent should use (notes, a script, assets), comma separated", commaList)
+    .option("--voice", "add a voiceover (paid, with your own provider key)")
     .option("--review", "review the brief and storyboard before animating")
-    .option("--no-review", "work autonomously")
+    .option("--no-review", "work without stopping for your review")
     .option("--dry-run", "print the exact agent command and exit")
     .action(action(load("make")));
 
@@ -321,7 +365,7 @@ export function buildProgram(): Command {
   skill
     .command("install")
     .description("install or update the Agent Skill (project-level by default)")
-    .option("--agent <list>", "agents: claude,codex,cursor", commaList)
+    .option("--agent <list>", "agents to install for, comma separated (claude,codex,cursor)", commaList)
     .option("--global", "install into the user-level skill folder (explicit request only)")
     .action(action(load("skill-install")));
 
@@ -331,5 +375,15 @@ export function buildProgram(): Command {
     .addOption(new Option("--provider <provider>", "CI provider").choices(["github"]).default("github"))
     .action(action(load("ci-init")));
 
+  // Examples under every command's --help (the same ones docs/cli.md shows).
+  const addExamples = (cmd: Command, prefix: string[]) => {
+    for (const sub of cmd.commands) {
+      const key = [...prefix, sub.name()].join(" ");
+      const examples = EXAMPLES[key];
+      if (examples) sub.addHelpText("after", examplesHelp(examples));
+      addExamples(sub, [...prefix, sub.name()]);
+    }
+  };
+  addExamples(program, []);
   return program;
 }

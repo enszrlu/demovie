@@ -14,6 +14,7 @@ import {
 import type { CommandContext } from "../context.ts";
 import { installedSkillVersion, SKILL_DIRS } from "../lib/skill.ts";
 import type { CommandResult } from "../output.ts";
+import { formatBytes, sizeOf } from "./clean.ts";
 
 interface VideoStatus {
   slug: string;
@@ -159,6 +160,12 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
     warnings.push(`${file} is not valid JSON or doesn't match its schema: fix or remove it`);
   if (captures.stale > 0)
     warnings.push(`${captures.stale} capture(s) are stale: run \`npx demovie capture --changed\``);
+  // Rendered frames are kept for faster re-renders; they add up to gigabytes.
+  const frameBytes = sizeOf(path.join(project.paths.cacheDir, "frames"));
+  if (frameBytes > 2 * 1024 ** 3)
+    warnings.push(
+      `rendered frames use ${formatBytes(frameBytes)} in .demovie/.cache: \`npx demovie clean\` frees it (the next render redraws them)`,
+    );
 
   const ground = grounding(paths);
   let next: string;
