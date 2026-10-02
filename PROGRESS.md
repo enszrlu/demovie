@@ -165,3 +165,6 @@ Decisions D138–D143.
   - **brag:** 39 min, 108 turns, $12.26 for 21.5 s, from the bare repository at maximum effort.
   - **demovie `make`:** 3 min 21 s, 43 turns, $1.06 for 12 s, in a project already set up, at the default effort.
   - **Disclosed on the page (D144):** both run differences, and that brag used Harborly's real demo data.
+- [x] Final checks, with nothing else running:
+  - `pnpm verify` → `VERIFY OK (14 checks)`: 198 unit tests, 27 integration tests (the only skips are 2 paid-API tests without keys), reference compositions QA 0 errors, 26 docs and 149 links;
+  - `pnpm verify:dogfood` → `VERIFY DOGFOOD OK (8 checks)`.
