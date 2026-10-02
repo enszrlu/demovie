@@ -14,9 +14,21 @@ npx demovie capture     # screenshots + element maps of every route and flow
 npx demovie make        # start your agent with the demovie skill, or just ask it for a video
 ```
 
+Then, in Claude Code, Codex or Cursor: *"Make a 30-second launch video of the Projects board with demovie."*
+
 Requirements: Node ≥ 20.19 (or Bun), ffmpeg with libx264 on your PATH, and an app you can run locally. Next.js is
 detected automatically; other apps work with `npx demovie init --url <url>`. `npx demovie doctor --fix` installs
 Chromium for Playwright.
+
+## Docs
+
+- [Your first video, step by step](https://github.com/enszrlu/demovie/blob/main/docs/tutorial.md)
+- [Every command, with examples](https://github.com/enszrlu/demovie/blob/main/docs/cli.md) (also under
+  `npx demovie <command> --help`)
+- [Recipes](https://github.com/enszrlu/demovie/blob/main/docs/recipes.md) and
+  [guides](https://github.com/enszrlu/demovie/blob/main/docs/README.md)
+- [How demovie compares](https://github.com/enszrlu/demovie/blob/main/docs/comparison.md) with brag, Remotion,
+  HyperFrames and plain prompting
 
 ## What's in the package
 

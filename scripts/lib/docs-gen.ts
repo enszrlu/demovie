@@ -1,10 +1,13 @@
 /**
- * The reference docs that must match the code (SPEC §19): docs/config.md from the config JSON Schema,
- * docs/qa-rules.md from the QA rule registry, docs/compositions.md from the runtime's exports.
+ * The reference docs that must match the code (SPEC §19): docs/config.md from the config JSON Schema, docs/cli.md
+ * from the commander program, docs/qa-rules.md from the QA rule registry, docs/compositions.md from the runtime's
+ * exports.
  * `pnpm docs:build` writes them; verify's docs check fails when they are stale.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { EXAMPLES } from "../../packages/cli/src/help-examples.ts";
+import { buildProgram } from "../../packages/cli/src/program.ts";
 import { jsonSchemaFor } from "../../packages/core/src/schemas/index.ts";
 import { RULES } from "../../packages/qa/src/rules.ts";
 import { repoRoot } from "./repo.ts";
@@ -136,11 +139,124 @@ export function compositionsDoc(): string {
   ].join("\n");
 }
 
+type Command = ReturnType<typeof buildProgram>;
+
+/** Commands by task, in the order a project uses them. */
+const CLI_SECTIONS: [string, string, string[]][] = [
+  ["Set up and check", "Get a project ready and keep it healthy.", ["init", "doctor", "status", "up", "down", "clean"]],
+  ["Log in", "For apps with a login (see [capture and auth](capture-and-auth.md)).", ["auth test", "auth record"]],
+  ["Know the product", "The brand, vocabulary and routes demovie reads from your code.", ["extract", "glossary sync"]],
+  [
+    "Capture",
+    "Screenshots and element maps of the running app.",
+    ["capture", "flow new", "flow run", "changes", "add"],
+  ],
+  [
+    "Make a video",
+    "Scaffold, look, check and render (your agent runs these for you).",
+    ["new", "preview", "stills", "qa", "render"],
+  ],
+  [
+    "Audio",
+    "Music, sound effects, voiceover and the final mix.",
+    ["audio music", "audio sfx", "audio voice", "audio mix"],
+  ],
+  ["Agents", "Hand the work to your coding agent.", ["make", "mcp", "skill install"]],
+  ["Continuous integration", "A video for every release.", ["ci init"]],
+];
+
+const anchor = (key: string) => `demovie-${key.replace(/ /g, "-")}`;
+
+/** docs/cli.md: every command with its arguments, options and examples, from the commander program itself. */
+export function cliDoc(): string {
+  const program = buildProgram();
+  const commands = new Map<string, Command>();
+  const walk = (cmd: Command, prefix: string[]) => {
+    for (const sub of cmd.commands) {
+      if (sub.name() === "help") continue;
+      const key = [...prefix, sub.name()].join(" ");
+      if (sub.commands.length === 0) commands.set(key, sub);
+      walk(sub, [...prefix, sub.name()]);
+    }
+  };
+  walk(program, []);
+  const listed = CLI_SECTIONS.flatMap(([, , keys]) => keys);
+  const missing = [...commands.keys()].filter((key) => !listed.includes(key));
+  if (missing.length)
+    throw new Error(`docs/cli.md: add ${missing.join(", ")} to CLI_SECTIONS in scripts/lib/docs-gen.ts`);
+  const cell = (s: string) => s.replace(/\|/g, "\\|");
+  const out = [
+    HEADER("packages/cli/src/program.ts and packages/cli/src/help-examples.ts"),
+    "# Command reference",
+    "",
+    "Every command, with its options and examples. The same examples appear under `npx demovie <command> --help`.",
+    "Run commands from your app's folder (the one with `.demovie/`), or point at it with `--cwd`.",
+    "",
+    "| Command | What it does |",
+    "|---|---|",
+    ...listed.map((key) => `| [\`${key}\`](#${anchor(key)}) | ${cell(commands.get(key)!.description())} |`),
+    "",
+    "## Global options",
+    "",
+    "These work with every command.",
+    "",
+    "| Option | What it does |",
+    "|---|---|",
+    ...program.options.map((o) => `| \`${o.flags}\` | ${cell(o.description)} |`),
+    "",
+  ];
+  for (const [title, intro, keys] of CLI_SECTIONS) {
+    out.push(`## ${title}`, "", intro, "");
+    for (const key of keys) {
+      const cmd = commands.get(key)!;
+      out.push(`### demovie ${key}`, "", `${cmd.description().replace(/^./, (c) => c.toUpperCase())}.`, "");
+      out.push("```bash", `npx demovie ${key} ${cmd.usage()}`.trimEnd(), "```", "");
+      const args = cmd.registeredArguments;
+      if (args.length) {
+        out.push("| Argument | What it is |", "|---|---|");
+        for (const a of args)
+          out.push(`| \`${a.name()}\`${a.required ? "" : " (optional)"} | ${cell(a.description || "")} |`);
+        out.push("");
+      }
+      const options = cmd.options.filter((o) => o.long !== "--help");
+      if (options.length) {
+        out.push("| Option | What it does | Default |", "|---|---|---|");
+        for (const o of options) {
+          const choices = o.argChoices?.length ? ` (one of: ${o.argChoices.map((c) => `\`${c}\``).join(", ")})` : "";
+          const def =
+            o.defaultValue === undefined || typeof o.defaultValue === "boolean" ? "" : `\`${String(o.defaultValue)}\``;
+          out.push(`| \`${o.flags}\` | ${cell(o.description)}${choices} | ${def} |`);
+        }
+        out.push("");
+      }
+      const examples = EXAMPLES[key] ?? [];
+      if (examples.length) out.push("```bash", ...examples.flatMap(([what, line]) => [`# ${what}`, line]), "```", "");
+    }
+  }
+  out.push(
+    "## Exit codes",
+    "",
+    "| Code | Meaning |",
+    "|---|---|",
+    "| 0 | Success |",
+    "| 1 | The command failed, or QA found errors |",
+    "| 2 | Usage or config error |",
+    "| 3 | A prerequisite is missing (Node, ffmpeg, Chromium) |",
+    "| 4 | The app is unreachable, or login failed |",
+    "",
+    "With `--json`, output is one JSON document on stdout and errors are",
+    '`{ "ok": false, "error": { "code", "message", "fix" } }`. Logs always go to stderr.',
+    "",
+  );
+  return out.join("\n");
+}
+
 /** Generated docs, keyed by their repo-relative path. */
 export function generatedDocs(): [string, string][] {
   return [
     ["docs/config.md", configDoc()],
     ["docs/qa-rules.md", qaRulesDoc()],
     ["docs/compositions.md", compositionsDoc()],
+    ["docs/cli.md", cliDoc()],
   ];
 }

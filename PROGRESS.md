@@ -144,3 +144,20 @@ Decisions D113–D135. Every fix below has a unit test unless noted.
   - reference compositions QA 0 errors, 0 warnings;
   - MCP smoke: stills returns a 31 KB PNG.
 - [x] `pnpm verify:dogfood` → `VERIFY DOGFOOD OK (8 checks)`: Harborly launch (16:9, 9:16; re-rendered in 63.5 s and 73.7 s against the 4 min budget) and changelog (16:9, 1:1), QA 0 errors and 0 warnings on all four.
+
+## Launch readiness
+Decisions D138–D143.
+- [x] `make` in headless runs:
+  - prints one line per agent step, keeps the raw stream in `.demovie/.cache/make/`, and ends with time, turns, the agent's reported cost and the MP4s written;
+  - in a folder without `.demovie/`, it runs `init` first.
+  - Tests: `agent-progress.test.ts`, `make.test.ts` (a fake Claude stream, and auto-init on `pages-minimal`).
+  - **Real run** on a copy of Harborly with the packed CLI (`npx demovie make --type teaser --format 16:9 --yes`, Claude Opus 5.5): 3 min 21 s, 43 turns, $1.06, a 12 s teaser with QA 0 errors and 0 warnings. It is now `examples/harborly/.demovie/videos/projects-board-teaser`.
+- [x] `demovie clean` frees the frame cache; `status` warns past 2 GB (`clean.test.ts`). On Harborly it freed 7.2 GB.
+- [x] Story-first skill: the brief has an Angle and a Hook (first 2 seconds), the rubric scores the hook, and long commands run in the foreground. The real run above filled both sections: angle "Launch plans scatter; Harborly puts every launch on one board…", hook "Every launch. One board."
+- [x] Examples under every command's `--help`; a test checks that every example uses real flags. Option descriptions explain themselves; `demovie --help` ends with the three getting-started commands.
+- [x] Docs for people:
+  - **Pages:** docs home, step-by-step tutorial, five guides (logins, flows, follow-up videos, releases, by hand), recipes, a generated command reference (`docs/cli.md`), and the comparison page.
+  - **Testing:** the by-hand guide's code was rendered and QA'd on Harborly.
+  - **Outputs shown:** the `make` output in the docs comes from the real run.
+- [x] Comparison with brag, Remotion, HyperFrames and plain prompting: facts checked 2026-10-02; four approaches measured on a private Next.js app (reported anonymously).
+- [x] README: an honest hero caption, "How it compares", a brag FAQ entry, the reorganized docs list and the teaser example; npm keywords added.

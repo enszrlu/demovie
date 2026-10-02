@@ -28,6 +28,16 @@ async function answers(url: string): Promise<boolean> {
   }
 }
 
+/** Harborly itself answers at `url`: another app on the same port doesn't count. */
+async function harborlyAnswers(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    return res.status < 500 && (await res.text()).includes("Harborly");
+  } catch {
+    return false;
+  }
+}
+
 function run(command: string, args: string[], cwd: string): Promise<number> {
   return new Promise((resolve) => {
     const child = spawn(command, args, { cwd, stdio: "ignore" });
@@ -38,7 +48,12 @@ function run(command: string, args: string[], cwd: string): Promise<number> {
 /** Seed Harborly and make sure its dev server answers on :3000. Returns a stop function (no-op when reused). */
 export async function ensureHarborly(): Promise<{ url: string; started: boolean; stop: () => Promise<void> }> {
   await run("pnpm", ["demo:seed"], HARBORLY_DIR);
-  if (await answers(`${HARBORLY_URL}/login`)) return { url: HARBORLY_URL, started: false, stop: async () => {} };
+  if (await harborlyAnswers(`${HARBORLY_URL}/login`))
+    return { url: HARBORLY_URL, started: false, stop: async () => {} };
+  if (await answers(`${HARBORLY_URL}/login`))
+    throw new Error(
+      `another app answers at ${HARBORLY_URL}: stop it, then re-run (the tests need Harborly on that port)`,
+    );
   mkdirSync(path.join(repoRoot, ".tmp"), { recursive: true });
   const log = openSync(path.join(repoRoot, ".tmp", "harborly-test.log"), "w");
   // Without vitest's NODE_ENV=test: `next dev` would keep it and rewrite tsconfig.json with wrong type paths.

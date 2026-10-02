@@ -266,3 +266,30 @@ D9 — 2026-10-01 — Frame format for final renders: PNG. Why: JPEG q92 saved 1
   - **Why:** tsdown 0.23 declares `node: ^22.18.0 || ^24.11.0 || >=26.0.0` and calls `Promise.withResolvers`, which Node 20 lacks. On GitHub the `node-20` job failed while building, not while running the CLI.
   - **CI:** the job now builds on Node 22, then switches to Node 20.19 and runs the tarball smoke test (pack, install, `npx demovie --version`, `doctor`, `init --yes`). The same sequence passes locally with Node 20.19.0.
   - **Files:** the monorepo root's `engines` and CONTRIBUTING say 22.18. The published `demovie` keeps `>= 20.19`, and the CLI still targets node20.19.
+
+## Launch readiness
+
+- **D138** — 2026-10-02 — `make` headless runs are readable:
+  - **Progress:** the agent's JSON event stream becomes one line per message or tool call, with elapsed time. Claude Code's stream-json format was checked against real run logs. Codex `exec --json` and Cursor `stream-json` are read defensively: known events become lines, unknown events are skipped, plain text passes through.
+  - **Log:** the raw stream is kept in `.demovie/.cache/make/<time>.jsonl`.
+  - **Summary:** every run ends with the time, turns, the agent's reported cost and the MP4s written during the run (interactive runs list the MP4s too).
+  - **Uninitialized folders:** `make` runs `init` first, because a headless agent is denied `demovie init` and used to get stuck.
+- **D139** — 2026-10-02 — `demovie clean` (not in SPEC §7; added):
+  - **Default:** deletes `.demovie/.cache/frames`. Rendered frames are kept on purpose so re-renders only redraw changes, at roughly 1–2 GB per video and format. Harborly's cache had reached 7.2 GB.
+  - **`--all`:** also deletes logs and other caches, but never the voiceover cache (it cost money), and never captures, videos or outputs.
+  - **`status`:** warns above 2 GB.
+- **D140** — 2026-10-02 — Changes to the skill, from comparing four approaches on a real app:
+  - **Story-first:** the brief now has `## Angle` and `## Hook (first 2 seconds)` sections (body sections, not frontmatter). The angle comes from the product's own voice, and the hook is at most 6 words of kinetic type. The arc is hook → product in use → proof → logo and CTA. QA's vocabulary already includes the whole brief, so hook copy written there passes DM-G02.
+  - **Hook guidance:** the Animate step says how to build the hook.
+  - **Rubric:** gains a Hook item.
+  - **New hard rule:** run `capture`, `qa` and `render` in the foreground and never end a turn while one runs in the background. brag lost its final capture exactly that way when its headless session ended.
+- **D141** — 2026-10-02 — The command reference:
+  - **Examples:** every command has examples in `--help`, from `packages/cli/src/help-examples.ts`. A test checks that every leaf command has examples and that every flag in them exists.
+  - **`docs/cli.md`:** generated from the commander program by `pnpm docs:build` (commands grouped by task, plus global options and exit codes), and checked for staleness by verify.
+  - **Option descriptions:** rewritten to explain themselves.
+  - **Docs check:** now recurses into `docs/guides/`.
+- **D142** — 2026-10-02 — Docs for people, not just reference:
+  - **New pages:** a docs home, a step-by-step tutorial, five task guides (logins, flows, follow-up videos, releases, building by hand), recipes, and a comparison page.
+  - **Testing:** the by-hand guide's code was rendered and QA'd on Harborly before publishing (0 errors).
+  - **Comparison page:** facts about brag, Remotion, HyperFrames and the course harness were checked on 2026-10-02. The real-app test is reported anonymously, as "a private Next.js app", with no frames from it.
+- **D143** — 2026-10-02 — The README hero caption now says the left half is a recreation of a typical one-prompt result (D100), not a recorded run. A "How it compares" section and FAQ entry say plainly when brag, Remotion or HyperFrames is the better choice.

@@ -40,11 +40,26 @@ npx demovie make --agent codex --format 16:9,9:16 --dry-run                 # pr
 npx demovie make --agent custom --agent-cmd "mytool run {prompt}"
 ```
 
-It finds the agent CLIs on your PATH (or uses `--agent`), installs the project skill if missing, and starts the agent
-with this prompt: *"Use the demovie skill to make a {type} video ({duration}s, {formats}) about: {about}. Resources:
+In a folder without `.demovie/`, it runs `init` first (asking its questions in a terminal, using defaults with
+`--yes`). It finds the agent CLIs on your PATH (or uses `--agent`), installs the project skill if missing, and starts
+the agent with this prompt: *"Use the demovie skill to make a {type} video ({duration}s, {formats}) about: {about}. Resources:
 {files}. Voiceover: {on|off}. Review the brief and storyboard with me before animating."* (or *"Work autonomously; do
 not ask questions."* with `--yes`, `--no-review` or in CI). In a terminal with review on, the agent runs
 interactively; otherwise it runs in its print/exec mode and demovie exits with its exit code.
+
+When the agent runs headless (no terminal, `--yes` or CI), demovie turns its event stream into one line per step, keeps the raw stream in
+`.demovie/.cache/make/<time>.jsonl`, and ends with a summary:
+
+```
+[ 2m 15s] → Bash npx demovie stills projects-board-teaser --every 1 --format all --sheet
+[ 2m 35s] → Bash npx demovie qa projects-board-teaser --format all
+[ 3m 11s] Rendered. Writing the share copy.
+Claude Code finished · 3m 21s · 43 turns · $1.06 (as reported by Claude Code)
+videos: .demovie/videos/projects-board-teaser/out/projects-board-teaser-16x9.mp4
+full agent log: .demovie/.cache/make/2026-10-02T22-47-10-813Z.jsonl
+```
+
+The cost is the agent's own estimate; on a subscription it's usage, not a bill.
 
 demovie only launches binaries you installed and signed in to yourself, and passes through API keys you set in CI. It
 never logs in, reads tokens or embeds an agent SDK. See [licensing and terms](licensing-and-terms.md).

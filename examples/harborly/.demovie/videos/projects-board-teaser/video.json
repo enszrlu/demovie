@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../node_modules/demovie/schema/video.schema.json",
+  "slug": "projects-board-teaser",
+  "title": "Harborly — the Projects board",
+  "type": "teaser",
+  "fps": 30,
+  "duration": 12,
+  "formats": ["16:9"],
+  "style": "clean",
+  "poster": null,
+  "status": "rendered",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": ["routes/app-projects@desktop"],
+  "qa": {
+    "ignore": []
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * Write the generated reference docs (docs/config.md, docs/qa-rules.md, docs/compositions.md) from the code.
+ * Write the generated reference docs (docs/config.md, docs/qa-rules.md, docs/compositions.md, docs/cli.md) from the code.
  *
  *   pnpm docs:build
  */

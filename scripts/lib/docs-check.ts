@@ -25,15 +25,23 @@ export function helpCommands(cli: string): Set<string> {
   return out;
 }
 
-/** README.md, CONTRIBUTING.md and every docs/*.md. */
+/** README.md, CONTRIBUTING.md and every Markdown file under docs/ (guides included). */
 export function markdownFiles(): string[] {
-  const docs = path.join(repoRoot, "docs");
-  const files = existsSync(docs)
-    ? readdirSync(docs)
-        .filter((f) => f.endsWith(".md"))
-        .sort()
-        .map((f) => path.join(docs, f))
-    : [];
+  const walk = (dir: string): string[] =>
+    existsSync(dir)
+      ? readdirSync(dir, { withFileTypes: true })
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .flatMap((e) =>
+            e.isDirectory()
+              ? e.name === "media"
+                ? []
+                : walk(path.join(dir, e.name))
+              : e.name.endsWith(".md")
+                ? [path.join(dir, e.name)]
+                : [],
+          )
+      : [];
+  const files = walk(path.join(repoRoot, "docs"));
   for (const f of ["README.md", "CONTRIBUTING.md"])
     if (existsSync(path.join(repoRoot, f))) files.push(path.join(repoRoot, f));
   return files;
@@ -102,6 +110,6 @@ export function checkDocs(cli: string): { ok: boolean; detail: string } {
     ? { ok: false, detail: problems.slice(0, 8).join("; ") }
     : {
         ok: true,
-        detail: `${files.length} docs, ${links} links resolve; ${mentioned.size} CLI commands mentioned, all in --help; generated docs (config, qa-rules, compositions) up to date`,
+        detail: `${files.length} docs, ${links} links resolve; ${mentioned.size} CLI commands mentioned, all in --help; generated docs (config, qa-rules, compositions, cli) up to date`,
       };
 }

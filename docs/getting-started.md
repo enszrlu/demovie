@@ -46,6 +46,9 @@ result.
 
 ## Next
 
+- [Your first video, step by step](tutorial.md): the same three commands, with what you should see at each step.
+- [Recipes](recipes.md) and the [command reference](cli.md).
+- [How demovie compares](comparison.md) with brag, Remotion, HyperFrames and plain prompting.
 - [Concepts](concepts.md): grounding levels, captures, compositions, QA.
 - [Capture and auth](capture-and-auth.md) and [demo data](demo-data.md).
 - [Agents](agents.md): Claude Code, Codex, Cursor, MCP and `make`.

@@ -9,6 +9,7 @@ creates missing folders.
 |---|---|
 | `no .demovie/config.json found` | Run `npx demovie init` in the app's root folder. |
 | `E_APP_UNREACHABLE` | `npx demovie up`; check `app.url` and `app.start.command`; read `.demovie/.cache/app.log`. |
+| Captures show a different app | Another app is running on your app's port, and demovie reuses whatever answers at `app.url`. Stop it, or set `app.reuseRunning` to `false`. |
 | `E_AUTH` | `npx demovie auth test`; set the env vars named in `auth.usernameEnv` / `auth.passwordEnv`; for OAuth or 2FA use `npx demovie auth record`. |
 | ffmpeg or Chromium missing (exit code 3) | Install ffmpeg; `npx demovie doctor --fix` for Chromium. |
 | Chromium is installed but won't launch on Linux (missing libraries) | `sudo npx -y playwright-core@<version> install-deps chromium`, with the version `doctor` prints. |
@@ -22,6 +23,8 @@ creates missing folders.
 | QA `DM-G05` (blurry captures) | Zoom less, or capture at a higher `deviceScaleFactor`. |
 | QA `DM-S01` (loudness) | Run `npx demovie audio mix <slug>` after every audio change. |
 | Render is slow | Use `--quality draft` while iterating; `--workers n` to change parallelism; unchanged frames are reused. |
+| Disk filling up | Rendered frames are kept for faster re-renders: `npx demovie clean` frees them (`status` warns past 2 GB). |
+| What did the agent do in `make`? | Headless runs print one line per step; the full stream is in `.demovie/.cache/make/<time>.jsonl`. |
 | `status` warns that the skill is old | `npx demovie skill install`. |
 
 Exit codes: `0` success · `1` failed or QA errors · `2` usage or config error · `3` missing prerequisite · `4` app

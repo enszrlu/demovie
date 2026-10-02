@@ -20,6 +20,13 @@ const entries: { name: string; slug: string; dir: string; at?: number }[] = [
   { name: "harborly-launch", slug: "launch", dir: path.join(HARBORLY, ".demovie/videos/launch") },
   // the changelog's poster repeats the launch video's board frame; show its dashboard shot instead
   { name: "harborly-changelog", slug: "changelog", dir: path.join(HARBORLY, ".demovie/videos/changelog"), at: 9.5 },
+  // made headless by `npx demovie make --type teaser --format 16:9 --yes`; at 8 s a ring marks a real At risk badge
+  {
+    name: "harborly-teaser",
+    slug: "projects-board-teaser",
+    dir: path.join(HARBORLY, ".demovie/videos/projects-board-teaser"),
+    at: 8,
+  },
 ];
 
 const outDir = path.join(repoRoot, "docs/media/examples");

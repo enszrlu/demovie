@@ -32,3 +32,10 @@ protection and monorepos. Any other web app works in generic mode: `npx demovie 
 ## Can I edit the video by hand?
 
 Yes. `composition/main.js` is ordinary JavaScript with GSAP; `npx demovie preview <slug>` hot-reloads as you edit.
+
+## How is this different from brag, Remotion or HyperFrames?
+
+brag turns a project into a quick launch post with one command; Remotion and HyperFrames are frameworks for building
+videos as code. demovie is for videos that must show your real, current product, logins and data included, checked
+before they render and remade on every release. See [how demovie compares](comparison.md), with measurements from one
+real app made four ways.
