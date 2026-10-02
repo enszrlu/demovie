@@ -63,7 +63,8 @@ jobs:
           path: .tmp/verify/
           retention-days: 7
 
-  # The minimum supported Node (package.json "engines"): build, then pack and run the CLI via npx.
+  # The CLI's minimum Node (packages/cli "engines": >= 20.19). Building needs Node 22 (tsdown requires ^22.18), so
+  # build there, then switch to Node 20.19 and pack, install and run the CLI via npx.
   node-20:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -74,9 +75,13 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          node-version: 20.19
+          node-version: 22
           cache: pnpm
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm exec playwright-core install --with-deps chromium chromium-headless-shell
-      - run: pnpm verify --only build,tarball
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20.19
+      - run: node --version && pnpm verify --only tarball

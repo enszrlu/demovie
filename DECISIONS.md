@@ -262,3 +262,7 @@ D9 — 2026-10-01 — Frame format for final renders: PNG. Why: JPEG q92 saved 1
   - **The fix:** the key's first underscore is written as a JavaScript unicode escape. Runtime strings are unchanged, so the page and the redaction tests behave as before.
   - **History:** the escape was applied to every commit with `git filter-branch` before the first successful push, so no published commit contains a scanner-matching key. That is why the commit hashes differ from the ones in earlier notes.
   - **CONTRIBUTING:** now records this convention, and that a package's first version is the one local publish npm needs before a trusted publisher can be added (D114).
+- **D137** — 2026-10-02 — Building demovie needs Node ≥ 22.18; running the CLI needs only Node ≥ 20.19.
+  - **Why:** tsdown 0.23 declares `node: ^22.18.0 || ^24.11.0 || >=26.0.0` and calls `Promise.withResolvers`, which Node 20 lacks. On GitHub the `node-20` job failed while building, not while running the CLI.
+  - **CI:** the job now builds on Node 22, then switches to Node 20.19 and runs the tarball smoke test (pack, install, `npx demovie --version`, `doctor`, `init --yes`). The same sequence passes locally with Node 20.19.0.
+  - **Files:** the monorepo root's `engines` and CONTRIBUTING say 22.18. The published `demovie` keeps `>= 20.19`, and the CLI still targets node20.19.

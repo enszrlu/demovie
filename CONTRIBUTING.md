@@ -5,7 +5,7 @@ Thanks for helping! demovie is MIT-licensed; by contributing you agree your work
 ## Setup
 
 ```bash
-pnpm install                     # Node ≥ 20.19, pnpm 9, ffmpeg with libx264 on PATH
+pnpm install                     # Node ≥ 22.18 to build (the CLI runs on ≥ 20.19), pnpm 9, ffmpeg with libx264
 pnpm build                       # builds every package (CLI bundle, runtime, skill, plugin)
 pnpm --filter harborly dev       # the fixture app on http://localhost:3000 (demo data: pnpm --filter harborly demo:seed)
 node packages/cli/dist/index.js --help
