@@ -79,6 +79,20 @@ export function buildProgram(): Command {
     .option("-y, --yes", "accept defaults and never prompt")
     .option("--no-color", "disable colors")
     .showHelpAfterError("(run with --help for usage)")
+    .addHelpText(
+      "after",
+      [
+        "",
+        "Get started, in your app's folder:",
+        "  $ npx demovie init       set up: brand, vocabulary, pages, login, demo data",
+        "  $ npx demovie capture    screenshots and element maps of your app",
+        "  $ npx demovie make       hand it to your agent (or just ask it for a video)",
+        "",
+        "Every command has examples: npx demovie <command> --help",
+        "Docs: https://github.com/enszrlu/demovie/tree/main/docs",
+        "",
+      ].join("\n"),
+    )
     .action(async (...args: unknown[]) => {
       const command = args[args.length - 1] as Command;
       if (command.args.length > 0) {
