@@ -108,7 +108,8 @@ export async function analyzeChanges(project: Project, o: AnalyzeChangesOptions 
   const root = project.paths.root;
   const top = (await git(root, ["rev-parse", "--show-toplevel"])).trim();
   const appRel = toPosix(path.relative(top, root));
-  const scope = appRel ? ["--", appRel] : [];
+  // git runs in the app folder: pathspecs are relative to it, while diff/status/--full-name paths are top-relative
+  const scope = appRel ? ["--", "."] : [];
   const head = (await git(root, ["rev-parse", "HEAD"])).trim();
   const since = o.since === undefined || o.since === null ? await defaultSince(root) : o.since;
   const sinceSha = since ? (await git(root, ["rev-parse", "--verify", `${since}^{commit}`])).trim() : "";
@@ -138,7 +139,7 @@ export async function analyzeChanges(project: Project, o: AnalyzeChangesOptions 
 
   const diff = since
     ? await git(root, ["diff", "--no-color", "--name-status", `${sinceSha}...HEAD`, ...scope])
-    : (await git(root, ["ls-files", ...(appRel ? [appRel] : [])]))
+    : (await git(root, ["ls-files", "--full-name"]))
         .split("\n")
         .filter(Boolean)
         .map((f) => `A\t${f}`)

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://unpkg.com/demovie@0.1.0/schema/video.schema.json",
+  "slug": "changelog",
+  "title": "Harborly — Health badges show an icon",
+  "type": "changelog",
+  "fps": 30,
+  "duration": 15,
+  "formats": ["16:9", "1:1"],
+  "style": "clean",
+  "poster": 5.2,
+  "status": "rendered",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [
+      {
+        "name": "whoosh-short",
+        "at": 2.7,
+        "gain": -17
+      },
+      {
+        "name": "soft-click",
+        "at": 3.4,
+        "gain": -20
+      },
+      {
+        "name": "soft-click",
+        "at": 5.1,
+        "gain": -20
+      },
+      {
+        "name": "soft-click",
+        "at": 6,
+        "gain": -20
+      },
+      {
+        "name": "whoosh-short",
+        "at": 6.986,
+        "gain": -17
+      },
+      {
+        "name": "soft-click",
+        "at": 8.986,
+        "gain": -20
+      },
+      {
+        "name": "whoosh-short",
+        "at": 11.271,
+        "gain": -17
+      },
+      {
+        "name": "shimmer",
+        "at": 11.621,
+        "gain": -18
+      }
+    ],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": ["routes/app-projects@desktop", "routes/app@desktop"],
+  "qa": {
+    "ignore": []
+  }
+}

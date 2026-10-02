@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { syntheticProject } from "../../render/test/synthetic.ts";
@@ -40,6 +40,33 @@ describe("new + add", () => {
     expect(readFileSync(path.join(dir, "brief.md"), "utf8")).toMatch(/^---\ntype: launch\nduration: 35/);
     await expect(newVideo(ctx, "launch", { type: "launch" })).rejects.toMatchObject({ code: "E_USAGE" });
     await expect(newVideo(ctx, "short", { type: "launch", duration: 5 })).rejects.toThrow(/25–50/);
+  });
+
+  it("starts from the capture that matches --about, and points $schema at unpkg when demovie isn't installed", async () => {
+    const p = syntheticProject("unit-new-about", "");
+    const routes = path.join(p.root, ".demovie/captures/routes");
+    const billing = path.join(routes, "settings-billing@desktop");
+    cpSync(path.join(routes, "demo@desktop"), billing, { recursive: true });
+    const edit = (file: string, change: (json: Record<string, unknown>) => void) => {
+      const json = JSON.parse(readFileSync(path.join(billing, file), "utf8"));
+      change(json);
+      writeFileSync(path.join(billing, file), JSON.stringify(json));
+    };
+    edit("meta.json", (m) => Object.assign(m, { id: "routes/settings-billing@desktop", path: "/settings/billing" }));
+    edit("elements.json", (m) => {
+      m.captureId = "routes/settings-billing@desktop";
+      (m.elements as { id: string; role: string; name: string }[])[0]!.role = "heading";
+      (m.elements as { id: string; role: string; name: string }[])[0]!.name = "Plans and invoices";
+    });
+    const ctx = createContext({ cwd: p.root, yes: true, json: true });
+    const capture = async (slug: string, about?: string) =>
+      ((await newVideo(ctx, slug, { type: "launch", about })).data as { capture: string | null }).capture;
+    // the shallower page wins by default; --about steers the pick by path or heading
+    expect(await capture("plain")).toBe("routes/demo@desktop");
+    expect(await capture("billing", "New billing settings")).toBe("routes/settings-billing@desktop");
+    expect(await capture("invoices", "Invoices")).toBe("routes/settings-billing@desktop");
+    const video = JSON.parse(readFileSync(path.join(p.root, ".demovie/videos/billing/video.json"), "utf8"));
+    expect(video.$schema).toMatch(/^https:\/\/unpkg\.com\/demovie@[\w.-]+\/schema\/video\.schema\.json$/);
   });
 
   it("imports images, transcodes video to WebM and requires --licensed for audio", async () => {

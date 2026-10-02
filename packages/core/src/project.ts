@@ -4,7 +4,8 @@ import { DemovieError } from "./errors.ts";
 import { logger } from "./logger.ts";
 import { type Config, ConfigSchema } from "./schemas/config.ts";
 import { loadDotEnv, resolveEnvRefs } from "./util/env.ts";
-import { readJson, sha256, writeJson } from "./util/fs.ts";
+import { readJson, sha256, toPosix, writeJson } from "./util/fs.ts";
+import { VERSION } from "./version.ts";
 
 export const DEMOVIE_DIR = ".demovie";
 
@@ -141,6 +142,18 @@ export function applyEnvOverrides(config: Config, env: Record<string, string | u
 
 export async function saveConfig(paths: ProjectPaths, config: Config): Promise<void> {
   await writeJson(paths.config, config);
+}
+
+/**
+ * `$schema` value for a JSON file written in `fromDir` (SPEC §6.1): the schema of the locally installed package when
+ * demovie is in the project's node_modules, otherwise the unpkg URL for this version. Relative to the file itself,
+ * which is how editors resolve it.
+ */
+export function schemaRef(root: string, fromDir: string, name: string): string {
+  const local = path.join(root, "node_modules", "demovie", "schema", name);
+  return existsSync(local)
+    ? toPosix(path.relative(fromDir, local))
+    : `https://unpkg.com/demovie@${VERSION}/schema/${name}`;
 }
 
 /** Hash of the config, used for capture freshness (SPEC §9.9). */

@@ -16,8 +16,10 @@ const git = (cwd: string, ...args: string[]) =>
 
 describe("demovie changes on a Harborly test branch", () => {
   it("maps a commit to a shared component onto the routes that render it", async () => {
-    const dir = path.join(repoRoot, ".tmp", "int-changes");
-    rmSync(dir, { recursive: true, force: true });
+    // a monorepo: the app lives in apps/web below the git root
+    const repo = path.join(repoRoot, ".tmp", "int-changes");
+    const dir = path.join(repo, "apps", "web");
+    rmSync(repo, { recursive: true, force: true });
     for (const f of [
       "src",
       "tsconfig.json",
@@ -32,8 +34,9 @@ describe("demovie changes on a Harborly test branch", () => {
     const badges = path.join(dir, "src/app/app/_components/badges.tsx");
     const after = readFileSync(badges, "utf8");
     writeFileSync(badges, readFileSync(path.join(import.meta.dirname, "fixtures/badges.before.tsx"), "utf8"));
-    git(dir, "init", "-q", "-b", "main");
-    git(dir, "add", "-A");
+    writeFileSync(path.join(repo, "README.md"), "# monorepo\n");
+    git(repo, "init", "-q", "-b", "main");
+    git(repo, "add", "-A");
     git(dir, "commit", "-q", "-m", "chore: initial import");
     git(dir, "tag", "v0.1.0");
     git(dir, "checkout", "-q", "-b", "feat/health-icons");
@@ -41,6 +44,9 @@ describe("demovie changes on a Harborly test branch", () => {
     git(dir, "commit", "-q", "-am", "feat(projects): health badges show an icon (#42)");
     appendFileSync(path.join(dir, "package.json"), "\n");
     git(dir, "commit", "-q", "-am", "chore: tidy package.json");
+    // a commit outside the app is not part of its changelog
+    appendFileSync(path.join(repo, "README.md"), "more\n");
+    git(repo, "commit", "-q", "-am", "docs: another package");
 
     const ctx = createContext({ cwd: dir, yes: true, json: true });
     const result = await changes(ctx, {});

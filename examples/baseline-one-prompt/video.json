@@ -1,0 +1,20 @@
+{
+  "slug": "baseline-one-prompt",
+  "title": "Harborly — one-prompt baseline (no captures)",
+  "type": "launch",
+  "fps": 30,
+  "duration": 30,
+  "formats": ["16:9"],
+  "style": "clean",
+  "poster": 12,
+  "captures": [],
+  "audio": {
+    "music": null,
+    "voice": null,
+    "sfx": []
+  },
+  "captions": {
+    "enabled": false
+  },
+  "status": "rendered"
+}

@@ -11,8 +11,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | M4 QA | done | `35fa823` |
 | M5 Audio | done | `83e76e6` |
 | M6 Agent layer | done | `5ed6603` |
-| M7 Changelog & CI | done | see `git log` (`feat(m7)`) |
-| M8 Dogfood | not started | |
+| M7 Changelog & CI | done | `90013e4` |
+| M8 Dogfood | done | see `git log` (`feat(m8)`) |
 | M9 Docs & release readiness | not started | |
 
 ## M0 — Scaffold
@@ -68,15 +68,23 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] Harborly test branch: correct affected routes; action scripts run locally end-to-end with the mocked agent — Harborly's shared HealthBadge now shows an icon per health; `packages/cli/test/changes.int.test.ts` replays it as `feat(projects): health badges show an icon (#42)` on a branch over the previous version in a temp git repo → exactly /app, /app/projects, /app/projects/[id], /app/projects/new via the import graph, flow `create-project`, story "1 user-visible change: health badges show an icon."; `packages/action/test/action.int.test.ts` runs `run` + `report` against Harborly with a mock agent that copies clean-launch, passes QA and renders a draft clip (summary, outputs, comment checked)
 
 ## M8 — Dogfood
-- [ ] Launch video (30–40 s, 16:9 + 9:16, `clean`), QA 0 errors
-  - Rubric (clarity / truth / pacing / hierarchy / brand / motion / polish / ending): _ / _ / _ / _ / _ / _ / _ / _
-  - Contact sheets:
-- [ ] Changelog clip (12–18 s), QA 0 errors
-- [ ] Baseline one-prompt video + `docs/media/grounded-vs-generic.mp4` + `.gif` (≤ 8 MB)
-- [ ] Friction log below: every item fixed or explicitly deferred
+- [x] Launch video (30–40 s, 16:9 + 9:16, `clean`), QA 0 errors — `examples/harborly/.demovie/videos/launch` ("Harborly — Projects board", made by following SKILL.md from `demovie new launch --type launch --style clean --about "The Projects board"`): 35 s at 112 bpm with cuts on bar lines, synth music + 21 CC0 SFX cues, no VO (no keys, no paid calls). Every product shot is a real capture (`routes/app-projects@desktop` and the 4 states of the `create-project` flow) with camera, cursor and rings on element-map ids. `demovie qa launch --format all` → 0 errors, 0 warnings; mix −15.7 LUFS / −2.5 dBTP; `out/launch-16x9.mp4` 1920×1080 and `out/launch-9x16.mp4` 1080×1920 (5.9 / 4.4 MB; final render 64.7 s for 16:9, budget 4 min); `share.md` written
+  - Rubric (clarity / truth / pacing / hierarchy / brand / motion / polish / ending): 5 / 5 / 4 / 4 / 5 / 4 / 4 / 5 — from the contact sheets: pacing −1 for two holds with little change (the created page 19–21 s, the timeline 24–26 s); hierarchy −1 because in 9:16 the product frame fills only about a third of the height and the full-board resets (9–10 s, 27 s) are too small to read, and the New project dialog stays about a third of the 16:9 frame wide while typing; motion −1 for the back-and-forth return to the full board between the column tour and the health zoom; polish −1 for the 16:9 timeline push-in leaving the left half of the frame mostly empty
+  - Contact sheets: `examples/harborly/.demovie/videos/launch/out/stills/16x9/sheet.png`, `examples/harborly/.demovie/videos/launch/out/stills/9x16/sheet.png` (reviewed; outputs are gitignored, `pnpm verify:dogfood` checks the MP4s)
+- [x] Changelog clip (12–18 s), QA 0 errors — `examples/harborly/.demovie/videos/changelog`: 15 s, 16:9 + 1:1, covering the M7 change ("Health badges now show an icon": board cards with rings on the At risk / Off track projects, then the same badges on the dashboard's upcoming launches); `demovie qa changelog --format all` → 0 errors, 0 warnings; `out/changelog-16x9.mp4` (2.0 MB, final render 31.5 s) and `out/changelog-1x1.mp4` (1.7 MB)
+- [x] Baseline one-prompt video + `docs/media/grounded-vs-generic.mp4` + `.gif` (≤ 8 MB) — `examples/baseline-one-prompt` (30 s, no captures, UI redrawn from imagination, invented metrics, HUD clichés, logo-only ending; QA fails on it by design); `pnpm comparison:build` (`scripts/build-comparison.ts`) → `docs/media/grounded-vs-generic.mp4` (1920×640, 35 s, 3.3 MB, labelled "One prompt, no captures" / "demovie: real captures, checked by QA") and `docs/media/grounded-vs-generic.gif` (960 px, 10 fps, 14 s excerpt, 2.4 MB)
+- [x] Friction log below: every item fixed or explicitly deferred — 8 fixed (with tests), 1 deferred (app-side)
 
 ### Friction log
--
+- **F1** — `status`: `"skill": []` but no warning that the project's agents have no demovie skill. **Fixed:** a warning names the agents and the fix (`npx demovie skill install`, or the plugin); `status` also reports the grounding level, L0 (brand only) to L3 (flows captured) — `packages/cli/test/status.test.ts`.
+- **F2** — `status`: the next step pointed at a `/demovie make` slash command that doesn't exist. **Fixed:** "ask your agent for a video (…), or run `npx demovie make --type launch`" — `status.test.ts`.
+- **F3** — `new --about "The Projects board"` still started from the dashboard capture; the capture pick ignored `--about`. **Fixed:** pages whose path or headings match the `--about` words are picked first — `packages/cli/test/new-add.test.ts`.
+- **F4** — Skill: SKILL.md generated music in step 6, after animating, but `v.beat()`/`v.bar()` need `audio/beats.json` while animating. **Fixed:** step 4 now says to run `npx demovie audio music <slug>` as soon as the storyboard has a bpm (plugin copy regenerated).
+- **F5** — Element map: Harborly's health badges have no element of their own (they sit inside the card link), so a ring can only target the whole card. **Deferred:** app-side; the fix is a `data-demovie` id on the badge, which the skill tells the agent to propose rather than add unasked. The changelog clip frames part of the row rect instead.
+- **F6** — `init`/`new`: `$schema` always pointed at `node_modules/demovie/…`, even when demovie isn't installed, and config.json's path was relative to the project root rather than to the file. **Fixed:** `schemaRef()` writes the path to the installed package's schema relative to the file, otherwise the unpkg URL for this version (SPEC §6.1) — `init.test.ts`, `new-add.test.ts`.
+- **F7** — `changes` (bug): in a monorepo (app below the git root) it found 0 commits, because git pathspecs are relative to the app folder it runs in. **Fixed:** scope with `.` and read paths with `--full-name` — monorepo case in `packages/cli/test/changes.int.test.ts`.
+- **F8** — QA DM-T01 counted a lone "—" as a word, which inflated reading time. **Fixed:** punctuation-only tokens don't count — `packages/render/test/runtime.test.ts`.
+- **F9** — Runtime: every composition hand-rolled a `union()` of rects to frame a heading plus its cards. **Fixed:** `screen.rect(...ids)` returns the box around several elements; the six compositions use it (QA unchanged, stills identical) — `runtime.test.ts`.
 
 ## M9 — Docs & release readiness
 - [ ] All docs (SPEC §19); README with the GIF; generated config + QA-rule docs

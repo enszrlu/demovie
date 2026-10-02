@@ -257,8 +257,11 @@ interface ScreenHandle {
   id: string;
   el: HTMLElement;
   capture: CaptureState;
-  /** Element rect in stage px at the screen's base transform (no camera, no user tweens). */
-  rect(elementId: string): Rect;
+  /**
+   * Rect of an element in stage px at the screen's base transform (no camera, no user tweens). With several ids, the
+   * box around all of them, e.g. a column heading and its last card.
+   */
+  rect(...elementIds: [string, ...string[]]): Rect;
   focus(
     target: string | Rect,
     o: { at: number; duration?: number; scale?: number; padding?: number; ease?: string },

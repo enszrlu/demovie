@@ -12,13 +12,6 @@ const add = (parent, markup) => {
   parent.insertAdjacentHTML("beforeend", markup);
   return parent.lastElementChild;
 };
-const union = (...rects) => {
-  const x = Math.min(...rects.map((r) => r.x));
-  const y = Math.min(...rects.map((r) => r.y));
-  const right = Math.max(...rects.map((r) => r.x + r.width));
-  const bottom = Math.max(...rects.map((r) => r.y + r.height));
-  return { x, y, width: right - x, height: bottom - y };
-};
 
 /**
  * Types a block character by character (a CLI reveal) from `at`, with a block caret that follows the last character,
@@ -131,11 +124,7 @@ const keys = session("keys", bar(9), bar(12), {
   comment: true,
   cps: 36,
 });
-const apiKeys = union(
-  keys.app.rect("heading:api-keys"),
-  keys.app.rect("textbox:secret-key"),
-  keys.app.rect("button:copy"),
-);
+const apiKeys = keys.app.rect("heading:api-keys", "textbox:secret-key", "button:copy");
 keys.app.focus(apiKeys, {
   at: bar(9) + 0.6,
   duration: 0.7,

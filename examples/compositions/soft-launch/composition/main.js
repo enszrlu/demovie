@@ -14,13 +14,6 @@ const add = (parent, markup) => {
   parent.insertAdjacentHTML("beforeend", markup);
   return parent.lastElementChild;
 };
-const union = (...rects) => {
-  const x = Math.min(...rects.map((r) => r.x));
-  const y = Math.min(...rects.map((r) => r.y));
-  const right = Math.max(...rects.map((r) => r.x + r.width));
-  const bottom = Math.max(...rects.map((r) => r.y + r.height));
-  return { x, y, width: right - x, height: bottom - y };
-};
 
 /** Brand tint plus two blurred blobs. Every shot drifts them on the same clock, so crossfades never jump. */
 function backdrop(shot) {
@@ -114,7 +107,7 @@ const phone = screen(v, {
   ...phoneBox,
 });
 springIn(phone, bar(1) - 0.3);
-phone.focus(union(phone.rect("heading:planning"), phone.rect("link:partner-api")), {
+phone.focus(phone.rect("heading:planning", "link:partner-api"), {
   at: bar(1) + 1.6,
   duration: 1.3,
   scale: 1.35,
@@ -134,9 +127,9 @@ const members = screen(v, {
   ...desktopBox,
 });
 springIn(members, bar(3) - 0.3);
-const table = union(
-  members.rect("row:name-role-email-active-projects-workload"),
-  members.rect("row:hs-hana-sato-data-analyst-hana-harborly-demo-4-3"),
+const table = members.rect(
+  "row:name-role-email-active-projects-workload",
+  "row:hs-hana-sato-data-analyst-hana-harborly-demo-4-3",
 );
 members.focus(table, { at: bar(3) + 1.4, duration: 1.3, scale: vertical ? 1.4 : 1.2, ease: "power2.inOut" });
 members.highlight("row:lp-leo-park-engineering-lead-leo-harborly-demo-8", {

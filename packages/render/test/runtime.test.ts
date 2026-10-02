@@ -123,6 +123,31 @@ v.ready();`,
     }
   });
 
+  it("rect() with several ids returns the box around all of them", async () => {
+    const multi = await serve(
+      "rt-rect",
+      `import { createVideo, screen } from "/__demovie/runtime.js";
+const v = await createVideo();
+const shot = v.shot("p", 0, 4, { kind: "product" });
+const s = screen(v, { capture: "routes/demo@desktop", parent: shot.el });
+window.__rects = [s.rect("button:create-shape"), s.rect("textbox:shape-name"), s.rect("button:create-shape", "textbox:shape-name")];
+v.ready();`,
+    );
+    const comp = await openComposition(browser, multi.server, { format: "16:9", scale: 0.5 });
+    try {
+      type R = { x: number; y: number; width: number; height: number };
+      const [button, textbox, both] = (await comp.page.evaluate("window.__rects")) as [R, R, R];
+      const near = (a: number, b: number) => expect(a).toBeCloseTo(b, 6);
+      near(both.x, Math.min(button.x, textbox.x));
+      near(both.y, Math.min(button.y, textbox.y));
+      near(both.x + both.width, Math.max(button.x + button.width, textbox.x + textbox.width));
+      near(both.y + both.height, Math.max(button.y + button.height, textbox.y + textbox.height));
+    } finally {
+      await comp.close();
+      await multi.server.close();
+    }
+  });
+
   it("flags stray GSAP tweens outside v.timeline", async () => {
     const stray = await serve(
       "rt-stray",
@@ -152,7 +177,7 @@ describe("inspect(): what a viewer can actually see", () => {
       `import { createVideo, text } from "/__demovie/runtime.js";
 const v = await createVideo();
 const s = v.shot("t", 0, 4, { kind: "title" });
-s.el.innerHTML = '<h1 class="big" id="h">Shapes, measured.</h1>';
+s.el.innerHTML = '<h1 class="big" id="h">Shapes — measured.</h1>';
 text.reveal(s.el.querySelector("#h"), { at: 2, by: "line", from: "mask", duration: 0.6 });
 v.ready();`,
     );
@@ -161,11 +186,14 @@ v.ready();`,
       const comp = await openComposition(browser, server, { format: "16:9", scale: 0.5 });
       const visible = async (t: number) => {
         await seek(comp.page, t);
-        const r = (await comp.page.evaluate("window.__DEMOVIE__.inspect()")) as { texts: { text: string }[] };
-        return r.texts.map((x) => x.text);
+        const r = (await comp.page.evaluate("window.__DEMOVIE__.inspect()")) as {
+          texts: { text: string; words: number }[];
+        };
+        return r.texts.map((x) => `${x.text} (${x.words})`);
       };
       expect(await visible(1)).toEqual([]);
-      expect(await visible(3)).toEqual(["Shapes, measured."]);
+      // a lone dash is not a word: no extra reading time
+      expect(await visible(3)).toEqual(["Shapes — measured. (2)"]);
       await comp.close();
     } finally {
       await browser.close();

@@ -90,7 +90,9 @@ Skip the confirmation when the user said `--yes`, asked you to work autonomously
 Fill `storyboard.md` ([template](references/storyboard-template.md)): one row per shot with start, duration, kind
 (`product|title|text|logo|other`), visual, on-screen text, VO line, captures/element ids, transition and notes.
 
-- With music, set `bpm:` in the frontmatter and time cuts on the beat grid (`v.beat(n)`, `v.bar(n)`).
+- With music, set `bpm:` in the frontmatter and time cuts on the beat grid (`v.beat(n)`, `v.bar(n)`). Generate the
+  bed as soon as the storyboard is set, before style frames: `npx demovie audio music <slug>` writes `beats.json`,
+  which `v.beat()` and `v.bar()` read.
 - Every product shot names its capture ids and the element ids it focuses, highlights or clicks.
 - VO stays at or below 2.6 words/s. On-screen text stays at least `max(1.2 s, 0.5 s + words/3)`.
 - One focal point per moment; at most 2 text blocks and 18 words on screen at once.
@@ -119,7 +121,7 @@ scrubbing, safe-area and QA overlays for the user.
 Audio ([audio.md](references/audio.md)):
 
 ```bash
-npx demovie audio music <slug>                 # license-clean synth bed + beats.json (free, deterministic)
+npx demovie audio music <slug>                 # license-clean synth bed + beats.json (re-run if bpm or duration change)
 npx demovie audio sfx --list                   # then add cues to video.json audio.sfx
 ```
 

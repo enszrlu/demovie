@@ -13,13 +13,6 @@ const add = (parent, markup) => {
   parent.insertAdjacentHTML("beforeend", markup);
   return parent.lastElementChild;
 };
-const union = (...rects) => {
-  const x = Math.min(...rects.map((r) => r.x));
-  const y = Math.min(...rects.map((r) => r.y));
-  const right = Math.max(...rects.map((r) => r.x + r.width));
-  const bottom = Math.max(...rects.map((r) => r.y + r.height));
-  return { x, y, width: right - x, height: bottom - y };
-};
 
 // Screens run flush into the bottom-right corner (16:9) or edge to edge (9:16). They never extend past the stage, so
 // a camera move toward the capture's edge never pushes the target off-frame.
@@ -93,12 +86,11 @@ const ship = productShot("ship", 5, 8, {
   proof: "Every project, from Planning to Launched.",
   capture: "routes/app-projects@desktop",
 });
-const column = (...ids) => union(...ids.map((id) => ship.rect(id)));
 const columns = [
-  column("heading:planning", "link:holiday-campaign", "link:eu-data-residency"),
-  column("heading:in-progress", "link:q3-launch", "link:billing-migration"),
-  column("heading:review", "link:pricing-page-refresh", "link:usage-analytics"),
-  column("heading:launched", "link:projects-board-beta", "link:spring-launch"),
+  ship.rect("heading:planning", "link:holiday-campaign", "link:eu-data-residency"),
+  ship.rect("heading:in-progress", "link:q3-launch", "link:billing-migration"),
+  ship.rect("heading:review", "link:pricing-page-refresh", "link:usage-analytics"),
+  ship.rect("heading:launched", "link:projects-board-beta", "link:spring-launch"),
 ];
 // Tight enough that one column fills the screen per beat; the last pan settles on Launched, framed whole.
 columns.forEach((rect, i) => {
@@ -115,8 +107,8 @@ const measure = productShot("measure", 8, 11, {
   proof: "Velocity and cycle time, in Reports.",
   capture: "routes/app-reports@desktop",
 });
-const velocity = union(measure.rect("heading:velocity"), measure.rect("application"));
-const cycleTime = union(measure.rect("heading:cycle-time#2"), measure.rect("application#2"));
+const velocity = measure.rect("heading:velocity", "application");
+const cycleTime = measure.rect("heading:cycle-time#2", "application#2");
 punch(measure, velocity, bar(9), zoomFor(velocity));
 measure.highlight("application", { at: beat(37), duration: bar(10) - beat(37) - 0.15, style: "ring" });
 punch(measure, cycleTime, bar(10), zoomFor(cycleTime));

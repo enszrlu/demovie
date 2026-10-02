@@ -14,13 +14,6 @@ const add = (parent, markup) => {
   parent.insertAdjacentHTML("beforeend", markup);
   return parent.lastElementChild;
 };
-const union = (...rects) => {
-  const x = Math.min(...rects.map((r) => r.x));
-  const y = Math.min(...rects.map((r) => r.y));
-  const right = Math.max(...rects.map((r) => r.x + r.width));
-  const bottom = Math.max(...rects.map((r) => r.y + r.height));
-  return { x, y, width: right - x, height: bottom - y };
-};
 
 // The figure: a borderless screen bleeding off the right edge (16:9) or both edges (9:16). The copy hangs on its
 // top and bottom edges through CSS variables, so every spread shares one grid.
@@ -105,10 +98,10 @@ const changelog = spread("changelog", bar(5), bar(7.5), {
   capture: "routes/changelog@desktop",
 });
 // Frame the whole entry — date column through the start of the next one — from the headings around it.
-const entry = union(
-  changelog.app.rect("heading:what-s-new-in-harborly"),
-  changelog.app.rect("heading:velocity-insights"),
-  changelog.app.rect("heading:launch-checklist-templates"),
+const entry = changelog.app.rect(
+  "heading:what-s-new-in-harborly",
+  "heading:velocity-insights",
+  "heading:launch-checklist-templates",
 );
 changelog.app.focus(entry, { at: bar(5) + 1.0, duration: 1.4, scale: zoomFor(entry), ease: MOVE });
 
@@ -117,7 +110,7 @@ const reports = spread("reports", bar(7.5), bar(10), {
   quote: "See how much your team ships every week.",
   capture: "routes/app-reports@desktop",
 });
-const chart = union(reports.app.rect("heading:velocity"), reports.app.rect("application"));
+const chart = reports.app.rect("heading:velocity", "application");
 // A looser framing in 16:9 leaves the chart's left edge far enough inside the figure for a note in the margin.
 reports.app.focus(chart, {
   at: bar(7.5) + 1.0,

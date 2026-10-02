@@ -11,6 +11,7 @@ import {
   GlossarySchema,
   type Project,
   type StyleId,
+  schemaRef,
   TYPE_PRESETS,
   VideoSchema,
   type VideoType,
@@ -44,11 +45,18 @@ const esc = (s: string): string =>
   s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const yamlString = (s: string | null): string => (s ? JSON.stringify(s) : "null");
 
+/** Words of `--about` worth matching against a page: three letters or more, plural "s" dropped. */
+const aboutWords = (about: string | undefined): string[] =>
+  (about?.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [])
+    .filter((w) => !["the", "and", "for", "with", "new", "your", "our", "now"].includes(w))
+    .map((w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w));
+
 /**
- * Pick a desktop route capture to start from: logged-in, non-dynamic pages with tagged elements first, shallow paths
- * first; then a focus target that is a meaningful region (5–45% of the viewport), not a whole page or a tiny control.
+ * Pick a desktop route capture to start from: pages whose path or headings match `--about` first, then logged-in,
+ * non-dynamic pages with tagged elements, shallow paths first; then a focus target that is a meaningful region
+ * (5–45% of the viewport), not a whole page or a tiny control.
  */
-function pickCapture(project: Project): { id: string; focus: string } | null {
+function pickCapture(project: Project, about?: string): { id: string; focus: string } | null {
   const index: CaptureIndex = existsSync(project.paths.captureIndex)
     ? CaptureIndexSchema.parse(JSON.parse(readFileSync(project.paths.captureIndex, "utf8")))
     : scanCaptures(project);
@@ -68,7 +76,16 @@ function pickCapture(project: Project): { id: string; focus: string } | null {
     )
     .map((s) => ({ s, map: load(s.id) }))
     .filter((x): x is { s: (typeof index.states)[number]; map: ElementMap } => x.map !== null);
+  const words = aboutWords(about);
+  const relevance = (x: { s: { path: string }; map: ElementMap }) => {
+    if (!words.length) return 0;
+    const page = [x.s.path, ...x.map.elements.filter((e) => e.role === "heading").map((e) => e.name)]
+      .join(" ")
+      .toLowerCase();
+    return words.filter((w) => page.includes(w)).length;
+  };
   const score = (x: { s: { path: string; route: string | null }; map: ElementMap }) =>
+    -20 * relevance(x) +
     (x.map.elements.some((e) => e.id.startsWith("dm:")) ? 0 : 10) +
     (x.s.route?.includes("[") ? 5 : 0) +
     x.s.path.split("/").length;
@@ -166,7 +183,7 @@ export async function scaffoldVideo(
     glossary?.uiLabels.find((l) => /^(start|try|get started|sign up|book a demo|request|join)/i.test(l)) ?? null;
   const url = glossary?.ctaUrl ?? null;
   const title = o.about ?? glossary?.features[0]?.term ?? product;
-  const capture = pickCapture(project);
+  const capture = pickCapture(project, o.about);
   const motion = STYLE_MOTION[style];
   const introEnd = o.type === "hero-loop" ? 2 : Math.min(3.2, duration * 0.18);
   const endLen = o.type === "hero-loop" ? 2 : Math.min(4, Math.max(2.5, duration * 0.14));
@@ -222,7 +239,7 @@ export async function scaffoldVideo(
   await write("composition/main.js", fill(read("main.js.tpl"), values));
   await write("composition/styles.css", fill(read("styles.css.tpl"), values));
   const video = VideoSchema.parse({
-    $schema: "../../../node_modules/demovie/schema/video.schema.json",
+    $schema: schemaRef(project.paths.root, dir, "video.schema.json"),
     slug: o.slug,
     title: o.about ? `${product} — ${o.about}` : product,
     type: o.type,

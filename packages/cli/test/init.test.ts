@@ -34,7 +34,8 @@ describe("init --yes (static, app not running)", () => {
       expect(existsSync(path.join(dir, f)), f).toBe(true);
     }
     const config = JSON.parse(readFileSync(path.join(dir, "config.json"), "utf8"));
-    expect(config.$schema).toBe("./node_modules/demovie/schema/config.schema.json");
+    // demovie isn't installed in the fixture, so the schema comes from unpkg (SPEC §6.1)
+    expect(config.$schema).toMatch(/^https:\/\/unpkg\.com\/demovie@[\w.-]+\/schema\/config\.schema\.json$/);
     expect(config.project.framework).toBe("nextjs");
     expect(config.app.start.command).toBe("pnpm dev");
     const brand = JSON.parse(readFileSync(path.join(dir, "brand/brand.json"), "utf8"));

@@ -43,8 +43,11 @@ export interface ScreenHandle {
   id: string;
   el: HTMLElement;
   capture: CaptureState;
-  /** Element rect in stage px at the screen's base transform (no camera, no user tweens). */
-  rect(elementId: string): Rect;
+  /**
+   * Rect of an element in stage px at the screen's base transform (no camera, no user tweens). With several ids, the
+   * box around all of them, e.g. a column heading and its last card.
+   */
+  rect(...elementIds: [string, ...string[]]): Rect;
   focus(
     target: string | Rect,
     o: { at: number; duration?: number; scale?: number; padding?: number; ease?: string },
@@ -300,14 +303,13 @@ export function screen(v: Video, o: ScreenOptions): ScreenHandle {
       }
       return true;
     },
-    rect(elementId: string): Rect {
-      const { element } = findAt(elementId, 0);
-      return {
-        x: left + c.side + element.bbox.x * k,
-        y: top + c.top + element.bbox.y * k,
-        width: element.bbox.width * k,
-        height: element.bbox.height * k,
-      };
+    rect(...elementIds: [string, ...string[]]): Rect {
+      const boxes = elementIds.map((id) => findAt(id, 0).element.bbox);
+      const x = Math.min(...boxes.map((b) => b.x));
+      const y = Math.min(...boxes.map((b) => b.y));
+      const right = Math.max(...boxes.map((b) => b.x + b.width));
+      const bottom = Math.max(...boxes.map((b) => b.y + b.height));
+      return { x: left + c.side + x * k, y: top + c.top + y * k, width: (right - x) * k, height: (bottom - y) * k };
     },
     focus(target, opts) {
       const t = opts.at;

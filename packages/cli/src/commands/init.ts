@@ -14,6 +14,7 @@ import {
   loadDotEnv,
   projectPaths,
   resolveEnvRefs,
+  schemaRef,
   upsertDotEnv,
   writeFileAtomic,
   writeJson,
@@ -41,7 +42,6 @@ export interface InitOptions {
   force?: boolean;
 }
 
-const SCHEMA_REF = "./node_modules/demovie/schema/config.schema.json";
 const FICTIONAL_TLD = /\.(demo|example|test|invalid|local|localhost)$/i;
 
 function defaultNow(): string {
@@ -173,7 +173,7 @@ export async function run(ctx: CommandContext, options: InitOptions): Promise<Co
 
     const allowDomain = username?.split("@")[1];
     config = ConfigSchema.parse({
-      $schema: SCHEMA_REF,
+      $schema: schemaRef(root, paths.dir, "config.schema.json"),
       version: 1,
       project: {
         name: detection.name,

@@ -1,6 +1,16 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { checkUrl, findProjectRoot, loadProject, QaFileSchema, VERSION, VideoSchema } from "@demovie/core";
+import {
+  CaptureIndexSchema,
+  checkUrl,
+  findProjectRoot,
+  loadProject,
+  type ProjectPaths,
+  QaFileSchema,
+  RoutesSchema,
+  VERSION,
+  VideoSchema,
+} from "@demovie/core";
 import type { CommandContext } from "../context.ts";
 import { installedSkillVersion, SKILL_DIRS } from "../lib/skill.ts";
 import type { CommandResult } from "../output.ts";
@@ -20,6 +30,34 @@ function compareVersions(a: string, b: string): number {
   const pb = b.split(/[.-]/).map((x) => Number.parseInt(x, 10) || 0);
   for (let i = 0; i < 3; i++) if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) - (pb[i] ?? 0);
   return 0;
+}
+
+const LEVELS = {
+  L0: "brand only: brand.json and the glossary",
+  L1: "public pages captured",
+  L2: "logged-in pages captured",
+  L3: "flows captured, with multi-step states",
+} as const;
+
+/** How much of the real product demovie can show (docs/concepts.md: L0 brand → L3 flows). */
+function grounding(paths: ProjectPaths): { level: keyof typeof LEVELS | null; label: string } {
+  const read = <T>(file: string, parse: (x: unknown) => T): T | null => {
+    try {
+      return existsSync(file) ? parse(JSON.parse(readFileSync(file, "utf8"))) : null;
+    } catch {
+      return null;
+    }
+  };
+  const index = read(paths.captureIndex, (x) => CaptureIndexSchema.parse(x));
+  const routes = read(paths.routes, (x) => RoutesSchema.parse(x));
+  const states = index?.states ?? [];
+  const isProtected = new Set((routes?.routes ?? []).filter((r) => r.protected).map((r) => r.path));
+  let level: keyof typeof LEVELS | null = null;
+  if (existsSync(paths.brandJson) && existsSync(paths.glossaryJson)) level = "L0";
+  if (states.some((s) => s.kind === "route")) level = "L1";
+  if (states.some((s) => s.kind === "route" && s.route && isProtected.has(s.route))) level = "L2";
+  if (states.some((s) => s.kind === "flow")) level = "L3";
+  return { level, label: level ? LEVELS[level] : "nothing extracted or captured yet" };
 }
 
 export async function run(ctx: CommandContext): Promise<CommandResult> {
@@ -82,6 +120,12 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
     return version ? [{ agent, dir: rel, version, outdated: compareVersions(version, VERSION) < 0 }] : [];
   });
   const warnings: string[] = [];
+  const configured = project.config.agents;
+  const withoutSkill = configured.filter((a) => !skill.some((s) => s.agent === a));
+  if (configured.length && withoutSkill.length === configured.length)
+    warnings.push(
+      `no demovie skill in this project for ${configured.join(", ")}: run \`npx demovie skill install\` (or install the demovie plugin)`,
+    );
   for (const s of skill)
     if (s.outdated)
       warnings.push(
@@ -91,13 +135,15 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
   if (captures.stale > 0)
     warnings.push(`${captures.stale} capture(s) are stale: run \`npx demovie capture --changed\``);
 
+  const ground = grounding(paths);
   let next: string;
   if (!reach.ok && !resolved.app.start)
     next = `start your app at ${resolved.app.url} (or set app.start.command), then run \`npx demovie capture\``;
   else if (captures.total === 0) next = "npx demovie capture";
   else if (captures.stale > 0) next = "npx demovie capture --changed";
   else if (videos.length === 0)
-    next = 'ask your agent: "/demovie make a 30s launch video" (or `npx demovie new launch --type launch`)';
+    next =
+      'ask your agent for a video ("make a 30-second launch video with demovie"), or run `npx demovie make --type launch`';
   else {
     const pending = videos.find((v) => v.status !== "rendered");
     next = pending
@@ -112,6 +158,7 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
     `app: ${resolved.app.url} ${reach.ok ? "✓ reachable" : `✗ not reachable${resolved.app.start ? " (demovie up starts it)" : ""}`}`,
     `auth: ${resolved.auth.strategy}${resolved.auth.loginPath ? ` (${resolved.auth.loginPath})` : ""}`,
     `captures: ${captures.total}${captures.total ? ` (${captures.stale} stale, updated ${captures.capturedAt})` : ""}`,
+    `grounding: ${ground.level ?? "—"} (${ground.label})`,
     `videos: ${videos.length ? videos.map((v) => `${v.slug} [${v.status}${v.qa ? `, QA ${v.qa.errors}E/${v.qa.warnings}W` : ""}]`).join(", ") : "none"}`,
     ...warnings.map((w) => `warn: ${w}`),
     `Next: ${next}`,
@@ -125,6 +172,7 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
       app: { url: resolved.app.url, reachable: reach.ok, status: reach.status, canStart: Boolean(resolved.app.start) },
       auth: { strategy: resolved.auth.strategy, loginPath: resolved.auth.loginPath },
       captures,
+      grounding: ground,
       videos,
       skill,
       warnings,

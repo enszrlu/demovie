@@ -29,6 +29,9 @@ examples/compositions/*/qa.json
 # reference compositions' generated audio (deterministic; `pnpm verify` regenerates it)
 examples/compositions/*/audio/*.wav
 !examples/compositions/bad-audio/audio/*.wav
+examples/harborly/.demovie/videos/*/audio/*.wav
+examples/baseline-one-prompt/out/
+examples/baseline-one-prompt/qa.json
 
 # skill copies installed into the fixture by `demovie skill install` / `make` (source: packages/skill/demovie)
 examples/harborly/.claude/

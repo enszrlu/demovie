@@ -1,0 +1,145 @@
+{
+  "$schema": "https://unpkg.com/demovie@0.1.0/schema/video.schema.json",
+  "slug": "launch",
+  "title": "Harborly — Projects board",
+  "type": "launch",
+  "fps": 30,
+  "duration": 35,
+  "formats": ["16:9", "9:16"],
+  "style": "clean",
+  "poster": 10.5,
+  "status": "rendered",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [
+      {
+        "name": "whoosh-short",
+        "at": 2.557,
+        "gain": -17
+      },
+      {
+        "name": "soft-click",
+        "at": 10.786,
+        "gain": -20
+      },
+      {
+        "name": "soft-click",
+        "at": 12.329,
+        "gain": -20
+      },
+      {
+        "name": "whoosh-short",
+        "at": 13.271,
+        "gain": -17
+      },
+      {
+        "name": "click",
+        "at": 14.921,
+        "gain": -14
+      },
+      {
+        "name": "click",
+        "at": 16.471,
+        "gain": -14
+      },
+      {
+        "name": "type-key",
+        "at": 16.621,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 16.693,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 16.764,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 16.836,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 16.907,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 16.979,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 17.05,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 17.121,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 17.193,
+        "gain": -22
+      },
+      {
+        "name": "click",
+        "at": 18.321,
+        "gain": -14
+      },
+      {
+        "name": "soft-click",
+        "at": 21.7,
+        "gain": -20
+      },
+      {
+        "name": "whoosh-short",
+        "at": 26.129,
+        "gain": -17
+      },
+      {
+        "name": "soft-click",
+        "at": 27.929,
+        "gain": -20
+      },
+      {
+        "name": "whoosh-short",
+        "at": 30.414,
+        "gain": -17
+      },
+      {
+        "name": "shimmer",
+        "at": 30.814,
+        "gain": -18
+      }
+    ],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": [
+    "routes/app-projects@desktop",
+    "flows/create-project@desktop/board",
+    "flows/create-project@desktop/dialog",
+    "flows/create-project@desktop/created",
+    "flows/create-project@desktop/board-after"
+  ],
+  "qa": {
+    "ignore": []
+  }
+}

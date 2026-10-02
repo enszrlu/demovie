@@ -175,7 +175,8 @@ function texts(stage: HTMLElement, origin: DOMRect): TextBox[] {
     out.push({
       id: block.dataset.dmTid,
       text,
-      words: text.split(/\s+/).filter(Boolean).length,
+      // words a viewer reads: punctuation-only tokens (a lone dash, a bullet) don't add reading time
+      words: text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length,
       bbox,
       fontSize,
       fontFamily: style.fontFamily
