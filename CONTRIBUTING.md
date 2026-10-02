@@ -28,7 +28,9 @@ GitHub Action dry-run, the docs check and a tarball smoke test. Please run it be
 Conventions: TypeScript strict, ESM, Biome formatting. Library packages never write to stdout (use the shared logger,
 which writes to stderr). Every file format is a zod schema in `packages/core/src/schemas`. Every CLI command has
 `--json` output, errors with a `fix:` hint, and tests. Allowed dependency licenses: MIT, Apache-2.0, BSD, ISC, 0BSD,
-MPL-2.0, CC0, OFL (fonts) — no GPL/AGPL/LGPL, no Remotion.
+MPL-2.0, CC0, OFL (fonts) — no GPL/AGPL/LGPL, no Remotion. Fixtures use fictional data only; a fictional secret in a
+real provider's format (a Stripe-style key, say) gets one character unicode-escaped, or GitHub push protection rejects
+the push.
 
 ## Regenerating the examples
 
@@ -78,5 +80,6 @@ their audio itself), and `pnpm comparison:build` rebuilds `docs/media/grounded-v
 
 ## Releases
 
-Changesets (`pnpm changeset`) describe user-facing changes; maintainers run the release workflow. Never publish from a
-local machine.
+Changesets (`pnpm changeset`) describe user-facing changes; maintainers run the release workflow, which publishes with
+npm trusted publishing (no token). Never publish from a local machine. The one exception is a package's very first
+version: npm only lets you add a trusted publisher once the package exists.

@@ -6,6 +6,7 @@ import { INNER_SCROLL_SCRIPT } from "../src/capture-state.ts";
 import { DECODE_SCRIPT, ELEMENT_MAP_SCRIPT } from "../src/element-map.ts";
 import { REDACT_SCRIPT, serializePatterns } from "../src/redact.ts";
 
+// The API key in this page is fictional; its first underscore is unicode-escaped so secret scanners don't flag it.
 const HTML = `<!doctype html><html><head><style>body{font-family:Arial;margin:0} .hidden{display:none}</style></head><body>
 <header><nav aria-label="Main"><a href="/app">Dashboard</a><a href="/app/projects">Projects</a></nav></header>
 <main>

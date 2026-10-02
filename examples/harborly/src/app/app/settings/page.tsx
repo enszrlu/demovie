@@ -9,7 +9,10 @@ import { AppearanceControl, CopyButton, NotificationSetting, SaveButton } from "
 
 export const metadata: Metadata = { title: "Settings · Harborly" };
 
-/** A fictional key, shown in full on purpose: capture tools are expected to redact it. */
+/**
+ * A fictional key, shown in full on purpose: capture tools are expected to redact it. Its first underscore is written
+ * as a unicode escape so secret scanners (GitHub push protection) don't mistake the fixture for a real Stripe key.
+ */
 const DEMO_API_KEY = "sk\u005flive_51HbX9qLmT4vR2cK8nWd3pZ7";
 
 function SettingsSection({

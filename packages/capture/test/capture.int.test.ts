@@ -90,6 +90,7 @@ describe("capture on Harborly (real Chromium)", () => {
     const map = elements("routes/app-settings@desktop").elements;
     const values = map.map((e) => e.value ?? "").join(" ");
     expect(values).not.toContain("maya.chen@acme-rockets.example");
+    // Harborly's fictional key (its first underscore unicode-escaped so secret scanners don't flag it).
     expect(values).not.toContain("sk\u005flive_51HbX9qLmT4vR2cK8nWd3pZ7");
     expect(values).toMatch(/sk_live_•+/);
     const meta = JSON.parse(readFileSync(path.join(captures(), "routes/app-settings@desktop/meta.json"), "utf8"));

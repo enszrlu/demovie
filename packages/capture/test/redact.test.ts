@@ -23,6 +23,7 @@ describe("redaction patterns", () => {
   });
 
   it("replaces secrets keeping a recognizable prefix", () => {
+    // Fictional keys; the Stripe-style one has its first underscore unicode-escaped so secret scanners don't flag it.
     const out = redactText("key sk\u005flive_51HbX9qLmT4vR2cK8nWd3pZ7 and ghp_0123456789abcdefghijABCDEFGHIJ", {
       ...opts,
       patterns: [...opts.patterns],
