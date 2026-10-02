@@ -88,17 +88,35 @@ export async function ensureHarborlyCaptures(
     ? path.join(repoRoot, video)
     : path.join(repoRoot, "examples/compositions", video, "video.json");
   const { captures } = JSON.parse(readFileSync(file, "utf8")) as { captures: string[] };
-  const missingIds = captures.filter(
-    (id) => !existsSync(path.join(repoRoot, "examples/harborly/.demovie/captures", id, "screen.png")),
-  );
-  if (missingIds.length === 0) return { ok: true, detail: "captures present" };
-  const r = await ctx.sh("node", [CLI, "--cwd", "examples/harborly", "capture"], {
-    env: FIXTURE_ENV,
-    timeoutMs: 15 * 60_000,
-  });
-  return r.code === 0
-    ? { ok: true, detail: "captured Harborly" }
-    : { ok: false, detail: `demovie capture exited ${r.code}` };
+  const missingIds = () =>
+    captures.filter((id) => !existsSync(path.join(repoRoot, "examples/harborly/.demovie/captures", id, "screen.png")));
+  if (missingIds().length === 0) return { ok: true, detail: "captures present" };
+  const capture = async (args: string[]) =>
+    (
+      await ctx.sh("node", [CLI, "--cwd", "examples/harborly", "capture", ...args], {
+        env: FIXTURE_ENV,
+        timeoutMs: 15 * 60_000,
+      })
+    ).code;
+  const code = await capture([]);
+  if (code !== 0) return { ok: false, detail: `demovie capture exited ${code}` };
+  // A plain capture uses the default viewport. Route states at other viewports (e.g. routes/app-projects@mobile, which
+  // soft-launch shows on a phone) get their own run, found through the route's capture slug.
+  const { routeSlug } = await import("../../packages/core/src/index.ts");
+  const { routes } = JSON.parse(
+    readFileSync(path.join(repoRoot, "examples/harborly/.demovie/routes.json"), "utf8"),
+  ) as {
+    routes: { path: string }[];
+  };
+  for (const id of missingIds()) {
+    const [, slug, viewport] = id.match(/^routes\/(.+)@([a-z0-9-]+)$/) ?? [];
+    const route = routes.find((r) => routeSlug(r.path) === slug);
+    if (!route || !viewport) return { ok: false, detail: `no capture produces ${id}` };
+    const extra = await capture(["--route", route.path, "--viewport", viewport]);
+    if (extra !== 0)
+      return { ok: false, detail: `demovie capture --route ${route.path} --viewport ${viewport} exited ${extra}` };
+  }
+  return { ok: true, detail: "captured Harborly" };
 }
 const fail = (detail: string): CheckOutcome => ({ status: "fail", detail });
 
