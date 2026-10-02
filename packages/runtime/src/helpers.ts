@@ -311,17 +311,18 @@ export const transition = {
     const d = o.duration ?? 0.7;
     overlapWindows(a, b, o.at, d);
     const dir = o.direction ?? "left";
+    // every value in %: GSAP interpolates inset() number by number, so unitless zeros would stop the tween
     const hidden = {
-      left: "inset(0 0 0 100%)",
-      right: "inset(0 100% 0 0)",
-      up: "inset(100% 0 0 0)",
-      down: "inset(0 0 100% 0)",
+      left: "inset(0% 0% 0% 100%)",
+      right: "inset(0% 100% 0% 0%)",
+      up: "inset(100% 0% 0% 0%)",
+      down: "inset(0% 0% 100% 0%)",
     }[dir];
     b.el.style.zIndex = String(Number(a.el.style.zIndex || 0) + 1);
     v.timeline.fromTo(
       b.el,
       { clipPath: hidden },
-      { clipPath: "inset(0 0 0 0)", duration: d, ease: "power3.inOut", immediateRender: false },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: d, ease: "power3.inOut", immediateRender: false },
       o.at,
     );
   },

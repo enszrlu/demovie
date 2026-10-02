@@ -270,18 +270,46 @@ export const verifyChecks: Check[] = [
   },
   {
     name: "MCP smoke test",
-    pendingReason: () => missing("packages/mcp/src/server.ts", "MCP server (M6)"),
-    run: async () => fail("not wired yet"),
+    pendingReason: () => missing("packages/cli/src/commands/mcp.ts", "MCP server (M6)"),
+    run: async (ctx) => {
+      const ready = await ensureHarborlyCaptures(ctx, "clean-launch");
+      if (!ready.ok) return fail(ready.detail);
+      const { EXPECTED_TOOLS, runMcpSmoke } = await import("../../packages/mcp/test/smoke.ts");
+      const r = await runMcpSmoke({
+        command: process.execPath,
+        args: [path.join(repoRoot, CLI), "mcp"],
+        cwd: path.join(repoRoot, "examples/harborly"),
+        stillsSlug: "../compositions/clean-launch",
+        format: "16:9",
+      });
+      if (r.tools.join(",") !== EXPECTED_TOOLS.join(","))
+        return fail(`tools: ${r.tools.join(", ")} (want ${EXPECTED_TOOLS.join(", ")})`);
+      if (r.status.ok !== true || r.status.initialized !== true)
+        return fail(`status: ${JSON.stringify(r.status).slice(0, 200)}`);
+      if (r.image?.mimeType !== "image/png" || r.image.bytes < 5000)
+        return fail(`stills returned no PNG image: ${JSON.stringify(r.stills).slice(0, 200)}`);
+      return pass(
+        `SDK client over stdio (built CLI): ${r.tools.length} tools listed; status → initialized; stills → ${(r.image.bytes / 1024).toFixed(0)} KB PNG image content; ${r.progress} progress notification(s)`,
+      );
+    },
   },
   {
     name: "Skill lint",
     pendingReason: () => missing("packages/skill/demovie/SKILL.md", "Agent Skill (M6)"),
-    run: async () => fail("not wired yet"),
+    run: async () => {
+      const { lintSkill } = await import("./agent-checks.ts");
+      const r = lintSkill();
+      return r.ok ? pass(r.detail) : fail(r.detail);
+    },
   },
   {
     name: "Plugin + marketplace manifests",
     pendingReason: () => missing(".claude-plugin/marketplace.json", "plugin marketplace (M6)"),
-    run: async () => fail("not wired yet"),
+    run: async () => {
+      const { checkPluginManifests } = await import("./agent-checks.ts");
+      const r = checkPluginManifests();
+      return r.ok ? pass(r.detail) : fail(r.detail);
+    },
   },
   {
     name: "Action + scripts dry-run",

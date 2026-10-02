@@ -26,7 +26,9 @@
   filter: blur(calc(var(--dm-unit) * 4));
 }
 
-.dm-screen__frame {
+/* rounder browser frames; phones, laptops and tablets keep their device radius */
+.dm-screen[data-device="browser"] .dm-screen__frame,
+.dm-screen[data-device="none"] .dm-screen__frame {
   border-radius: calc(var(--dm-unit) * 2.4) !important;
 }
 
@@ -42,7 +44,7 @@
   margin: 0;
   text-wrap: pretty;
   font: 450 var(--dm-subtitle-size) / 1.4 var(--dm-font-body);
-  color: var(--dm-muted-fg);
+  color: color-mix(in srgb, var(--dm-muted-fg) 70%, var(--dm-fg));
 }
 
 .dm-kicker {
@@ -52,7 +54,8 @@
   border-radius: 999px;
   background: var(--dm-tint-2);
   font: 600 var(--dm-kicker-size) / 1.2 var(--dm-font-body);
-  color: var(--dm-primary);
+  /* the primary darkened toward the foreground keeps ≥ 4.5:1 on its tinted pill (QA DM-T04) */
+  color: color-mix(in srgb, var(--dm-primary) 75%, var(--dm-fg));
 }
 
 .dm-accent {

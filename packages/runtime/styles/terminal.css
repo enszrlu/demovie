@@ -41,12 +41,13 @@
 .dm-kicker {
   margin: 0;
   font: 500 var(--dm-kicker-size) / 1.2 var(--dm-font-mono);
-  color: var(--dm-primary);
+  /* the primary lightened toward the terminal foreground keeps ≥ 4.5:1 on the dark background (QA DM-T04) */
+  color: color-mix(in srgb, var(--dm-primary) 60%, var(--dm-term-fg));
 }
 
 .dm-prompt::before {
   content: "$ ";
-  color: var(--dm-primary);
+  color: color-mix(in srgb, var(--dm-primary) 60%, var(--dm-term-fg));
 }
 
 .dm-accent {

@@ -1,0 +1,173 @@
+{
+  "slug": "bold-launch",
+  "title": "Harborly — Plan, ship and measure",
+  "type": "launch",
+  "fps": 30,
+  "duration": 28,
+  "formats": ["16:9", "9:16"],
+  "style": "bold",
+  "poster": 17,
+  "status": "qa-pass",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [
+      {
+        "name": "tick",
+        "at": 0.0,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 0.469,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 0.938,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 1.406,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 1.875,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 2.344,
+        "gain": -16
+      },
+      {
+        "name": "whoosh-short",
+        "at": 3.6,
+        "gain": -16
+      },
+      {
+        "name": "swipe",
+        "at": 5.625,
+        "gain": -18
+      },
+      {
+        "name": "swipe",
+        "at": 7.5,
+        "gain": -18
+      },
+      {
+        "name": "whoosh-short",
+        "at": 9.225,
+        "gain": -16
+      },
+      {
+        "name": "swipe",
+        "at": 10.312,
+        "gain": -22
+      },
+      {
+        "name": "swipe",
+        "at": 10.781,
+        "gain": -22
+      },
+      {
+        "name": "swipe",
+        "at": 11.25,
+        "gain": -22
+      },
+      {
+        "name": "swipe",
+        "at": 11.719,
+        "gain": -22
+      },
+      {
+        "name": "pop",
+        "at": 12.188,
+        "gain": -20
+      },
+      {
+        "name": "pop",
+        "at": 12.656,
+        "gain": -20
+      },
+      {
+        "name": "pop",
+        "at": 13.125,
+        "gain": -20
+      },
+      {
+        "name": "whoosh-short",
+        "at": 14.85,
+        "gain": -16
+      },
+      {
+        "name": "swipe",
+        "at": 16.875,
+        "gain": -18
+      },
+      {
+        "name": "swipe",
+        "at": 18.75,
+        "gain": -18
+      },
+      {
+        "name": "whoosh-short",
+        "at": 20.475,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 20.625,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 21.094,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 21.562,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 22.031,
+        "gain": -16
+      },
+      {
+        "name": "tick",
+        "at": 22.5,
+        "gain": -16
+      },
+      {
+        "name": "impact",
+        "at": 24.375,
+        "gain": -20
+      },
+      {
+        "name": "pop",
+        "at": 24.844,
+        "gain": -20
+      }
+    ],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": ["routes/app-projects-prj_launch@desktop", "routes/app-projects@desktop", "routes/app-reports@desktop"],
+  "qa": {
+    "ignore": []
+  }
+}

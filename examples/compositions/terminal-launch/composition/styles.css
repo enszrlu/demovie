@@ -1,0 +1,171 @@
+/* terminal-launch: layout only — colors, type and motion tokens come from the brand and the terminal preset. */
+
+:root {
+  --term-accent: color-mix(in srgb, var(--dm-primary) 52%, white);
+  --term-dim: color-mix(in srgb, var(--dm-term-fg) 64%, var(--dm-term-bg));
+  --term-panel: color-mix(in srgb, var(--dm-term-bg) 78%, black);
+  --term-line: color-mix(in srgb, var(--dm-primary) 34%, transparent);
+  /* The browser window gets the same dark chrome as the terminal. */
+  --dm-screen-frame: var(--term-panel);
+  --dm-screen-bar: color-mix(in srgb, var(--dm-term-bg) 88%, white);
+  --dm-screen-border: var(--term-line);
+}
+
+/* 60 px cells tile both frames exactly (32 × 18 and 18 × 32), so shots pushed up scroll the grid without a seam. */
+.dm-bg {
+  background-size: calc(var(--dm-unit) * 50 / 9) calc(var(--dm-unit) * 50 / 9);
+}
+
+.dm-screen__bar {
+  border-bottom-color: var(--term-line);
+}
+
+.dm-screen__url {
+  background: rgb(255 255 255 / 0.06);
+  color: var(--term-dim);
+  font-family: var(--dm-font-mono);
+}
+
+.dm-screen__dots span,
+.pane-bar span {
+  background: rgb(255 255 255 / 0.18);
+}
+
+/* Terminal window: the left column in 16:9, under the browser window in 9:16. */
+.pane {
+  position: absolute;
+  left: var(--dm-safe-left);
+  top: 50%;
+  translate: 0 -50%;
+  width: calc(var(--dm-unit) * 70);
+  border: 1px solid var(--term-line);
+  border-radius: calc(var(--dm-unit) * 1.2);
+  background: var(--term-panel);
+  box-shadow: 0 40px 80px -36px rgb(0 0 0 / 0.75);
+  overflow: hidden;
+}
+
+[data-format="9:16"] .pane {
+  top: calc(var(--dm-h) * 0.49);
+  right: var(--dm-safe-right);
+  translate: none;
+  width: auto;
+}
+
+.pane--hero {
+  left: 50%;
+  translate: -50% -50%;
+  width: calc(var(--dm-unit) * 112);
+}
+
+[data-format="9:16"] .pane--hero {
+  left: var(--dm-safe-left);
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.pane-bar {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--dm-unit) * 0.9);
+  height: calc(var(--dm-unit) * 4.4);
+  padding: 0 calc(var(--dm-unit) * 2);
+  border-bottom: 1px solid var(--term-line);
+}
+
+.pane-bar span {
+  width: calc(var(--dm-unit) * 1.2);
+  height: calc(var(--dm-unit) * 1.2);
+  border-radius: 50%;
+}
+
+.pane-body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--dm-unit) * 2);
+  padding: calc(var(--dm-unit) * 3) calc(var(--dm-unit) * 3.2) calc(var(--dm-unit) * 3.6);
+}
+
+/* Typed text: mono, pre-formatted so columns line up; main.js reveals it character by character. */
+.typed {
+  position: relative;
+  margin: 0;
+  font: 400 calc(var(--dm-unit) * 3.4) / 1.5 var(--dm-font-mono);
+  color: var(--dm-term-fg);
+  white-space: pre;
+}
+
+[data-format="9:16"] .typed {
+  font-size: calc(var(--dm-unit) * 4.2);
+}
+
+.pane--hero .typed {
+  white-space: pre-wrap;
+}
+
+.pane--hero .headline {
+  font-size: calc(var(--dm-unit) * 6.4);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+[data-format="9:16"] .pane--hero .headline {
+  font-size: calc(var(--dm-unit) * 7);
+}
+
+.prompt::before {
+  content: "› ";
+  color: var(--term-accent);
+}
+
+.comment {
+  color: var(--term-dim);
+  white-space: pre-wrap;
+}
+
+.caret {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0.58em;
+  height: 1.25em;
+  margin-top: 0.12em;
+  background: var(--term-accent);
+}
+
+/* End card */
+.end {
+  position: absolute;
+  inset: var(--dm-safe-top) var(--dm-safe-right) var(--dm-safe-bottom) var(--dm-safe-left);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--dm-unit) * 3.6);
+}
+
+.badge {
+  padding: calc(var(--dm-unit) * 2.6) calc(var(--dm-unit) * 4);
+  border-radius: calc(var(--dm-unit) * 1.4);
+  background: var(--dm-bg);
+  box-shadow:
+    0 0 0 1px var(--term-line),
+    0 40px 80px -36px rgb(0 0 0 / 0.75);
+}
+
+.badge .dm-logo__img {
+  height: calc(var(--dm-unit) * 9);
+}
+
+.end .dm-cta {
+  display: inline-block;
+  font-size: calc(var(--dm-unit) * 4.4);
+  border-color: var(--term-accent);
+}
+
+.end .url {
+  margin: 0;
+  font: 400 calc(var(--dm-unit) * 3.6) / 1.2 var(--dm-font-mono);
+  color: var(--term-dim);
+}

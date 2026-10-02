@@ -1,0 +1,152 @@
+/* editorial-launch: layout only — colors, type and motion tokens come from the brand and the editorial preset.
+   main.js sets --figure-x/--figure-top/--figure-bottom so the copy hangs on the same grid lines as the figure. */
+
+:root {
+  --ink-soft: color-mix(in srgb, var(--dm-fg) 72%, var(--dm-muted-fg));
+  --gutter: calc(var(--dm-unit) * 7);
+}
+
+.rule {
+  height: 1px;
+  background: var(--dm-rule);
+  transform-origin: 0 50%;
+}
+
+.kicker {
+  margin: 0;
+  font: 500 calc(var(--dm-unit) * 3.4) / 1.2 var(--dm-font-body);
+  letter-spacing: 0.01em;
+  color: var(--dm-fg);
+}
+
+/* Cover: kicker on a hairline, then the display headline, set in the copy column and sitting on the figure's
+   bottom grid line (16:9), or above the figure (9:16). */
+.opening {
+  position: absolute;
+  left: var(--dm-safe-left);
+  bottom: calc(var(--dm-h) - var(--figure-bottom));
+  width: calc(var(--figure-x) - var(--dm-safe-left) - var(--gutter));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--dm-unit) * 3.2);
+}
+
+[data-format="9:16"] .opening {
+  top: calc(var(--dm-safe-top) + var(--dm-unit) * 3);
+  right: var(--dm-safe-right);
+  bottom: auto;
+  width: auto;
+}
+
+.display {
+  font-size: calc(var(--dm-unit) * 11);
+  line-height: 1;
+}
+
+[data-format="9:16"] .display {
+  font-size: calc(var(--dm-unit) * 10);
+}
+
+/* Spreads: a pull quote hanging from the figure's top edge, a caption on its bottom edge, the figure bleeding off. */
+.quote {
+  position: absolute;
+  left: var(--dm-safe-left);
+  top: var(--figure-top);
+  width: calc(var(--figure-x) - var(--dm-safe-left) - var(--gutter));
+  font-size: calc(var(--dm-unit) * 6.8);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+[data-format="9:16"] .quote {
+  top: calc(var(--dm-safe-top) + var(--dm-unit) * 3);
+  right: var(--dm-safe-right);
+  width: auto;
+  font-size: calc(var(--dm-unit) * 8);
+}
+
+.caption {
+  position: absolute;
+  left: var(--dm-safe-left);
+  top: var(--figure-bottom);
+  translate: 0 -100%;
+  margin: 0;
+  padding-top: calc(var(--dm-unit) * 1.6);
+  border-top: 1px solid var(--dm-rule);
+  width: calc(var(--figure-x) - var(--dm-safe-left) - var(--gutter));
+  font: 400 calc(var(--dm-unit) * 3.3) / 1.25 var(--dm-font-body);
+  color: var(--ink-soft);
+}
+
+[data-format="9:16"] .caption {
+  top: calc(var(--figure-bottom) + var(--dm-unit) * 3);
+  right: var(--dm-safe-right);
+  translate: none;
+  width: auto;
+}
+
+/* Figures are printed, not floating: hairline edge, no rounded chrome. */
+.dm-screen[data-device="none"] .dm-screen__frame {
+  border-color: var(--dm-rule);
+}
+
+/* Annotations: a hairline leader and a paper label instead of the default dark pill. */
+.dm-callout__label {
+  padding: calc(var(--dm-unit) * 0.9) calc(var(--dm-unit) * 1.6);
+  border: 1px solid var(--dm-rule);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--dm-bg) 96%, #f5f0e6);
+  color: var(--dm-fg);
+  font-weight: 500;
+  box-shadow: 0 12px 24px -18px rgb(15 23 42 / 0.35);
+}
+
+.dm-callout__line {
+  height: 1px;
+  background: var(--dm-fg);
+}
+
+.dm-callout__dot {
+  box-shadow: none;
+}
+
+/* Back cover: wordmark as masthead, the tagline in display type, an underlined call to action. */
+.cover {
+  position: absolute;
+  left: var(--dm-safe-left);
+  right: var(--dm-safe-right);
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--dm-unit) * 4);
+}
+
+[data-format="9:16"] .cover {
+  top: calc((var(--dm-safe-top) + var(--dm-h) - var(--dm-safe-bottom)) / 2);
+}
+
+.cover .rule {
+  align-self: stretch;
+}
+
+.cover-logo .dm-logo__img {
+  height: calc(var(--dm-unit) * 8);
+}
+
+.cover-line {
+  max-width: 10em;
+  font-size: calc(var(--dm-unit) * 10.5);
+  line-height: 1.02;
+}
+
+[data-format="9:16"] .cover-line {
+  max-width: 7em;
+  font-size: calc(var(--dm-unit) * 11);
+}
+
+.cover .dm-cta {
+  margin: 0;
+  font-size: calc(var(--dm-unit) * 4.2);
+}

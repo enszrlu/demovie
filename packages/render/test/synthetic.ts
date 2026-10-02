@@ -200,6 +200,7 @@ s.focus("button:create-shape", { at: 2, duration: 0.6, scale: 1.4 });
 const c = cursor(v);
 c.moveTo(s, "button:create-shape", { at: 2.2, duration: 0.6 });
 c.click({ at: 3 });
+s.reset({ at: 3.05, duration: 0.05 });
 typeText(s, "textbox:shape-name", "Circle", { at: 3.1, cps: 20 });
 window.__seenRaf = [];
 requestAnimationFrame((ts) => window.__seenRaf.push(ts));

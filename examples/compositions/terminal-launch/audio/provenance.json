@@ -1,0 +1,42 @@
+{
+  "files": [
+    {
+      "file": "mix.wav",
+      "kind": "mix",
+      "generator": "demovie-mix",
+      "license": null,
+      "createdAt": "2026-10-02T01:37:11.457Z",
+      "details": {
+        "inputs": [
+          "audio/music.wav",
+          "sfx:type-key",
+          "sfx:swipe",
+          "sfx:tick",
+          "sfx:shimmer"
+        ],
+        "inputsHash": "3a3f1b58acbcedc4",
+        "target": {
+          "lufs": -16,
+          "truePeak": -1.5
+        },
+        "sha256": "3f53d57e39c28fbff5821927169e322f316c6e87d40f999af2b4d6665d1e7aa6"
+      }
+    },
+    {
+      "file": "music.wav",
+      "kind": "music",
+      "generator": "demovie-synth",
+      "license": "CC0-1.0",
+      "createdAt": "2026-10-02T01:33:52.937Z",
+      "details": {
+        "mood": "tech",
+        "bpm": 120,
+        "key": "Eb minor",
+        "seed": "terminal-launch",
+        "duration": 28,
+        "endHit": 24,
+        "sha256": "d3af881b2b43da0dde009e52c74efdfbb17132df300afc3acb0a20c0915b7e2c"
+      }
+    }
+  ]
+}

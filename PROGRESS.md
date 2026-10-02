@@ -9,8 +9,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | M2 Capture | done | `068532d` |
 | M3 Runtime, renderer, preview, stills | done | `5d43820` |
 | M4 QA | done | `35fa823` |
-| M5 Audio | done | see `git log` (`feat(m5)`) |
-| M6 Agent layer | not started | |
+| M5 Audio | done | `83e76e6` |
+| M6 Agent layer | done | see `git log` (`feat(m6)`) |
 | M7 Changelog & CI | not started | |
 | M8 Dogfood | not started | |
 | M9 Docs & release readiness | not started | |
@@ -57,10 +57,10 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - Audio timings: `audio music` 35 s synth in 1.1 s wall (0.9 s DSP); `audio mix` (16 cues, two-pass loudnorm) in 2.4 s
 
 ## M6 — Agent layer
-- [ ] SKILL.md + references + 5 style docs; one reference composition per style, all passing QA
-- [ ] `skill install`; plugin + marketplace manifests; `npx skills add` compatible
-- [ ] MCP server with all tools; smoke test passes
-- [ ] `make` adapters (claude, codex, cursor, custom), interactive + headless; `--dry-run` verified against the real CLIs' `--help`
+- [x] SKILL.md + references + 5 style docs; one reference composition per style, all passing QA — `packages/skill/demovie/SKILL.md` (224 lines: preflight → brief → capture plan → storyboard → style frames → animate → QA loop → render → report, hard rules, the "AI look" list, rubric), references (runtime-api.md and qa-rules.md generated from the code, motion, pacing/formats, brief + storyboard templates, flows, audio, troubleshooting, `styles/{clean,bold,soft,editorial,terminal}.md`, 5 annotated examples). Reference compositions `examples/compositions/{clean,bold,soft,editorial,terminal}-launch` (28–35 s, synth music + SFX): `pnpm verify` check 7 → 0 errors / 0 warnings in 16:9 and 9:16 for all five; contact sheets in `<name>/out/stills/{16x9,9x16}/sheet.png` reviewed. Building them surfaced and fixed: `transition.wipe` not interpolating (unitless `inset()`), `inspect()` counting text hidden by a mask reveal, three preset classes under 4.5:1 contrast, and soft.css overriding phone frame radii.
+- [x] `skill install`; plugin + marketplace manifests; `npx skills add` compatible — `demovie skill install [--agent …] [--global]` (project `.claude/skills/demovie` + `.agents/skills/demovie` by default; tests incl. `--global` into a temp HOME); `plugins/demovie` (plugin.json, `.mcp.json` → `npx -y demovie mcp`, generated skill copy) and `.claude-plugin/marketplace.json` pass `claude plugin validate --strict`; the skills CLI's documented marketplace discovery finds `plugins/demovie/skills/demovie` (verify check 11)
+- [x] MCP server with all tools; smoke test passes — 15 tools (status, init_check, extract, list_routes, list_captures, capture, get_elements, new_video, stills with image content, qa, audio_music, audio_voice with `confirm`, audio_mix, render, changes) with progress notifications; `packages/mcp/test/mcp.int.test.ts` and verify check 9 (SDK client over stdio against the built CLI: 15 tools, status, a PNG contact sheet)
+- [x] `make` adapters (claude, codex, cursor, custom), interactive + headless; `--dry-run` verified against the real CLIs' `--help` — `packages/cli/src/adapters/*`; `packages/cli/test/make.test.ts` checks every adapter's interactive/headless arguments, the SPEC prompt, `--dry-run` output, exit-code passthrough, and greps the installed `claude` 2.1.247, `codex` 0.156.1 and `cursor-agent` 2026.10.01 `--help` for every flag used (DECISIONS)
 
 ## M7 — Changelog & CI
 - [ ] `changes` with import-graph route mapping; `capture --changed`

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "demovie": {
+      "command": "npx",
+      "args": ["-y", "demovie", "mcp"]
+    }
+  }
+}

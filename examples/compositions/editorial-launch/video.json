@@ -1,0 +1,73 @@
+{
+  "slug": "editorial-launch",
+  "title": "Harborly — Velocity insights are here",
+  "type": "launch",
+  "fps": 30,
+  "duration": 31,
+  "formats": ["16:9", "9:16"],
+  "style": "editorial",
+  "poster": 16,
+  "status": "qa-pass",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [
+      {
+        "name": "whoosh-long",
+        "at": 4.633,
+        "gain": -24
+      },
+      {
+        "name": "soft-click",
+        "at": 6.533,
+        "gain": -24
+      },
+      {
+        "name": "soft-click",
+        "at": 11.067,
+        "gain": -24
+      },
+      {
+        "name": "whoosh-long",
+        "at": 12.633,
+        "gain": -24
+      },
+      {
+        "name": "whoosh-long",
+        "at": 19.3,
+        "gain": -24
+      },
+      {
+        "name": "tick",
+        "at": 22.6,
+        "gain": -22
+      },
+      {
+        "name": "whoosh-long",
+        "at": 25.967,
+        "gain": -24
+      },
+      {
+        "name": "shimmer",
+        "at": 26.667,
+        "gain": -20
+      }
+    ],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": ["routes/app@desktop", "routes/index@desktop", "routes/changelog@desktop", "routes/app-reports@desktop"],
+  "qa": {
+    "ignore": []
+  }
+}

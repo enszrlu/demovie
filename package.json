@@ -17,7 +17,8 @@
     "check-licenses": "tsx scripts/check-licenses.ts",
     "verify": "tsx scripts/verify.ts",
     "verify:dogfood": "tsx scripts/verify-dogfood.ts",
-    "sfx:generate": "tsx scripts/generate-sfx.ts"
+    "sfx:generate": "tsx scripts/generate-sfx.ts",
+    "skill:build": "tsx scripts/build-skill.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

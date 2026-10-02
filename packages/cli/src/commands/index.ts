@@ -30,9 +30,9 @@ export const commandLoaders = {
   "audio-voice": () => import("./audio-voice.ts"),
   "audio-mix": () => import("./audio-mix.ts"),
   render: () => import("./render.ts"),
-  make: () => import("./pending.ts").then((m) => m.pending("make", "M6")),
-  mcp: () => import("./pending.ts").then((m) => m.pending("mcp", "M6")),
-  "skill-install": () => import("./pending.ts").then((m) => m.pending("skill install", "M6")),
+  make: () => import("./make.ts"),
+  mcp: () => import("./mcp.ts"),
+  "skill-install": () => import("./skill-install.ts"),
   "ci-init": () => import("./pending.ts").then((m) => m.pending("ci init", "M7")),
 } satisfies Record<string, () => Promise<CommandModule>>;
 

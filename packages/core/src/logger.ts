@@ -12,6 +12,9 @@ export interface LoggerOptions {
   write?: (line: string) => void;
 }
 
+export type LogKind = "debug" | "info" | "step" | "success" | "warn" | "error";
+export type LogListener = (event: { kind: LogKind; text: string }) => void;
+
 /**
  * The shared logger. It always writes to stderr so that `--json` output on stdout stays clean.
  */
@@ -20,6 +23,7 @@ export class Logger {
   private colors: ReturnType<typeof createColors>;
   private secrets: Set<string>;
   private write: (line: string) => void;
+  private listeners = new Set<LogListener>();
 
   constructor(options: LoggerOptions = {}) {
     this.level = options.level ?? "info";
@@ -49,29 +53,39 @@ export class Logger {
     return out;
   }
 
-  private emit(level: LogLevel, prefix: string, parts: unknown[]): void {
-    if (order[level] < order[this.level]) return;
+  /** Observe every message (masked, uncolored), whatever the level; e.g. to forward progress over MCP. */
+  listen(fn: LogListener): () => void {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  private emit(level: LogLevel, kind: LogKind, prefix: string, parts: unknown[]): void {
     const text = parts.map((p) => (typeof p === "string" ? p : formatValue(p))).join(" ");
+    if (this.listeners.size) {
+      const masked = this.mask(text);
+      for (const fn of this.listeners) fn({ kind, text: masked });
+    }
+    if (order[level] < order[this.level]) return;
     this.write(this.mask(prefix ? `${prefix} ${text}` : text));
   }
 
   debug(...parts: unknown[]): void {
-    this.emit("debug", this.colors.dim("debug"), parts);
+    this.emit("debug", "debug", this.colors.dim("debug"), parts);
   }
   info(...parts: unknown[]): void {
-    this.emit("info", "", parts);
+    this.emit("info", "info", "", parts);
   }
   step(...parts: unknown[]): void {
-    this.emit("info", this.colors.cyan("◇"), parts);
+    this.emit("info", "step", this.colors.cyan("◇"), parts);
   }
   success(...parts: unknown[]): void {
-    this.emit("info", this.colors.green("✓"), parts);
+    this.emit("info", "success", this.colors.green("✓"), parts);
   }
   warn(...parts: unknown[]): void {
-    this.emit("warn", this.colors.yellow("warn"), parts);
+    this.emit("warn", "warn", this.colors.yellow("warn"), parts);
   }
   error(...parts: unknown[]): void {
-    this.emit("error", this.colors.red("error"), parts);
+    this.emit("error", "error", this.colors.red("error"), parts);
   }
 }
 

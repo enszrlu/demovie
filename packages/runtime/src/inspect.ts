@@ -72,6 +72,25 @@ function clipRectOf(node: Element, stage: Element): DOMRect | null {
   return null;
 }
 
+/** The share of `r` left after clipping by overflow/clip-path ancestors between `from` and the stage (0…1). */
+function unclippedShare(r: DOMRect, from: Element | null, stage: Element): number {
+  let left = r.left;
+  let top = r.top;
+  let right = r.right;
+  let bottom = r.bottom;
+  for (let current = from; current && current !== stage; current = current.parentElement) {
+    const s = getComputedStyle(current);
+    if (s.overflow === "visible" && s.clipPath === "none") continue;
+    const c = current.getBoundingClientRect();
+    left = Math.max(left, c.left);
+    top = Math.max(top, c.top);
+    right = Math.min(right, c.right);
+    bottom = Math.min(bottom, c.bottom);
+  }
+  const area = r.width * r.height;
+  return area > 0 ? (Math.max(0, right - left) * Math.max(0, bottom - top)) / area : 0;
+}
+
 function texts(stage: HTMLElement, origin: DOMRect): TextBox[] {
   const groups = new Map<HTMLElement, Text[]>();
   const walker = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT);
@@ -87,7 +106,10 @@ function texts(stage: HTMLElement, origin: DOMRect): TextBox[] {
   const out: TextBox[] = [];
   const range = document.createRange();
   for (const [block, nodes] of groups) {
+    // `rects`: the text as laid out (for clipping checks); `seen`: the parts a viewer can see — text that a mask
+    // reveal (or any overflow/clip-path ancestor) still hides doesn't count as visible.
     const rects: Rect[] = [];
+    const seen: Rect[] = [];
     let weighted = 0;
     let total = 0;
     let visibleLen = 0;
@@ -95,15 +117,25 @@ function texts(stage: HTMLElement, origin: DOMRect): TextBox[] {
       range.selectNodeContents(node);
       const len = node.nodeValue!.trim().length;
       const op = effectiveOpacity(node.parentElement, stage);
-      weighted += op * len;
       total += len;
-      if (op > 0.05) {
+      if (op <= 0.05) continue;
+      let shown = false;
+      for (const r of range.getClientRects()) {
+        if (r.width <= 0 || r.height <= 0) continue;
+        rects.push(rel(r, origin));
+        if (unclippedShare(r, node.parentElement, stage) >= 0.25) {
+          seen.push(rel(r, origin));
+          shown = true;
+        }
+      }
+      if (shown) {
         visibleLen += len;
-        for (const r of range.getClientRects()) if (r.width > 0 && r.height > 0) rects.push(rel(r, origin));
+        weighted += op * len;
       }
     }
-    const bbox = union(rects);
-    if (!bbox || visibleLen === 0) continue;
+    const laidOut = union(rects);
+    const bbox = union(seen);
+    if (!bbox || !laidOut || visibleLen === 0) continue;
     const parent = nodes[0]!.parentElement!;
     const style = getComputedStyle(parent);
     const blockStyle = getComputedStyle(block);
@@ -125,12 +157,15 @@ function texts(stage: HTMLElement, origin: DOMRect): TextBox[] {
     const clipRel = clip ? rel(clip, origin) : null;
     const outsideClip =
       clipRel !== null &&
-      (bbox.x < clipRel.x - 1 ||
-        bbox.y < clipRel.y - 1 ||
-        bbox.x + bbox.width > clipRel.x + clipRel.width + 1 ||
-        bbox.y + bbox.height > clipRel.y + clipRel.height + 1);
+      (laidOut.x < clipRel.x - 1 ||
+        laidOut.y < clipRel.y - 1 ||
+        laidOut.x + laidOut.width > clipRel.x + clipRel.width + 1 ||
+        laidOut.y + laidOut.height > clipRel.y + clipRel.height + 1);
     const outsideStage =
-      bbox.x < -1 || bbox.y < -1 || bbox.x + bbox.width > origin.width + 1 || bbox.y + bbox.height > origin.height + 1;
+      laidOut.x < -1 ||
+      laidOut.y < -1 ||
+      laidOut.x + laidOut.width > origin.width + 1 ||
+      laidOut.y + laidOut.height > origin.height + 1;
     const overflowing =
       (blockStyle.overflow !== "visible" || blockStyle.textOverflow === "ellipsis") &&
       (block.scrollWidth > block.clientWidth + 1 || block.scrollHeight > block.clientHeight + 1);

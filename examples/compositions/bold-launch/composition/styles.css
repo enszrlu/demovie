@@ -1,0 +1,102 @@
+/* bold-launch: layout only — colors, type and motion tokens come from the brand and the bold preset. */
+
+:root {
+  --kinetic-size: calc(var(--dm-h) * 0.16);
+}
+
+[data-format="9:16"] {
+  --kinetic-size: calc(var(--dm-w) * 0.14);
+}
+
+/* Kinetic headlines: flush-left, heavy, tight. Words start ghosted and light up on the beat (main.js). */
+.kinetic {
+  position: absolute;
+  left: var(--dm-safe-left);
+  top: 50%;
+  translate: 0 -50%;
+  max-width: 11ch;
+  font-size: var(--kinetic-size);
+}
+
+[data-format="9:16"] .kinetic {
+  max-width: 7.5ch;
+}
+
+/* Product shots: the verb top-left, its proof line bottom-left, the screen anchored to the bottom-right corner.
+   Geist's glyph box is ~1.3 em tall, so tight line-heights overhang the element box: keep ~0.2 em clear of edges. */
+.verb {
+  position: absolute;
+  left: var(--dm-safe-left);
+  top: calc(var(--dm-safe-top) + var(--kinetic-size) * 0.22);
+  font-size: var(--kinetic-size);
+}
+
+.proof {
+  position: absolute;
+  left: var(--dm-safe-left);
+  bottom: calc(var(--dm-safe-bottom) + var(--dm-unit) * 1);
+  width: 10em;
+  margin: 0;
+  font: 700 calc(var(--dm-unit) * 4.4) / 1.12 var(--dm-font-body);
+  letter-spacing: -0.02em;
+  color: var(--dm-primary-fg);
+  text-wrap: balance;
+}
+
+[data-format="9:16"] .proof {
+  top: calc(var(--dm-safe-top) + var(--kinetic-size) * 1.42);
+  right: var(--dm-safe-right);
+  bottom: auto;
+  width: auto;
+  font-size: calc(var(--dm-unit) * 4.8);
+}
+
+/* End card: a white field for the wordmark over a brand-blue band that carries the call to action. */
+.end-top {
+  position: absolute;
+  inset: 0 0 40% 0;
+  background: var(--dm-bg);
+}
+
+.end-logo {
+  position: absolute;
+  inset: var(--dm-safe-top) 0 40% 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-format="9:16"] .end-top,
+[data-format="9:16"] .end-logo {
+  bottom: 46%;
+}
+
+.end-logo .dm-logo__img {
+  height: calc(var(--dm-unit) * 16);
+}
+
+.end-cta {
+  position: absolute;
+  inset: 60% var(--dm-safe-right) var(--dm-safe-bottom) var(--dm-safe-left);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--dm-unit) * 3);
+}
+
+[data-format="9:16"] .end-cta {
+  top: 54%;
+}
+
+.end-cta .dm-cta {
+  font-size: calc(var(--dm-unit) * 5.6);
+  padding: 0.55em 1.2em;
+}
+
+.end-cta .url {
+  margin: 0;
+  font: 700 calc(var(--dm-unit) * 4.4) / 1.1 var(--dm-font-body);
+  letter-spacing: -0.02em;
+  color: var(--dm-primary-fg);
+}

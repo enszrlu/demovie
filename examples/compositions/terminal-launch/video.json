@@ -1,0 +1,708 @@
+{
+  "slug": "terminal-launch",
+  "title": "Harborly — Every launch, path by path",
+  "type": "launch",
+  "fps": 30,
+  "duration": 28,
+  "formats": ["16:9", "9:16"],
+  "style": "terminal",
+  "poster": 15,
+  "status": "qa-pass",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [
+      {
+        "name": "type-key",
+        "at": 0.25,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.327,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.404,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.481,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.558,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.85,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.921,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 0.993,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.064,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.136,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.207,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.279,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.35,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.421,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.493,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.564,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.636,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.707,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.779,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.85,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 1.921,
+        "gain": -26
+      },
+      {
+        "name": "swipe",
+        "at": 3.75,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 4.3,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 4.367,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 4.733,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 4.792,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 4.851,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 4.91,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 4.969,
+        "gain": -26
+      },
+      {
+        "name": "tick",
+        "at": 5.0,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 5.027,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.086,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.145,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.204,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.263,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.322,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.38,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.439,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.498,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.557,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.616,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.675,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.733,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.792,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.851,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.91,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 5.969,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.027,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.086,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.145,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.204,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.263,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.322,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.38,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 6.439,
+        "gain": -26
+      },
+      {
+        "name": "swipe",
+        "at": 10.75,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 11.3,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.367,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.433,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.5,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.567,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.633,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.7,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.767,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.833,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.9,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 11.967,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.033,
+        "gain": -26
+      },
+      {
+        "name": "tick",
+        "at": 12.2,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 12.4,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.463,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.525,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.588,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.65,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.713,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.775,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.838,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.9,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 12.963,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.025,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.088,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.15,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.213,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.275,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.338,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.4,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.463,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.525,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.588,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.65,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.713,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.775,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.838,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 13.9,
+        "gain": -26
+      },
+      {
+        "name": "swipe",
+        "at": 17.75,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 18.3,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 18.367,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 18.433,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 18.5,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 18.567,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 18.633,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 18.7,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.033,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.089,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.144,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.2,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.256,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.311,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.367,
+        "gain": -26
+      },
+      {
+        "name": "tick",
+        "at": 19.4,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 19.422,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.478,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.533,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.589,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.644,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.7,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.756,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.811,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.867,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.922,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 19.978,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 20.033,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 20.089,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 20.144,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 20.2,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 20.256,
+        "gain": -26
+      },
+      {
+        "name": "swipe",
+        "at": 23.75,
+        "gain": -20
+      },
+      {
+        "name": "shimmer",
+        "at": 24.0,
+        "gain": -20
+      },
+      {
+        "name": "type-key",
+        "at": 24.6,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 24.683,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 24.767,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 24.85,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 24.933,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 25.017,
+        "gain": -26
+      },
+      {
+        "name": "type-key",
+        "at": 25.1,
+        "gain": -26
+      }
+    ],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": ["routes/app@desktop", "routes/app-projects-prj_launch@desktop", "routes/app-settings@desktop"],
+  "qa": {
+    "ignore": []
+  }
+}

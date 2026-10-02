@@ -1,0 +1,108 @@
+{
+  "slug": "soft-launch",
+  "title": "Harborly — Plan your next launch",
+  "type": "launch",
+  "fps": 30,
+  "duration": 30,
+  "formats": ["16:9", "9:16"],
+  "style": "soft",
+  "poster": 12.5,
+  "status": "qa-pass",
+  "audio": {
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
+    "voice": null,
+    "sfx": [
+      {
+        "name": "pop",
+        "at": 0.2,
+        "gain": -22
+      },
+      {
+        "name": "whoosh-long",
+        "at": 3.582,
+        "gain": -26
+      },
+      {
+        "name": "pop",
+        "at": 4.382,
+        "gain": -24
+      },
+      {
+        "name": "tick",
+        "at": 7.182,
+        "gain": -24
+      },
+      {
+        "name": "tick",
+        "at": 7.782,
+        "gain": -24
+      },
+      {
+        "name": "whoosh-long",
+        "at": 9.036,
+        "gain": -26
+      },
+      {
+        "name": "pop",
+        "at": 9.836,
+        "gain": -24
+      },
+      {
+        "name": "tick",
+        "at": 12.436,
+        "gain": -24
+      },
+      {
+        "name": "whoosh-long",
+        "at": 14.491,
+        "gain": -26
+      },
+      {
+        "name": "pop",
+        "at": 15.291,
+        "gain": -24
+      },
+      {
+        "name": "whoosh-long",
+        "at": 21.309,
+        "gain": -26
+      },
+      {
+        "name": "whoosh-long",
+        "at": 25.4,
+        "gain": -26
+      },
+      {
+        "name": "shimmer",
+        "at": 26.0,
+        "gain": -18
+      },
+      {
+        "name": "pop",
+        "at": 26.6,
+        "gain": -22
+      }
+    ],
+    "loudness": {
+      "targetLufs": -16,
+      "truePeak": -1.5
+    }
+  },
+  "captions": {
+    "enabled": true,
+    "burnIn": ["9:16"]
+  },
+  "captures": [
+    "routes/app-projects@mobile",
+    "routes/app-team@desktop",
+    "flows/create-project@desktop/created",
+    "flows/create-project@desktop/checklist-hover"
+  ],
+  "qa": {
+    "ignore": []
+  }
+}

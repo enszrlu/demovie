@@ -1,0 +1,157 @@
+/* soft-launch: layout only — colors, type and motion tokens come from the brand and the soft preset. */
+
+:root {
+  --ink-soft: color-mix(in srgb, var(--dm-fg) 70%, var(--dm-muted-fg));
+  --pill-shadow: 0 10px 24px -12px color-mix(in srgb, var(--dm-primary) 55%, transparent);
+}
+
+/* Two blurred brand-tint blobs; they drift on one shared clock, so crossfades between shots never jump. */
+.blob-a {
+  width: calc(var(--dm-unit) * 54);
+  height: calc(var(--dm-unit) * 54);
+  right: calc(var(--dm-unit) * -12);
+  top: calc(var(--dm-unit) * -16);
+}
+
+.blob-b {
+  width: calc(var(--dm-unit) * 44);
+  height: calc(var(--dm-unit) * 44);
+  left: calc(var(--dm-unit) * -14);
+  bottom: calc(var(--dm-unit) * -14);
+}
+
+/* Copy: a feature pill over a friendly headline — left column in 16:9, centered on top in 9:16. */
+.copy {
+  position: absolute;
+  left: calc(var(--dm-safe-left) + var(--dm-unit) * 3);
+  top: 50%;
+  translate: 0 -50%;
+  width: calc(var(--dm-unit) * 61);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--dm-unit) * 2.6);
+}
+
+[data-format="9:16"] .copy {
+  left: var(--dm-safe-left);
+  right: var(--dm-safe-right);
+  top: calc(var(--dm-safe-top) + var(--dm-unit) * 2);
+  translate: none;
+  width: auto;
+  align-items: center;
+  text-align: center;
+}
+
+.copy .dm-kicker {
+  background: var(--dm-bg);
+  box-shadow: var(--pill-shadow);
+  font-size: calc(var(--dm-unit) * 3.3);
+  transform-origin: 0% 50%;
+}
+
+[data-format="9:16"] .copy .dm-kicker {
+  transform-origin: 50% 50%;
+}
+
+.copy .headline {
+  font-size: calc(var(--dm-unit) * 7.2);
+  line-height: 1.12;
+}
+
+/* Devices float in a wrapper, so the float never fights the entrance tween on the screen itself. */
+.float {
+  position: absolute;
+  inset: 0;
+}
+
+/* A light phone suits the soft preset better than the default dark bezel. */
+.dm-screen[data-device="phone"] .dm-screen__frame {
+  background: var(--dm-bg);
+  border-color: color-mix(in srgb, var(--dm-primary) 16%, var(--dm-border));
+  /* biome-ignore lint/complexity/noImportantStyles: the runtime sets the device radius inline; this phone is rounder. */
+  border-radius: calc(var(--dm-unit) * 7) !important;
+}
+
+.dm-blob {
+  background: color-mix(in srgb, var(--dm-primary) 24%, var(--dm-bg));
+}
+
+/* Title */
+.intro {
+  position: absolute;
+  inset: var(--dm-safe-top) var(--dm-safe-right) var(--dm-safe-bottom) var(--dm-safe-left);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--dm-unit) * 4);
+  text-align: center;
+}
+
+.intro-mark {
+  border-radius: calc(var(--dm-unit) * 3);
+  box-shadow: 0 24px 48px -20px color-mix(in srgb, var(--dm-primary) 60%, transparent);
+}
+
+.intro-mark .dm-logo__img {
+  height: calc(var(--dm-unit) * 12);
+}
+
+.intro-title {
+  max-width: 14ch;
+  font-size: calc(var(--dm-unit) * 9.4);
+  line-height: 1.06;
+}
+
+[data-format="9:16"] .intro-title {
+  max-width: 8.6em;
+  font-size: calc(var(--dm-unit) * 10);
+}
+
+/* Tagline and end card */
+.center {
+  position: absolute;
+  inset: var(--dm-safe-top) var(--dm-safe-right) var(--dm-safe-bottom) var(--dm-safe-left);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--dm-unit) * 4);
+  text-align: center;
+}
+
+.tagline {
+  max-width: 13ch;
+  font-size: calc(var(--dm-unit) * 9);
+  line-height: 1.08;
+}
+
+[data-format="9:16"] .tagline {
+  max-width: 8em;
+  font-size: calc(var(--dm-unit) * 10);
+}
+
+.end-card {
+  padding: calc(var(--dm-unit) * 4.5) calc(var(--dm-unit) * 7);
+  border-radius: calc(var(--dm-unit) * 4);
+  background: var(--dm-bg);
+  box-shadow:
+    0 40px 80px -36px color-mix(in srgb, var(--dm-primary) 45%, transparent),
+    0 12px 28px -18px rgb(15 23 42 / 0.2);
+}
+
+.end-card .dm-logo__img {
+  height: calc(var(--dm-unit) * 12);
+}
+
+.end .dm-cta {
+  font-size: calc(var(--dm-unit) * 4.2);
+  padding: 0.8em 1.6em;
+}
+
+.end .url {
+  margin: 0;
+  font: 500 calc(var(--dm-unit) * 3.6) / 1.2 var(--dm-font-body);
+  color: var(--ink-soft);
+}

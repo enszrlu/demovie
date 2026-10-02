@@ -145,6 +145,35 @@ v.ready();`,
   });
 });
 
+describe("inspect(): what a viewer can actually see", () => {
+  it("does not report text that a mask reveal still hides", async () => {
+    const { server } = await serve(
+      "rt-mask",
+      `import { createVideo, text } from "/__demovie/runtime.js";
+const v = await createVideo();
+const s = v.shot("t", 0, 4, { kind: "title" });
+s.el.innerHTML = '<h1 class="big" id="h">Shapes, measured.</h1>';
+text.reveal(s.el.querySelector("#h"), { at: 2, by: "line", from: "mask", duration: 0.6 });
+v.ready();`,
+    );
+    const browser = await launchRenderer();
+    try {
+      const comp = await openComposition(browser, server, { format: "16:9", scale: 0.5 });
+      const visible = async (t: number) => {
+        await seek(comp.page, t);
+        const r = (await comp.page.evaluate("window.__DEMOVIE__.inspect()")) as { texts: { text: string }[] };
+        return r.texts.map((x) => x.text);
+      };
+      expect(await visible(1)).toEqual([]);
+      expect(await visible(3)).toEqual(["Shapes, measured."]);
+      await comp.close();
+    } finally {
+      await browser.close();
+      await server.close();
+    }
+  });
+});
+
 describe("runtime helpers: callout, counter, captions, transitions", () => {
   it("renders every helper without errors and reports them through inspect()", async () => {
     const p = syntheticProject(
@@ -224,6 +253,14 @@ v.ready();`,
           `t=${t}`,
         ).toContain(id);
       }
+      // the wipe interpolates its clip-path (shot "c" enters from the right between 1.26 and 1.36)
+      await seek(comp.page, 1.31);
+      const clip = String(
+        await comp.page.evaluate(`getComputedStyle(document.querySelector('[data-shot="c"]')).clipPath`),
+      );
+      const left = Number.parseFloat(clip.replace(/^inset\(/, "").split(" ")[3] ?? "NaN");
+      expect(left, clip).toBeGreaterThan(5);
+      expect(left, clip).toBeLessThan(95);
       const end = await at(3.9);
       expect(end.transitions.length).toBe(5);
       expect(end.logos[0].visible).toBe(true);

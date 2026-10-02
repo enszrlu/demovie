@@ -31,6 +31,7 @@ export async function run(
         return n;
       })
     : everyTimes(video.video.duration, options.every!, video.video.fps);
+  ctx.logger.step(`stills ${video.slug} @ ${formats.join(", ")}: ${times.length} time(s)…`);
   const report = await renderStills(project, video, {
     formats,
     times,

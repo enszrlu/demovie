@@ -19,6 +19,7 @@ export * from "./capture.ts";
 export * from "./common.ts";
 export * from "./config.ts";
 export * from "./flow.ts";
+export * from "./plugin.ts";
 export * from "./project-files.ts";
 export * from "./reports.ts";
 export * from "./video.ts";

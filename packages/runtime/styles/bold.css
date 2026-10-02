@@ -38,7 +38,8 @@
   margin: 0;
   text-wrap: pretty;
   font: 600 var(--dm-subtitle-size) / 1.25 var(--dm-font-body);
-  color: color-mix(in srgb, var(--dm-primary-fg) 82%, transparent);
+  /* full strength: a translucent white on the brand color drops below 4.5:1 (QA DM-T04) */
+  color: var(--dm-primary-fg);
 }
 
 .dm-kicker {
