@@ -195,7 +195,7 @@ export async function run(ctx: CommandContext, options: MakeOptions): Promise<Co
     log = path.join(logDir, `${new Date(started).toISOString().replace(/[:.]/g, "-")}.jsonl`);
     const raw = createWriteStream(log);
     const out = ctx.json ? process.stderr : process.stdout;
-    const progress = new AgentProgress((line) => out.write(`${line}\n`));
+    const progress = new AgentProgress((line) => out.write(`${line}\n`), root);
     const child = execa(binary, args, {
       cwd: root,
       env: { [MAKE_ENV]: "1" },

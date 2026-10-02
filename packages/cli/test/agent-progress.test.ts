@@ -88,3 +88,22 @@ describe("AgentProgress", () => {
     expect(formatDuration(125_000)).toBe("2m 05s");
   });
 });
+
+describe("AgentProgress paths", () => {
+  it("shows paths inside the project relative to it", () => {
+    const lines: string[] = [];
+    const progress = new AgentProgress((l) => lines.push(l.replace(/^\[[^\]]*\] /, "")), "/work/app");
+    progress.line(
+      JSON.stringify({
+        type: "assistant",
+        message: {
+          content: [
+            { type: "tool_use", name: "Read", input: { file_path: "/work/app/.demovie/videos/x/brief.md" } },
+            { type: "tool_use", name: "Bash", input: { command: "cd /work/app && npx demovie qa x" } },
+          ],
+        },
+      }),
+    );
+    expect(lines).toEqual(["→ Read .demovie/videos/x/brief.md", "→ Bash npx demovie qa x"]);
+  });
+});

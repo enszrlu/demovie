@@ -44,7 +44,11 @@ export class AgentProgress {
   };
   private codexTurns = 0;
 
-  constructor(private readonly write: (line: string) => void) {}
+  /** `root`: the project folder; paths inside it are shown relative to it. */
+  constructor(
+    private readonly write: (line: string) => void,
+    private readonly root?: string,
+  ) {}
 
   /** Feed one line of the agent's stdout. */
   line(raw: string): void {
@@ -58,7 +62,13 @@ export class AgentProgress {
       return;
     }
     const clock = `[${formatDuration(Date.now() - this.started).padStart(7)}]`;
-    for (const line of this.describe(record(event))) this.write(`${clock} ${line}`);
+    for (const line of this.describe(record(event))) this.write(`${clock} ${this.relative(line)}`);
+  }
+
+  private relative(line: string): string {
+    if (!this.root) return line;
+    const root = this.root.replace(/\/+$/, "");
+    return line.split(`cd ${root} && `).join("").split(`${root}/`).join("");
   }
 
   summary(): AgentRunSummary {
