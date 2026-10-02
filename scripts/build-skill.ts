@@ -95,6 +95,8 @@ writeJson(path.join(pluginDir, ".claude-plugin/plugin.json"), {
   version,
   description,
   author: { name: "demovie contributors" },
+  homepage: "https://github.com/enszrlu/demovie",
+  repository: "https://github.com/enszrlu/demovie",
   license: "MIT",
   keywords: ["video", "motion-graphics", "product-video", "launch-video", "changelog", "agent-skills", "mcp"],
 });

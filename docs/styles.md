@@ -17,4 +17,5 @@ backgrounds and pacing.
 Every style shares the CSS variables `--dm-bg`, `--dm-fg`, `--dm-primary`, `--dm-primary-fg`, `--dm-muted-fg`,
 `--dm-font-heading`, `--dm-font-body`, `--dm-font-mono`, `--dm-unit` (1% of the short side), `--dm-w`, `--dm-h` and
 the safe-area insets `--dm-safe-top|right|bottom|left`, plus the classes `.dm-bg`, `.dm-title`, `.dm-subtitle`,
-`.dm-kicker`, `.dm-accent` and `.dm-cta`.
+`.dm-kicker`, `.dm-accent` and `.dm-cta`. When `brand.json` lists chart colors (often darker and lighter tints of the
+primary), they are `--dm-chart-1` … `--dm-chart-5`: useful when the primary itself is too light for a CTA's contrast.

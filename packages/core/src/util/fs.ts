@@ -19,10 +19,14 @@ export async function ensureDir(dir: string): Promise<void> {
 }
 
 /** Write atomically: temp file in the same folder, then rename. */
-export async function writeFileAtomic(file: string, data: string | Uint8Array): Promise<void> {
+export async function writeFileAtomic(
+  file: string,
+  data: string | Uint8Array,
+  options: { mode?: number } = {},
+): Promise<void> {
   await ensureDir(path.dirname(file));
   const tmp = path.join(path.dirname(file), `.${path.basename(file)}.${randomBytes(4).toString("hex")}.tmp`);
-  await writeFile(tmp, data);
+  await writeFile(tmp, data, options.mode === undefined ? undefined : { mode: options.mode });
   try {
     await rename(tmp, file);
   } catch (error) {
@@ -35,8 +39,18 @@ export function stableJson(data: unknown): string {
   return `${JSON.stringify(data, null, 2)}\n`;
 }
 
+/**
+ * Write JSON with 2-space indentation, unless the file already holds the same data: a project formatter may have
+ * reflowed it (e.g. a short array on one line), and rewriting unchanged data would only churn the user's git diff.
+ */
 export async function writeJson(file: string, data: unknown): Promise<void> {
-  await writeFileAtomic(file, stableJson(data));
+  const next = stableJson(data);
+  try {
+    if (JSON.stringify(JSON.parse(await readFile(file, "utf8"))) === JSON.stringify(JSON.parse(next))) return;
+  } catch {
+    // missing or unparsable: write it
+  }
+  await writeFileAtomic(file, next);
 }
 
 export async function readJsonRaw(file: string): Promise<unknown> {

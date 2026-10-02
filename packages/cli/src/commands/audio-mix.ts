@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { DemovieError, loadProject, sha256, VoiceManifestSchema } from "@demovie/core";
+import { DemovieError, loadProject, sha256, toPosix, VoiceManifestSchema } from "@demovie/core";
 import type { CommandContext } from "../context.ts";
 import { resolveAudioSrc } from "../lib/audio.ts";
 import type { CommandResult } from "../output.ts";
@@ -75,7 +75,7 @@ export async function run(ctx: CommandContext, slug: string): Promise<CommandRes
       details: {
         inputs: [
           ...(cfg.music ? [cfg.music.src] : []),
-          ...voice.map((l) => path.relative(video.dir, l.file)),
+          ...voice.map((l) => toPosix(path.relative(video.dir, l.file))),
           ...[...new Set(sfx.map((s) => `sfx:${s.name}`))],
         ],
         inputsHash: result.inputsHash,

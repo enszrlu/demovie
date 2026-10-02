@@ -148,6 +148,8 @@ function applyCssVars(
   s.setProperty("--dm-muted", c.muted ?? "#f5f5f5");
   s.setProperty("--dm-muted-fg", c.mutedForeground ?? "#737373");
   s.setProperty("--dm-border", c.border ?? "#e5e5e5");
+  // The brand's chart palette (often darker and lighter tints of the primary): --dm-chart-1 … --dm-chart-5.
+  for (const [i, color] of (c.chart ?? []).slice(0, 5).entries()) s.setProperty(`--dm-chart-${i + 1}`, color);
   s.setProperty("--dm-font-heading", stack(v.brand.fonts.heading?.family, "Geist"));
   s.setProperty("--dm-font-body", stack(v.brand.fonts.body?.family, "Geist"));
   s.setProperty("--dm-font-mono", stack(v.brand.fonts.mono?.family, "Geist Mono"));

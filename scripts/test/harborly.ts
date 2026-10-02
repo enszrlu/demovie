@@ -41,11 +41,13 @@ export async function ensureHarborly(): Promise<{ url: string; started: boolean;
   if (await answers(`${HARBORLY_URL}/login`)) return { url: HARBORLY_URL, started: false, stop: async () => {} };
   mkdirSync(path.join(repoRoot, ".tmp"), { recursive: true });
   const log = openSync(path.join(repoRoot, ".tmp", "harborly-test.log"), "w");
+  // Without vitest's NODE_ENV=test: `next dev` would keep it and rewrite tsconfig.json with wrong type paths.
+  const { NODE_ENV: _testEnv, ...env } = process.env;
   const child = spawn("pnpm", ["dev"], {
     cwd: HARBORLY_DIR,
     stdio: ["ignore", log, log],
     detached: true,
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
+    env: { ...env, NEXT_TELEMETRY_DISABLED: "1" },
   });
   const deadline = Date.now() + 120_000;
   while (!(await answers(`${HARBORLY_URL}/login`))) {

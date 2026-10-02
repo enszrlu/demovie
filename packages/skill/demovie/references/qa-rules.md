@@ -29,7 +29,7 @@ the final render; warnings are reported (`--strict` turns them into errors). Onl
 | DM-A02 | error | Assets | Any 4xx/5xx response, or a broken image or video |
 | DM-A03 | error | Network | Any blocked external request |
 | DM-A04 | error | Audio provenance | An audio file that has no provenance.json entry from a demovie generator, a configured provider, or add --licensed |
-| DM-R01 | error | Determinism | 5 sampled frames rendered twice, in different seek orders, are pixel-identical |
+| DM-R01 | error | Determinism | 5 sampled frames rendered twice — in a different seek order, the second time right after the frame before each — are pixel-identical |
 | DM-R02 | warn | Blank frames | Frames that are over 98% one color for more than 0.3 s, outside declared transitions |
 | DM-R03 | error | Stray GSAP tweens | Tweens outside v.timeline |
 | DM-R04 | warn | Unregistered CSS animations | Running CSS animations not registered via v.css |
@@ -62,7 +62,7 @@ the final render; warnings are reported (`--strict` turns them into errors). Onl
 - **DM-A02 Assets** — fix the path (composition-relative, /brand/*, /captures/*, /assets/*, /audio/*) or remove the reference
 - **DM-A03 Network** — serve everything locally: copy the file into the composition folder or `npx demovie add` it
 - **DM-A04 Audio provenance** — generate audio with `npx demovie audio music|voice|mix`, or import it with `npx demovie add <file> --licensed`
-- **DM-R01 Determinism** — derive everything from t: no Date/timers/real randomness, put tweens in v.timeline, make onSeek pure
+- **DM-R01 Determinism** — derive everything from t: no Date/timers/real randomness, put tweens in v.timeline, make onSeek pure, and avoid will-change on animated elements
 - **DM-R02 Blank frames** — start content earlier, overlap shots with a transition, or add a background element
 - **DM-R03 Stray GSAP tweens** — add every tween to v.timeline (v.timeline.to/from/fromTo(..., at)), never gsap.to() directly
 - **DM-R04 Unregistered CSS animations** — drive CSS keyframes with v.css(el, keyframes, { start, duration }) so they follow the timeline

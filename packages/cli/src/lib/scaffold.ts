@@ -7,7 +7,7 @@ import {
   CaptureIndexSchema,
   DemovieError,
   type ElementMap,
-  type FormatId,
+  FormatId,
   GlossarySchema,
   type Project,
   type StyleId,
@@ -162,6 +162,13 @@ export async function scaffoldVideo(
     );
   }
   const formats = o.formats?.length ? o.formats : preset.formats;
+  const badFormat = formats.find((f) => !FormatId.safeParse(f).success);
+  if (badFormat)
+    throw new DemovieError(
+      "E_USAGE",
+      `unknown format "${badFormat}"`,
+      `use ${FormatId.options.join(", ")} (comma separated)`,
+    );
   const style = o.style ?? project.resolved.video.style;
   const dir = path.join(project.paths.videosDir, o.slug);
   if (existsSync(dir) && !o.force)
@@ -225,6 +232,19 @@ export async function scaffoldVideo(
   values.ROWS = rows;
 
   await mkdir(path.join(dir, "composition"), { recursive: true });
+  // Validate the video before writing anything, so a bad option never leaves a half-written folder.
+  const video = VideoSchema.parse({
+    $schema: schemaRef(project.paths.root, dir, "video.schema.json"),
+    slug: o.slug,
+    title: o.about ? `${product} — ${o.about}` : product,
+    type: o.type,
+    fps: project.resolved.video.fps,
+    duration,
+    formats,
+    style,
+    status: "brief",
+    captures: capture ? [capture.id] : [],
+  });
   await mkdir(path.join(dir, "audio"), { recursive: true });
   const files: string[] = [];
   const write = async (rel: string, content: string) => {
@@ -238,18 +258,6 @@ export async function scaffoldVideo(
   await write("composition/index.html", read("index.html"));
   await write("composition/main.js", fill(read("main.js.tpl"), values));
   await write("composition/styles.css", fill(read("styles.css.tpl"), values));
-  const video = VideoSchema.parse({
-    $schema: schemaRef(project.paths.root, dir, "video.schema.json"),
-    slug: o.slug,
-    title: o.about ? `${product} — ${o.about}` : product,
-    type: o.type,
-    fps: project.resolved.video.fps,
-    duration,
-    formats,
-    style,
-    status: "brief",
-    captures: capture ? [capture.id] : [],
-  });
   await writeJson(path.join(dir, "video.json"), video);
   files.push("video.json");
   return { dir, files, capture: capture?.id ?? null };

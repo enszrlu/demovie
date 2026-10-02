@@ -21,4 +21,5 @@ export * from "./util/net.ts";
 export * from "./util/proc.ts";
 export * from "./util/slug.ts";
 export * from "./util/static-js.ts";
+export * from "./util/svg.ts";
 export * from "./version.ts";

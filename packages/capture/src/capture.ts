@@ -20,6 +20,7 @@ import {
   RoutesSchema,
   readJson,
   routeSlug,
+  sha256,
   toPosix,
   writeFileAtomic,
   writeJson,
@@ -77,6 +78,8 @@ export interface CaptureReport {
 }
 
 interface RouteJob {
+  /** routes/<slug>@<viewport>[.dark], unique within the run */
+  id: string;
   route: Route;
   path: string;
   viewport: string;
@@ -126,6 +129,12 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
     }
   }
   const allRoutes = await loadRoutes(project);
+  if (allRoutes.length === 0 && listFlows(project).length === 0)
+    throw new DemovieError(
+      "E_NOT_FOUND",
+      "no routes to capture: .demovie/routes.json is empty (the app wasn't running when routes were discovered)",
+      "start the app (`npx demovie up`), then run `npx demovie extract routes` and capture again",
+    );
   // `--route` without `--flow` captures only those routes; flows run when asked for, or when nothing was narrowed.
   const routesOnly = Boolean(request.routes?.length) && !request.flows?.length;
   const flowFiles = routesOnly
@@ -163,6 +172,7 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
         for (const viewport of viewports) {
           for (const scheme of schemes(project, request.dark)) {
             jobs.push({
+              id: "",
               route,
               path: p,
               viewport,
@@ -177,6 +187,19 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
         }
       }
     }
+  }
+
+  // Ids: two paths with the same slug (/a/b and /a-b) must not overwrite each other's capture; the later one (in
+  // route order, so stable across runs) gets a short hash of its path.
+  const firstPathOf = new Map<string, string>();
+  for (const j of jobs) {
+    const suffix = `@${j.viewport}${j.scheme === "dark" ? ".dark" : ""}`;
+    let id = `routes/${routeSlug(j.path)}${suffix}`;
+    const owner = firstPathOf.get(id);
+    if (owner !== undefined && owner !== j.path)
+      id = `routes/${routeSlug(j.path)}-${sha256(j.path).slice(0, 6)}${suffix}`;
+    else firstPathOf.set(id, j.path);
+    j.id = id;
   }
 
   // --changed: keep only stale or affected states.
@@ -195,7 +218,7 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
     const affectedPaths = new Set(analysis?.routes.map((r) => r.path) ?? []);
     const affectedFlows = new Set(analysis?.suggestions.flows ?? []);
     const affected = (route: Route) => affectedPaths.has(route.path);
-    const idOf = (j: RouteJob) => `routes/${routeSlug(j.path)}@${j.viewport}${j.scheme === "dark" ? ".dark" : ""}`;
+    const idOf = (j: RouteJob) => j.id;
     const kept = jobs.filter((j) => staleIds.has(idOf(j)) || !known.has(idOf(j)) || affected(j.route));
     for (const j of jobs) if (!kept.includes(j)) report.skipped.push({ what: idOf(j), reason: "fresh" });
     jobs.splice(0, jobs.length, ...kept);
@@ -215,11 +238,25 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
     return report;
   }
 
+  // Parse every flow before starting anything: a typo fails now, not after all routes were captured.
+  const flowDefs = new Map<string, TsFlowDefinition | ReturnType<typeof parseFlowYaml>>();
+  for (const file of flowsToRun)
+    flowDefs.set(
+      file.file,
+      file.kind === "yaml"
+        ? parseFlowYaml(await readFile(file.file, "utf8"), file.file)
+        : await loadTsFlow(project, file.file),
+    );
+
   // App up (seed → start → wait), browser, auth.
   const app: AppHandle = await ensureApp(project, { yes: request.yes });
   report.app = { url: app.url, started: app.started, reused: app.reused, seeded: app.seeded };
   // --lang makes locale-dependent widgets (date inputs, number formats in the UI chrome) follow demo.locale.
-  const browser = await launchChromium({ args: [`--lang=${config.demo.locale}`] });
+  // A failed launch (no Chromium yet) must not leave the app we just started running.
+  const browser = await launchChromium({ args: [`--lang=${config.demo.locale}`] }).catch(async (error: unknown) => {
+    if (app.started) await app.stop();
+    throw error;
+  });
   const gitSha = await gitHead(project.paths.root);
   const cHash = configHash(project.config);
   const indexEntries: CaptureIndexEntry[] = [];
@@ -232,12 +269,8 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
     let statePath: string | undefined;
     if (needsAuth) statePath = (await ensureAuth(browser, project, app.url)).statePath ?? undefined;
     const contexts = new Map<string, BrowserContext>();
-    const contextFor = async (viewport: string, scheme: "light" | "dark", authed: boolean, fresh = false) => {
+    const contextFor = async (viewport: string, scheme: "light" | "dark", authed: boolean) => {
       const key = `${viewport}|${scheme}|${authed}`;
-      if (fresh && contexts.has(key)) {
-        await contexts.get(key)!.close();
-        contexts.delete(key);
-      }
       if (!contexts.has(key)) {
         contexts.set(
           key,
@@ -251,6 +284,26 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
       }
       return contexts.get(key)!;
     };
+    // An expired session logs in again once, however many workers notice it (single flight). Contexts that hold the
+    // old session are retired, not closed under other workers' pages, and closed at the end.
+    let authGeneration = 0;
+    let reauthing: Promise<void> | null = null;
+    const retired: BrowserContext[] = [];
+    const reauth = async (seen: number) => {
+      if (authGeneration > seen) return;
+      reauthing ??= (async () => {
+        statePath = (await ensureAuth(browser, project, app.url, { force: true })).statePath ?? undefined;
+        authGeneration++;
+        for (const [key, context] of contexts)
+          if (key.endsWith("|true")) {
+            retired.push(context);
+            contexts.delete(key);
+          }
+      })().finally(() => {
+        reauthing = null;
+      });
+      await reauthing;
+    };
 
     // Route states, `capture.concurrency` at a time.
     const queue = [...jobs];
@@ -259,9 +312,10 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
         const job = queue.shift();
         if (!job) return;
         const t0 = Date.now();
-        const id = `routes/${routeSlug(job.path)}@${job.viewport}${job.scheme === "dark" ? ".dark" : ""}`;
+        const id = job.id;
         let state: StateCapture | null = null;
         for (let attempt = 0; attempt < 2 && !state; attempt++) {
+          const generation = authGeneration;
           const context = await contextFor(job.viewport, job.scheme, job.authed);
           const page = await context.newPage();
           const network = trackNetwork(page);
@@ -280,8 +334,7 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
                 continue;
               }
               if (attempt === 0 && config.auth.strategy !== "none") {
-                statePath = (await ensureAuth(browser, project, app.url, { force: true })).statePath ?? undefined;
-                await contextFor(job.viewport, job.scheme, true, true);
+                await reauth(generation);
                 continue;
               }
               throw new DemovieError(
@@ -359,10 +412,7 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
 
     // Flows run after routes, one at a time (they change demo data).
     for (const file of flowsToRun) {
-      const def: TsFlowDefinition | ReturnType<typeof parseFlowYaml> =
-        file.kind === "yaml"
-          ? parseFlowYaml(await readFile(file.file, "utf8"), file.file)
-          : await loadTsFlow(project, file.file);
+      const def = flowDefs.get(file.file)!;
       // A flow runs at its declared viewport unless `--flow` and `--viewport` are both given explicitly.
       const flowViewports =
         request.flows?.length && request.viewports?.length
@@ -428,14 +478,15 @@ export async function runCapture(project: Project, request: CaptureRequest): Pro
         }
       }
     }
-    for (const c of contexts.values()) await c.close();
+    for (const c of [...contexts.values(), ...retired]) await c.close();
   } finally {
     await browser.close();
     if (app.started) await app.stop();
+    // States captured before a failure are on disk: index them either way.
+    if (indexEntries.length) await updateCaptureIndex(project, indexEntries);
   }
 
-  // Bookkeeping: index, routes.json titles/protection, glossary "Discovered".
-  if (indexEntries.length) await updateCaptureIndex(project, indexEntries);
+  // Bookkeeping: routes.json titles/protection, glossary "Discovered".
   if (existsSync(project.paths.routes) && (titles.size || protectionUpdates.size)) {
     const routes: Routes = await readJson(project.paths.routes, RoutesSchema);
     for (const r of routes.routes) {

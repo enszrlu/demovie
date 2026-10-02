@@ -443,6 +443,17 @@ describe("QA rules (synthetic inputs)", () => {
     expect(waived.summary).toMatchObject({ errors: 0, warnings: 0, waived: 1 });
   });
 
+  it("only warns about a declared font that no text in the video uses", () => {
+    const unused = inputs((t) => ({
+      fonts: { declared: ["Inter", "JetBrains Mono"], loaded: ["Inter"], failed: [] },
+      texts: t < 4 ? [text("h", "Stop guessing", { fontFamily: "Inter" })] : [],
+    }));
+    const result = status(unused, "DM-A01");
+    expect(result.status).toBe("fail");
+    expect(result.severity).toBe("warn");
+    expect(evaluate(unused).summary).toMatchObject({ errors: 0, warnings: 1 });
+  });
+
   it("lets reading time follow word count and ignores entrance frames", () => {
     // 3 words need max(1.2, 0.5 + 1) = 1.5 s.
     const ok = inputs((t) => ({ texts: t >= 1 && t < 2.6 ? [text("h", "One more launch")] : [] }));

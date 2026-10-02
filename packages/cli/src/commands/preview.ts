@@ -21,7 +21,10 @@ export async function run(
   else process.stdout.write(`preview: ${preview.url}  (hot reload on; Ctrl+C to stop)\n`);
   if (options.open !== false && ctx.interactive) {
     const opener = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
-    spawn(opener, [preview.url], { stdio: "ignore", detached: true, shell: process.platform === "win32" }).unref();
+    // no opener (WSL, SSH, a container): the URL is printed above, so just skip it
+    spawn(opener, [preview.url], { stdio: "ignore", detached: true, shell: process.platform === "win32" })
+      .on("error", () => {})
+      .unref();
   }
   await new Promise<void>((resolve) => {
     const stop = () => resolve();
@@ -29,5 +32,6 @@ export async function run(
     process.once("SIGTERM", stop);
   });
   await preview.close();
-  return { data: { url: preview.url, stopped: true }, human: [] };
+  // With --json the one document was printed when the server started (agents need the URL then).
+  return { data: { url: preview.url, stopped: true }, human: [], emitted: ctx.json };
 }

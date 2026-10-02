@@ -8,6 +8,7 @@ import {
   findProjectRoot,
   loadProject,
   projectPaths,
+  toDemovieError,
   which,
 } from "@demovie/core";
 import type { CommandContext } from "../context.ts";
@@ -102,21 +103,33 @@ export async function run(ctx: CommandContext, options: { fix?: boolean }): Prom
     chromium = capture.chromiumStatus();
     if (chromium.installed) fixed.push("installed Chromium");
   }
+  // Installed is not enough (Linux may lack system libraries): launch it once.
+  const launch = chromium.installed
+    ? await capture
+        .launchChromium()
+        .then(async (browser) => {
+          await browser.close();
+          return null;
+        })
+        .catch((error: unknown) => toDemovieError(error))
+    : null;
   checks.push(
-    chromium.installed
-      ? {
-          id: "chromium",
-          status: "ok",
-          message: `Chromium for Playwright ${chromium.playwrightVersion}`,
-          kind: "prerequisite",
-        }
-      : {
-          id: "chromium",
-          status: "fail",
-          message: `Chromium for Playwright ${chromium.playwrightVersion} is not installed`,
-          fix: "npx demovie doctor --fix",
-          kind: "prerequisite",
-        },
+    chromium.installed && launch
+      ? { id: "chromium", status: "fail", message: launch.message, fix: launch.fix, kind: "prerequisite" }
+      : chromium.installed
+        ? {
+            id: "chromium",
+            status: "ok",
+            message: `Chromium for Playwright ${chromium.playwrightVersion} (launches)`,
+            kind: "prerequisite",
+          }
+        : {
+            id: "chromium",
+            status: "fail",
+            message: `Chromium for Playwright ${chromium.playwrightVersion} is not installed`,
+            fix: "npx demovie doctor --fix",
+            kind: "prerequisite",
+          },
   );
 
   // Project
@@ -280,5 +293,11 @@ export async function run(ctx: CommandContext, options: { fix?: boolean }): Prom
     ...fixed.map((f) => `fixed: ${f}`),
     failed.length === 0 ? "doctor: all required checks passed" : `doctor: ${failed.length} check(s) failed`,
   ];
-  return { data: { checks, fixed }, human, exitCode };
+  // The GitHub Action installs the Chromium build of this Playwright version.
+  const browser = {
+    installed: chromium.installed,
+    launches: chromium.installed && !launch,
+    playwrightVersion: chromium.playwrightVersion,
+  };
+  return { data: { checks, fixed, chromium: browser }, human, exitCode };
 }

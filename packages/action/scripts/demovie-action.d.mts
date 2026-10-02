@@ -18,3 +18,13 @@ export interface ActionSummary {
 
 export function defaultSince(): string | null;
 export function commentMarkdown(summary: ActionSummary, assetBase?: string | null): string;
+
+export interface DetectedPackageManager {
+  manager: "pnpm" | "npm-ci" | "yarn" | "yarn-berry" | "bun" | "npm";
+  dir: string;
+  lockfile: string;
+  packageJson: string;
+  pnpmVersion: string;
+}
+
+export function detectPackageManager(from: string, top?: string): DetectedPackageManager;

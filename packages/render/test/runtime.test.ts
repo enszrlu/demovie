@@ -148,6 +148,29 @@ v.ready();`,
     }
   });
 
+  it("text.reveal keeps inline markup, such as an accented word", async () => {
+    const accent = await serve(
+      "rt-accent",
+      `import { createVideo, text } from "/__demovie/runtime.js";
+const v = await createVideo();
+const shot = v.shot("t", 0, 4, { kind: "title" });
+shot.el.insertAdjacentHTML("beforeend", '<h1 class="dm-title" id="h">Cut waste by <span class="dm-accent">40%</span>.</h1>');
+text.reveal(document.getElementById("h"), { at: 0.2, by: "word" });
+v.ready();`,
+    );
+    const comp = await openComposition(browser, accent.server, { format: "16:9", scale: 0.5 });
+    try {
+      await seek(comp.page, 3);
+      expect(await comp.page.evaluate('document.querySelector("#h .dm-accent .dm-word")?.textContent')).toBe("40%");
+      expect(await comp.page.evaluate('document.getElementById("h").getAttribute("aria-label")')).toBe(
+        "Cut waste by 40%.",
+      );
+    } finally {
+      await comp.close();
+      await accent.server.close();
+    }
+  });
+
   it("flags stray GSAP tweens outside v.timeline", async () => {
     const stray = await serve(
       "rt-stray",

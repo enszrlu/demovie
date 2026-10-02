@@ -24,6 +24,23 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 html, body, * { scrollbar-width: none !important; caret-color: transparent !important; }`;
 }
 
+/**
+ * Add `app.headers` (e.g. a preview-protection bypass secret) to requests for the app's own origin only. Playwright's
+ * `extraHTTPHeaders` would send them to every host the page contacts: fonts, analytics, an identity provider.
+ */
+export async function routeAppHeaders(
+  context: BrowserContext,
+  appUrl: string,
+  headers: Record<string, string>,
+): Promise<void> {
+  if (Object.keys(headers).length === 0) return;
+  const origin = new URL(appUrl).origin;
+  await context.route(
+    (url) => url.origin === origin,
+    (route) => route.fallback({ headers: { ...route.request().headers(), ...headers } }),
+  );
+}
+
 /** A Playwright context configured for demo-mode capture (SPEC §9.4). */
 export async function createCaptureContext(browser: Browser, options: ContextOptions): Promise<BrowserContext> {
   const { config, viewport } = options;
@@ -36,10 +53,10 @@ export async function createCaptureContext(browser: Browser, options: ContextOpt
     locale: config.demo.locale,
     timezoneId: config.demo.timezone,
     reducedMotion: "reduce",
-    extraHTTPHeaders: config.app.headers,
     ignoreHTTPSErrors: false,
     ...(options.storageState ? { storageState: options.storageState } : {}),
   });
+  await routeAppHeaders(context, config.app.url, config.app.headers);
   const block = config.demo.blockRequests.map(urlPatternToRegExp);
   if (block.length > 0) {
     await context.route(

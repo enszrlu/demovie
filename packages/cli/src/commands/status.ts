@@ -39,6 +39,17 @@ const LEVELS = {
   L3: "flows captured, with multi-step states",
 } as const;
 
+/** How many routes routes.json lists (0 when it is missing or unreadable). */
+function routeCount(paths: ProjectPaths): number {
+  try {
+    return existsSync(paths.routes)
+      ? RoutesSchema.parse(JSON.parse(readFileSync(paths.routes, "utf8"))).routes.length
+      : 0;
+  } catch {
+    return 0;
+  }
+}
+
 /** How much of the real product demovie can show (docs/concepts.md: L0 brand → L3 flows). */
 function grounding(paths: ProjectPaths): { level: keyof typeof LEVELS | null; label: string } {
   const read = <T>(file: string, parse: (x: unknown) => T): T | null => {
@@ -90,17 +101,29 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
     };
   }
 
-  // Videos
+  // Videos (one broken file is a warning, not a failed status)
   const videos: VideoStatus[] = [];
+  const unreadable: string[] = [];
+  const readJsonFile = (file: string): unknown => {
+    try {
+      return JSON.parse(readFileSync(file, "utf8"));
+    } catch {
+      unreadable.push(path.relative(root, file));
+      return null;
+    }
+  };
   if (existsSync(paths.videosDir)) {
     for (const slug of readdirSync(paths.videosDir).sort()) {
       const file = path.join(paths.videosDir, slug, "video.json");
       if (!existsSync(file)) continue;
-      const parsed = VideoSchema.safeParse(JSON.parse(readFileSync(file, "utf8")));
-      if (!parsed.success) continue;
+      const parsed = VideoSchema.safeParse(readJsonFile(file));
+      if (!parsed.success) {
+        if (!unreadable.includes(path.relative(root, file))) unreadable.push(path.relative(root, file));
+        continue;
+      }
       const v = parsed.data;
       const qaFile = path.join(paths.videosDir, slug, "qa.json");
-      const qa = existsSync(qaFile) ? QaFileSchema.safeParse(JSON.parse(readFileSync(qaFile, "utf8"))) : null;
+      const qa = existsSync(qaFile) ? QaFileSchema.safeParse(readJsonFile(qaFile)) : null;
       const outDir = path.join(paths.videosDir, slug, "out");
       videos.push({
         slug,
@@ -132,6 +155,8 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
         `the skill in ${s.dir} is ${s.version}, older than demovie ${VERSION}: run \`npx demovie skill install\``,
       );
   if (project.missingEnv.length) warnings.push(`unset env vars referenced by config: ${project.missingEnv.join(", ")}`);
+  for (const file of unreadable)
+    warnings.push(`${file} is not valid JSON or doesn't match its schema: fix or remove it`);
   if (captures.stale > 0)
     warnings.push(`${captures.stale} capture(s) are stale: run \`npx demovie capture --changed\``);
 
@@ -139,6 +164,8 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
   let next: string;
   if (!reach.ok && !resolved.app.start)
     next = `start your app at ${resolved.app.url} (or set app.start.command), then run \`npx demovie capture\``;
+  else if (captures.total === 0 && routeCount(paths) === 0)
+    next = "npx demovie up, then `npx demovie extract routes` (no routes were found yet)";
   else if (captures.total === 0) next = "npx demovie capture";
   else if (captures.stale > 0) next = "npx demovie capture --changed";
   else if (videos.length === 0)

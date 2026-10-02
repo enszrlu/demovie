@@ -1,4 +1,4 @@
-import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createRequire } from "node:module";
@@ -87,11 +87,25 @@ async function send(res: ServerResponse, file: string, transpile = false): Promi
   return 200;
 }
 
-/** Map a URL path to a file under `base`, refusing traversal outside it. */
+/**
+ * Map a URL path to a file under `base`, refusing traversal outside it — by name, and through symlinks: an existing
+ * file must resolve (realpath) to a place inside the real `base`.
+ */
 function under(base: string, rel: string): string | null {
-  const decoded = decodeURIComponent(rel);
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(rel);
+  } catch {
+    return null;
+  }
   const file = path.resolve(base, `.${path.sep}${decoded}`);
-  return isInside(base, file) ? file : null;
+  if (!isInside(base, file)) return null;
+  if (!existsSync(file)) return file;
+  try {
+    return isInside(realpathSync(base), realpathSync(file)) ? file : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -143,8 +157,8 @@ export async function startServer(options: ServerOptions): Promise<StaticServer>
     else if (p.startsWith("/assets/")) file = route("/assets/", paths.assetsDir);
     else if (p.startsWith("/audio/")) file = route("/audio/", video.audioDir);
     else if (p.startsWith("/__out/")) file = route("/__out/", video.outDir);
-    else if (p === "/video.json") file = video.videoFile;
-    else if (p === "/glossary.json") file = paths.glossaryJson;
+    else if (p === "/video.json") file = under(path.dirname(video.videoFile), path.basename(video.videoFile));
+    else if (p === "/glossary.json") file = under(paths.dir, path.basename(paths.glossaryJson));
     else file = under(video.compositionDir, p === "/" ? "index.html" : p.slice(1));
     if (!file) {
       res.writeHead(403, { "content-type": "text/plain" }).end("forbidden");
@@ -153,7 +167,14 @@ export async function startServer(options: ServerOptions): Promise<StaticServer>
     return send(res, file, true);
   };
 
+  // Only loopback names: a page on another origin that rebinds its DNS to 127.0.0.1 sends its own Host header.
+  let allowedHosts = new Set<string>();
   const server: Server = createServer((req, res) => {
+    if (!allowedHosts.has((req.headers.host ?? "").toLowerCase())) {
+      requests.push({ url: req.url ?? "/", status: 403 });
+      res.writeHead(403, { "content-type": "text/plain" }).end("forbidden host");
+      return;
+    }
     handle(req, res)
       .then((status) => {
         requests.push({ url: req.url ?? "/", status });
@@ -169,6 +190,7 @@ export async function startServer(options: ServerOptions): Promise<StaticServer>
     server.listen(options.port ?? 0, "127.0.0.1", () => resolve());
   });
   const port = (server.address() as AddressInfo).port;
+  allowedHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`]);
   return {
     origin: `http://127.0.0.1:${port}`,
     port,

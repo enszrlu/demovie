@@ -53,7 +53,11 @@ export interface ScreenHandle {
     o: { at: number; duration?: number; scale?: number; padding?: number; ease?: string },
   ): void;
   reset(o: { at: number; duration?: number; ease?: string }): void;
-  highlight(elementId: string, o: { at: number; duration?: number; style?: "ring" | "glow" | "dim-others" }): void;
+  /**
+   * Ring, glow or spotlight an element — or a Rect in stage px at the base transform (the space of rect()), e.g. a row
+   * framed from two element rects when the row itself has no element.
+   */
+  highlight(target: string | Rect, o: { at: number; duration?: number; style?: "ring" | "glow" | "dim-others" }): void;
   swap(
     capture: string,
     o: { at: number; duration?: number; transition?: "cut" | "crossfade" | "slide-left" | "slide-up" },
@@ -111,7 +115,8 @@ function chrome(
       };
     case "phone":
       return {
-        top: Math.round(w * 0.045),
+        // bezel + a status bar band (12% of the width) that holds the island, so it never covers the captured page
+        top: Math.round(w * 0.045) + Math.round(w * 0.12),
         bottom: Math.round(w * 0.045),
         side: Math.round(w * 0.045),
         radius: Math.round(w * 0.16),
@@ -200,15 +205,31 @@ export function screen(v: Video, o: ScreenOptions): ScreenHandle {
     base.style.height = `${Math.round(W * 0.028)}px`;
   }
   if (device === "phone") {
+    const bezel = Math.round(W * 0.045);
+    const statusHeight = c.top - bezel;
+    const status = el("div", "dm-screen__status", frame);
+    status.dataset.scheme = capture.colorScheme === "dark" ? "dark" : "light";
+    Object.assign(status.style, {
+      top: `${bezel}px`,
+      left: `${c.side}px`,
+      width: `${W}px`,
+      height: `${statusHeight}px`,
+      borderRadius: `${c.inner}px ${c.inner}px 0 0`,
+    });
     const island = el("div", "dm-screen__island", frame);
+    const islandHeight = Math.round(W * 0.085);
     Object.assign(island.style, {
       width: `${Math.round(W * 0.3)}px`,
-      height: `${Math.round(W * 0.085)}px`,
-      top: `${c.top + Math.round(W * 0.03)}px`,
+      height: `${islandHeight}px`,
+      top: `${bezel + Math.round((statusHeight - islandHeight) / 2)}px`,
     });
   }
   const viewport = el("div", "dm-screen__viewport", frame);
-  Object.assign(viewport.style, { width: `${W}px`, height: `${H}px`, borderRadius: `${c.inner}px` });
+  Object.assign(viewport.style, {
+    width: `${W}px`,
+    height: `${H}px`,
+    borderRadius: device === "phone" ? `0 0 ${c.inner}px ${c.inner}px` : `${c.inner}px`,
+  });
   const content = el("div", "dm-screen__content", viewport);
   Object.assign(content.style, { width: `${W}px`, height: `${contentH}px` });
   const overlay = el("div", "dm-screen__overlay", content);
@@ -339,11 +360,27 @@ export function screen(v: Video, o: ScreenOptions): ScreenHandle {
       });
       camera.sort((a, b) => a.at - b.at);
     },
-    highlight(elementId, opts) {
+    highlight(target, opts) {
       const duration = opts.duration ?? 1.5;
       const style = opts.style ?? "ring";
-      const { element } = findAt(elementId, opts.at);
-      const r = toContent(element.bbox);
+      // The highlighted region in capture CSS px: an element's box, or a Rect given in stage px at the base transform.
+      const { bbox, radius, label } =
+        typeof target === "string"
+          ? (() => {
+              const { element } = findAt(target, opts.at);
+              return { bbox: element.bbox, radius: element.style.radius, label: target };
+            })()
+          : (() => {
+              const b = {
+                x: (target.x - (left + c.side)) / k,
+                y: (target.y - (top + c.top)) / k,
+                width: target.width / k,
+                height: target.height / k,
+              };
+              const at = [b.x, b.y, b.width, b.height].map((n) => Math.round(n)).join(",");
+              return { bbox: b, radius: 8, label: `rect:${at}` };
+            })();
+      const r = toContent(bbox);
       const box = el("div", `dm-highlight dm-highlight--${style}`, overlay);
       const pad = 6;
       Object.assign(box.style, {
@@ -351,16 +388,20 @@ export function screen(v: Video, o: ScreenOptions): ScreenHandle {
         top: `${r.y - pad}px`,
         width: `${r.width + 2 * pad}px`,
         height: `${r.height + 2 * pad}px`,
-        borderRadius: `${element.style.radius * k + pad}px`,
+        borderRadius: `${radius * k + pad}px`,
       });
       const from = opts.at;
       const to = opts.at + duration;
       internal.highlights.push({
         screenId: id,
-        elementId,
+        elementId: label,
         from,
         to,
-        rect: () => handle.liveRect(elementId, internal.t),
+        rect: () => {
+          const a = livePoint({ x: bbox.x, y: bbox.y }, internal.t);
+          const b = livePoint({ x: bbox.x + bbox.width, y: bbox.y + bbox.height }, internal.t);
+          return { x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y };
+        },
       });
       internal.updaters.push((tt) => {
         const fade = 0.25;

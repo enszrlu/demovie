@@ -129,10 +129,25 @@ export function expandWorkspaceGlobs(root: string, globs: string[]): string[] {
   return [...out].sort();
 }
 
-function hasRouteFiles(dir: string): boolean {
+/**
+ * An App Router folder holds a page or layout — at its top, or a few segments down: the root layout may live in a
+ * segment (`app/[locale]/layout.tsx` with next-intl) or a route group.
+ */
+function hasRouteFiles(dir: string, depth = 3): boolean {
   if (!existsSync(dir)) return false;
   try {
-    return readdirSync(dir).some((f) => /^(page|layout)\.(tsx|ts|jsx|js|mdx)$/.test(f));
+    const entries = readdirSync(dir, { withFileTypes: true });
+    if (entries.some((e) => e.isFile() && /^(page|layout)\.(tsx|ts|jsx|js|mdx)$/.test(e.name))) return true;
+    return (
+      depth > 0 &&
+      entries.some(
+        (e) =>
+          e.isDirectory() &&
+          !e.name.startsWith("_") &&
+          !e.name.startsWith(".") &&
+          hasRouteFiles(path.join(dir, e.name), depth - 1),
+      )
+    );
   } catch {
     return false;
   }

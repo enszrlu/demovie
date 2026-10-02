@@ -68,7 +68,7 @@ flowchart LR
 | Claude Code | `.claude/skills/demovie` or the plugin | ✓ | interactive and headless |
 | Codex CLI | `.agents/skills/demovie` | ✓ | interactive and headless |
 | Cursor | `.agents/skills/demovie` | ✓ (`.cursor/mcp.json`) | interactive and headless |
-| Any MCP client or skills-aware agent | `npx skills add <owner>/demovie` | `npx -y demovie mcp` | `--agent custom --agent-cmd "…"` |
+| Any MCP client or skills-aware agent | `npx skills add enszrlu/demovie` | `npx -y demovie mcp` | `--agent custom --agent-cmd "…"` |
 
 demovie never logs in to AI services or touches your subscriptions: it starts the agent you installed and signed in
 to, or passes through API keys in CI. See [agents](docs/agents.md) and [licensing and terms](docs/licensing-and-terms.md).

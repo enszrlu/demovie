@@ -14,6 +14,8 @@ export interface CommandContext {
   json: boolean;
   verbose: boolean;
   yes: boolean;
+  /** `--yes` passed explicitly (or an MCP call's `confirm`): consent to paid calls. CI alone (`yes`) is not. */
+  confirmed: boolean;
   color: boolean;
   interactive: boolean;
   logger: Logger;
@@ -30,6 +32,7 @@ export function createContext(options: GlobalOptions): CommandContext {
     json,
     verbose,
     yes,
+    confirmed: Boolean(options.yes),
     color,
     interactive: !yes && !json && Boolean(process.stdin.isTTY) && Boolean(process.stdout.isTTY),
     logger,

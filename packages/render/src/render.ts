@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { type FormatId, formatSlug, logger, type Project, VideoSchema, writeJson } from "@demovie/core";
 import { encodeGif, encodeMp4, encodeWebm, type H264Encoder, probe } from "./encode.ts";
-import { defaultWorkers, renderFrames, renderId } from "./frames.ts";
+import { defaultWorkers, markFrames, pruneFrames, renderFrames, renderId } from "./frames.ts";
 import { startServer } from "./server.ts";
 import { capture, launchRenderer, openComposition, seek } from "./session.ts";
 import type { VideoContext } from "./video-dir.ts";
@@ -78,11 +78,17 @@ export async function render(project: Project, video: VideoContext, options: Ren
     ms: 0,
   };
   const server = await startServer({ project, video });
-  const browser = await launchRenderer();
+  const rendered = new Set<string>();
+  const browser = await launchRenderer().catch(async (error: unknown) => {
+    await server.close();
+    throw error;
+  });
   try {
     for (const format of options.formats) {
       const t0 = Date.now();
       const id = await renderId(project, video, { format, scale, fps, type });
+      rendered.add(id);
+      await markFrames(project, video, id);
       const dir = path.join(project.paths.cacheDir, "frames", id, formatSlug(format));
       const frames = await renderFrames({
         browser,
@@ -139,6 +145,9 @@ export async function render(project: Project, video: VideoContext, options: Ren
     await browser.close();
     await server.close();
   }
+  // Every format encoded: frame sets of this video's earlier renders are no longer needed.
+  const pruned = await pruneFrames(project, video, rendered);
+  if (pruned) logger.debug(`removed ${pruned} outdated frame set(s) from .demovie/.cache/frames`);
   const first = report.outputs[0];
   if (options.gif && first) {
     const gif = path.join(video.outDir, "preview.gif");

@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import {
+  AGENT_IDS,
   type AgentId,
   type Config,
   ConfigSchema,
@@ -58,6 +59,16 @@ function guessSuccessPath(routes: { path: string; protected: boolean | null; dyn
 }
 
 export async function run(ctx: CommandContext, options: InitOptions): Promise<CommandResult> {
+  // Flags first, as usage errors (not a schema dump after detection)
+  if (options.url && !/^https?:\/\/[^\s/]+/.test(options.url))
+    throw new DemovieError(
+      "E_USAGE",
+      `--url "${options.url}" is not an http(s) URL`,
+      "pass e.g. --url http://localhost:3000",
+    );
+  const badAgent = options.agents?.find((a) => !(AGENT_IDS as readonly string[]).includes(a));
+  if (badAgent)
+    throw new DemovieError("E_USAGE", `unknown agent "${badAgent}"`, `use ${AGENT_IDS.join(", ")} (comma separated)`);
   const interactive = ctx.interactive;
   if (interactive) clack.intro("demovie");
 
@@ -106,6 +117,22 @@ export async function run(ctx: CommandContext, options: InitOptions): Promise<Co
     ctx.logger.step(
       `Using the existing ${path.relative(ctx.cwd, paths.config) || ".demovie/config.json"} (pass --force to regenerate it)`,
     );
+    const ignored = (
+      [
+        ["--url", options.url],
+        ["--framework", options.framework],
+        ["--start", options.start],
+        ["--seed", options.seed],
+        ["--auth", options.auth],
+        ["--login-path", options.loginPath],
+        ["--success-path", options.successPath],
+        ["--agents", options.agents],
+      ] as const
+    )
+      .filter(([, value]) => value !== undefined)
+      .map(([flag]) => flag);
+    if (ignored.length)
+      ctx.logger.warn(`${ignored.join(", ")} ignored: the config already exists (pass --force to regenerate it)`);
   } else {
     const fsRoutes = detection.nextjs ? discoverRoutes(root, detection.nextjs) : [];
     const loginRoute = fsRoutes.find((r) => /\/(log-?in|sign-?in)$/i.test(r.path))?.path ?? null;
@@ -257,7 +284,8 @@ export async function run(ctx: CommandContext, options: InitOptions): Promise<Co
     ? [`Codex MCP (add it yourself; demovie never edits global config):\n${snippets.codex}`]
     : [];
 
-  const next = 'npx demovie capture, then ask your agent: "/demovie make a 30s launch video"';
+  const next =
+    'npx demovie capture, then ask your agent for a video ("make a 30-second launch video with demovie"), or run `npx demovie make`';
   const human: string[] = [];
   if (summary?.brand) {
     human.push(

@@ -91,3 +91,56 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] changesets configured; `release.yml` prepared (not run); version 0.1.0 — `@changesets/cli` 3.0.3 with `.changeset/config.json` (`demovie` + `@demovie/runtime` fixed, public; private workspace packages not versioned) and `pnpm changeset`; `changeset status` reads the config; `CHANGELOG.md` → `packages/cli/CHANGELOG.md` and `packages/runtime/CHANGELOG.md` (0.1.0); `.github/workflows/release.yml` (verify, then changesets/action with npm provenance) only runs on main when the `DEMOVIE_RELEASES` repository variable is `enabled`, and never ran (no remote); every package is 0.1.0 and `demovie --version` → 0.1.0
 - [x] Tarball smoke test via npx (and bunx if available) — verify check 14: `demovie-0.1.0.tgz` unpacked 2.5 MB (< 15 MB); `npx demovie --version` → 0.1.0, `doctor --json` ok, `init --yes` on a Harborly copy ok; `bunx demovie --version` → 0.1.0 and `doctor` with bun 1.2.4
 - [x] `pnpm verify` + `pnpm verify:dogfood` pass; `git status` clean — after the last change: `pnpm verify` → `VERIFY OK (14 checks)`, none pending, the only skips being the 2 live paid-API tests without keys; `pnpm verify:dogfood` → `VERIFY DOGFOOD OK (8 checks)` with ffprobe summaries and 0 QA errors for launch (16:9, 9:16) and changelog (16:9, 1:1); `git status --porcelain` empty; `git log --oneline` shows `feat(m0)` … `feat(m9)`
+
+## Post-M9 — Production hardening and a second real app (Bite Club)
+Decisions D113–D135. Every fix below has a unit test unless noted.
+- [x] Security:
+  - render sandbox: no network beyond 127.0.0.1, no WebSockets or WebRTC; the static server checks real paths and the Host header (`packages/render/test/sandbox.test.ts`);
+  - secret masking in all JSON, errors and MCP output (`output.test.ts`, `mcp-handlers.test.ts`);
+  - app headers scoped to the app origin (`headers.test.ts`), saved login state filtered to the app's site (`same-site.test.ts`), `.env` written 0600 (`fs.test.ts`);
+  - redaction of shadow roots, iframes, hrefs and titles (`element-map.test.ts`);
+  - `make` refuses nested runs and passes Claude deny rules (`make.test.ts`); paid calls need an explicit `--yes` (`context.test.ts`).
+- [x] Robustness:
+  - `down` only kills the process it started (`same-process.test.ts`);
+  - the frame cache is keyed on everything a frame depends on, written atomically and pruned (`frames.test.ts`);
+  - capture can't hang on lazy images, and captures the full page of app shells (`element-map.test.ts`);
+  - unique capture job ids; route detection for i18n proxies and `[locale]` layouts (`detect.test.ts`);
+  - `changes` at a tag and in an empty repository (`changes.test.ts`);
+  - numeric CLI flags range-checked, with `--json` usage errors (checked by hand: `--fps abc` and `--scale 0` exit 2, and with `--json` print `E_USAGE`).
+- [x] Determinism: a frame depended on the frame rendered before it, because Chromium caches the raster of `will-change` layers (Bite Club, t=15 s). The cursor no longer sets it, and DM-R01 now renders the frame before each sample first, so it catches this.
+- [x] Packaging:
+  - `@demovie/runtime` ships types; `demovie/flow` exports `defineFlow` with types (`flow-types.test.ts` type-checks a consumer);
+  - package metadata points at `enszrlu/demovie`;
+  - `doctor` launches Chromium, with an install-deps hint for Linux (`launch-failure.test.ts`).
+- [x] CI and release:
+  - actions moved to their Node 24 majors;
+  - CI checks that generated files are committed, and runs a Node 20.19 build job;
+  - `release.yml` splits verify (read-only) from release and publishes with npm trusted publishing (OIDC);
+  - the action finds monorepo lockfiles, installs the Chromium of the demovie that runs, and reports workspace-relative outputs (`packages/action/test/action.test.ts`).
+- [x] Friction F5 fixed: Harborly's health badges carry `data-demovie="health-<id>"`. Both Harborly videos were re-captured and re-rendered: the changelog rings sit on the badges themselves, and the launch video has the new phone status band.
+- [x] Bite Club example: in the Bite Club repository's `.demovie/` folder (outside this repository, untracked there), with no app code changed.
+  - **Setup:** a real Next.js 16 app with i18n and three roles, logged in with its seed test accounts.
+  - **Captures:** employee screens (Weekly Menu Selection, the pickup QR code) and kitchen screens (Distribution, Today's Menu Details) on phone and laptop.
+  - **The video:** "Bite Club — Stop guessing. Start counting.", made by following SKILL.md: 35 s at 112 bpm, 16:9 + 9:16, synth music and SFX, no VO.
+  - **Outputs:** `out/launch-16x9.mp4` 1920×1080 (3.5 MB) and `out/launch-9x16.mp4` 1080×1920 (3.6 MB), BT.709, mix −15.8 LUFS / −2.2 dBTP.
+  - **QA:** `demovie qa launch --format all` gives 0 errors and 1 warning per format (DM-A01: the brand's JetBrains Mono is declared but unused).
+  - **Friction found and fixed:**
+    - **F10** — capture hung on lazy offscreen images;
+    - **F11** — every route was marked protected (i18n catch-all proxy);
+    - **F12** — no root layout found under `[locale]`;
+    - **F13** — the logo SVG had no viewBox and used JSX attribute names;
+    - **F14** — `text.reveal` dropped accent spans;
+    - **F15** — the phone's dynamic island covered the page;
+    - **F16** — rings couldn't frame a row that has no element (`highlight(rect)`);
+    - **F17** — full-page captures of app-shell scrollers were viewport-only;
+    - **F18** — the determinism bug above;
+    - **F19** — an unused brand font failed QA (now a warning);
+    - **F20** — Turbopack stalled on start (troubleshooting entry; the example uses `next dev --webpack`).
+- [x] Two problems found by this repository's own verify, both fixed:
+  - **F21** — vitest's `NODE_ENV=test` reached `next dev`, which then rewrote Harborly's tsconfig.json (D134; `child-env.test.ts`);
+  - **F22** — the new MCP project boundary refused the smoke test's `../compositions/clean-launch`, so the smoke test now uses the project's own slug (D135).
+- [x] `pnpm verify` → `VERIFY OK (14 checks)`, none pending:
+  - 188 unit tests and 27 integration tests; the only skips are 2 live paid-API tests without keys;
+  - reference compositions QA 0 errors, 0 warnings;
+  - MCP smoke: stills returns a 31 KB PNG.
+- [x] `pnpm verify:dogfood` → `VERIFY DOGFOOD OK (8 checks)`: Harborly launch (16:9, 9:16; re-rendered in 63.5 s and 73.7 s against the 4 min budget) and changelog (16:9, 1:1), QA 0 errors and 0 warnings on all four.

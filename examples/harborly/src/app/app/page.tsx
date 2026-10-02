@@ -245,7 +245,7 @@ export default async function DashboardPage() {
                             </div>
                           </td>
                           <td className="py-3 pr-4">
-                            <HealthBadge health={project.health} />
+                            <HealthBadge health={project.health} demovieId={`health-${project.id}`} />
                           </td>
                           <td className="py-3 text-right text-[13px] whitespace-nowrap text-muted-foreground tabular-nums">
                             {project.dueDate ? formatShortDate(project.dueDate) : "—"}

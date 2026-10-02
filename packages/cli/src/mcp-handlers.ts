@@ -5,6 +5,7 @@ import {
   DemovieError,
   ElementMapSchema,
   findProjectRoot,
+  isInside,
   loadProject,
   RoutesSchema,
   readJson,
@@ -14,9 +15,23 @@ import { type CommandName, commandLoaders } from "./commands/index.ts";
 import { type CommandContext, createContext } from "./context.ts";
 import type { CommandResult } from "./output.ts";
 
+/**
+ * MCP inputs only name things inside the project: a slug is a plain name or a path inside the project folder (never
+ * `../elsewhere`), and a capture id stays under captures/.
+ */
+function inside(root: string, cwd: string, value: string, what: string): string {
+  if (/^[a-z0-9][a-z0-9-]*$/.test(value)) return value;
+  if (isInside(root, path.resolve(cwd, value))) return value;
+  throw new DemovieError(
+    "E_USAGE",
+    `${what} "${value}" is outside the project`,
+    `pass a video slug (e.g. "launch") or a path inside ${root}`,
+  );
+}
+
 /** A JSON-mode context; `yes` only when the caller confirmed (paid calls) or the tool never asks. */
 function contextFor(cwd: string, yes: boolean): CommandContext {
-  return { ...createContext({ cwd, json: true }), yes, interactive: false };
+  return { ...createContext({ cwd, json: true }), yes, confirmed: yes, interactive: false };
 }
 
 async function call(name: CommandName, ctx: CommandContext, ...args: unknown[]): Promise<Record<string, unknown>> {
@@ -43,6 +58,7 @@ function captureDirs(capturesDir: string): string[] {
 /** MCP tool implementations backed by the CLI commands (SPEC §14.3). */
 export function mcpHandlers(cwd: string): ToolHandlers {
   const data = (d: unknown): ToolOutput => ({ data: d });
+  const slug = (value: string) => inside(findProjectRoot(cwd) ?? cwd, cwd, value, "slug");
   return {
     status: async () => data(await call("status", contextFor(cwd, true))),
 
@@ -104,9 +120,10 @@ export function mcpHandlers(cwd: string): ToolHandlers {
       return data({ total: captures.length, stale: stale.size, captures });
     },
 
+    // The non-local app URL guard (SPEC §9.1) needs the user's approval: allowRemote, never an implicit yes.
     capture: async (a) =>
       data(
-        await call("capture", contextFor(cwd, true), {
+        await call("capture", contextFor(cwd, a.allowRemote === true), {
           route: a.routes,
           flow: a.flows,
           viewport: a.viewports,
@@ -118,6 +135,12 @@ export function mcpHandlers(cwd: string): ToolHandlers {
     get_elements: async (a) => {
       const project = await loadProject(cwd);
       const file = path.join(project.paths.capturesDir, a.captureId, "elements.json");
+      if (!isInside(project.paths.capturesDir, file))
+        throw new DemovieError(
+          "E_USAGE",
+          `capture id "${a.captureId}" is outside captures/`,
+          "call list_captures for valid ids",
+        );
       if (!existsSync(file))
         throw new DemovieError(
           "E_NOT_FOUND",
@@ -148,7 +171,7 @@ export function mcpHandlers(cwd: string): ToolHandlers {
 
     new_video: async (a) =>
       data(
-        await call("new", contextFor(cwd, true), a.slug, {
+        await call("new", contextFor(cwd, true), slug(a.slug), {
           type: a.type,
           duration: a.duration,
           format: a.formats,
@@ -159,7 +182,7 @@ export function mcpHandlers(cwd: string): ToolHandlers {
 
     stills: async (a) => {
       const sheet = a.sheet ?? true;
-      const result = (await call("stills", contextFor(cwd, true), a.slug, {
+      const result = (await call("stills", contextFor(cwd, true), slug(a.slug), {
         at: a.at?.map(String),
         every: a.every ?? (a.at?.length ? undefined : 1),
         format: a.format,
@@ -170,11 +193,12 @@ export function mcpHandlers(cwd: string): ToolHandlers {
       return { data: result, images: files.map((f) => path.resolve(cwd, f.file)) };
     },
 
-    qa: async (a) => data(await call("qa", contextFor(cwd, true), a.slug, { format: a.format, strict: a.strict })),
+    qa: async (a) =>
+      data(await call("qa", contextFor(cwd, true), slug(a.slug), { format: a.format, strict: a.strict })),
 
     audio_music: async (a) =>
       data(
-        await call("audio-music", contextFor(cwd, a.confirm === true), a.slug, {
+        await call("audio-music", contextFor(cwd, a.confirm === true), slug(a.slug), {
           bpm: a.bpm,
           mood: a.mood,
           provider: a.provider,
@@ -186,7 +210,7 @@ export function mcpHandlers(cwd: string): ToolHandlers {
     audio_voice: async (a) => {
       try {
         return data(
-          await call("audio-voice", contextFor(cwd, a.confirm), a.slug, {
+          await call("audio-voice", contextFor(cwd, a.confirm), slug(a.slug), {
             provider: a.provider,
             voice: a.voice,
             model: a.model,
@@ -208,11 +232,11 @@ export function mcpHandlers(cwd: string): ToolHandlers {
       }
     },
 
-    audio_mix: async (a) => data(await call("audio-mix", contextFor(cwd, true), a.slug)),
+    audio_mix: async (a) => data(await call("audio-mix", contextFor(cwd, true), slug(a.slug))),
 
     render: async (a) =>
       data(
-        await call("render", contextFor(cwd, true), a.slug, {
+        await call("render", contextFor(cwd, true), slug(a.slug), {
           format: a.formats?.length ? a.formats.join(",") : "all",
           quality: a.quality ?? "final",
         }),

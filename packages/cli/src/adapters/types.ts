@@ -2,6 +2,8 @@ export type AgentAdapterId = "claude" | "codex" | "cursor" | "custom";
 
 export interface AdapterOptions {
   model?: string | undefined;
+  /** `make --voice`: the user opted into (paid) voiceover, so a headless run may call `audio voice`. */
+  voice?: boolean | undefined;
 }
 
 /** Data-driven description of how to launch one agent CLI (SPEC §14.4). */

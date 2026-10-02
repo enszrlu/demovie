@@ -4,6 +4,13 @@
   "type": "module",
   "description": "Browser runtime for demovie compositions: deterministic time, device frames, camera moves to real elements, a truthful cursor, captions and transitions.",
   "license": "MIT",
+  "homepage": "https://github.com/enszrlu/demovie#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enszrlu/demovie.git",
+    "directory": "packages/runtime"
+  },
+  "bugs": "https://github.com/enszrlu/demovie/issues",
   "keywords": [
     "demovie",
     "video",
@@ -13,17 +20,19 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/types/index.d.ts",
       "default": "./dist/runtime.js"
     },
-    "./clock": "./dist/clock.js",
+    "./clock": {
+      "types": "./dist/types/clock.d.ts",
+      "default": "./dist/clock.js"
+    },
     "./runtime.css": "./dist/runtime.css",
     "./styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "src",
     "styles",
     "fonts",
     "README.md",

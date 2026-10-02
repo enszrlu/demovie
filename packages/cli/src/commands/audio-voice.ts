@@ -71,9 +71,7 @@ export async function run(ctx: CommandContext, slug: string, options: VoiceCliOp
 
   const apiKey = requireKey(project, provider.envKey, `${provider.label} voiceover`);
   const cacheDir = path.join(project.paths.cacheDir, "voice");
-  const uncached = lines.filter(
-    (l) => !existsSync(path.join(cacheDir, `${audio.voiceCacheKey(provider.id, model, voice, l.text)}.json`)),
-  );
+  const uncached = lines.filter((l) => !audio.isVoiceCached(cacheDir, provider, model, voice, l.text));
   const cost = provider.estimateCost(uncached, { model });
   if (uncached.length > 0) {
     const usd = cost.usd === null ? "price unknown for this model" : `≈ $${cost.usd.toFixed(4)}`;

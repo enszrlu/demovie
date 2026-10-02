@@ -15,9 +15,13 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
   }
   const capture = await import("@demovie/capture");
   const app = await capture.ensureApp(project, { yes: ctx.yes, seed: false });
-  const browser = await capture.launchChromium({ headless: false });
+  const browser = await capture.launchChromium({ headless: false }).catch(async (error: unknown) => {
+    if (app.started) await app.stop();
+    throw error;
+  });
   try {
-    const context = await browser.newContext({ viewport: null, extraHTTPHeaders: project.resolved.app.headers });
+    const context = await browser.newContext({ viewport: null });
+    await capture.routeAppHeaders(context, app.url, project.resolved.app.headers);
     const page = await context.newPage();
     const { loginPath, successPath } = project.resolved.auth;
     await page.goto(capture.appUrl(app.url, loginPath ?? "/"));
@@ -31,7 +35,7 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
       : new Promise<void>(() => {});
     await Promise.race([enter, reached]);
     rl.close();
-    await capture.saveState(context, project.paths.authState);
+    await capture.saveState(context, project.paths.authState, app.url);
     const cookies = await capture.cookieNames(project.paths.authState);
     return {
       data: { ok: true, statePath: project.paths.authState, cookieNames: cookies },

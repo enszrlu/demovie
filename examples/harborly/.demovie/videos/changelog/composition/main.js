@@ -59,7 +59,7 @@ const [kicker, title] = box.children;
 tl.fromTo(kicker, { opacity: 0, y: 1.5 * u }, { opacity: 1, y: 0, duration: 0.7, ease: EASE }, 0.1);
 text.reveal(title, { at: 0.3, by: "word", stagger: 0.06, duration: 0.8, ease: EASE });
 
-// 2 · The Projects board: one card of each health, ringed in turn
+// 2 · The Projects board: one badge of each health, ringed in turn (badges carry data-demovie ids)
 const board = v.shot("board", bar(1), bar(3), { kind: "product" });
 add(board.el, `<div class="dm-bg"></div>`);
 const app = browser(board, "routes/app-projects@desktop", bar(1) - 0.3);
@@ -68,10 +68,10 @@ headline(board, "On track, At risk, Off track.", bar(1) + 0.2, bar(3) - 0.45);
 const column = app.rect("link:mobile-onboarding", "link:billing-migration");
 const cards = app.rect("link:android-app-v2", "link:billing-migration");
 app.focus(column, { at: bar(1) - 0.3, duration: 0, scale: zoomFor(column, 0.86) });
-app.highlight("link:mobile-onboarding", { at: bar(1) + 0.4, duration: 1.0, style: "ring" });
+app.highlight("dm:health-prj_mobile-onboarding", { at: bar(1) + 0.4, duration: 1.0, style: "ring" });
 app.focus(cards, { at: bar(1) + 1.3, duration: 0.9, scale: zoomFor(cards, 0.9), ease: "power3.inOut" });
-app.highlight("link:android-app-v2", { at: bar(1) + 2.1, duration: 0.85, style: "ring" });
-app.highlight("link:billing-migration", { at: bar(1) + 3.0, duration: 0.9, style: "ring" });
+app.highlight("dm:health-prj_android-app-v2", { at: bar(1) + 2.1, duration: 0.85, style: "ring" });
+app.highlight("dm:health-prj_billing-migration", { at: bar(1) + 3.0, duration: 0.9, style: "ring" });
 
 // 3 · The dashboard: the same badges in Upcoming launches
 const dash = v.shot("dashboard", bar(3), bar(5), { kind: "product" });
@@ -90,11 +90,7 @@ const upcoming = part(
   1,
 );
 home.focus(upcoming, { at: bar(3) + 0.3, duration: 1.2, scale: zoomFor(upcoming, 0.9), ease: "power3.inOut" });
-home.highlight("row:usage-analytics-kestrel-health-hs-owner-hana-sat", {
-  at: bar(3) + 1.7,
-  duration: 2.0,
-  style: "ring",
-});
+home.highlight("dm:health-prj_usage-analytics", { at: bar(3) + 1.7, duration: 2.0, style: "ring" });
 
 // 4 · End card on the ending hit
 const end = v.shot("end", bar(5), v.duration, { kind: "logo" });

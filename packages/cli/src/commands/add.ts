@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { copyFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -46,17 +46,24 @@ export async function run(
   const added: Asset[] = [];
   const { encodeWebm, ffmpegBin, probe } = await import("@demovie/render");
 
+  // Check every input before importing any, so a refused file never leaves the others half imported.
   for (const input of files) {
     const source = path.resolve(ctx.cwd, input);
     if (!existsSync(source)) throw new DemovieError("E_NOT_FOUND", `${input} does not exist`, "check the path");
-    const kind = kindOf(source);
-    if (kind === "audio" && !options.licensed) {
+    if (!statSync(source).isFile())
+      throw new DemovieError("E_USAGE", `${input} is not a file`, "pass image, video or audio files (not folders)");
+    if (kindOf(source) === "audio" && !options.licensed) {
       throw new DemovieError(
         "E_USAGE",
         `${input} is audio; demovie only imports audio you hold a license for`,
         `re-run with --licensed if you have the rights (e.g. \`npx demovie add ${input} --licensed --describe "Track from <library>, license #…"\`)`,
       );
     }
+  }
+
+  for (const input of files) {
+    const source = path.resolve(ctx.cwd, input);
+    const kind = kindOf(source);
     const ext = kind === "video" ? ".webm" : path.extname(source).toLowerCase();
     const base = slugify(path.basename(source, path.extname(source)));
     let name = `${base}${ext}`;

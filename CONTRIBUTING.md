@@ -21,7 +21,7 @@ pnpm test:integration    # real Chromium + examples/harborly
 pnpm verify              # everything; must end with "VERIFY OK (<n> checks)"
 ```
 
-`pnpm verify` runs Biome, the typecheck, unit and integration tests, the build, the license check, QA on every
+`pnpm verify` runs Biome, the typecheck, the build, unit tests, the license check, integration tests, QA on every
 reference composition, a render smoke test, the MCP smoke test, skill lint, the plugin/marketplace manifests, the
 GitHub Action dry-run, the docs check and a tarball smoke test. Please run it before opening a pull request.
 

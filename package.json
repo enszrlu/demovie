@@ -22,7 +22,8 @@
     "docs:build": "tsx scripts/build-docs.ts",
     "comparison:build": "tsx scripts/build-comparison.ts",
     "gallery:build": "tsx scripts/build-gallery.ts",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm skill:build && pnpm docs:build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -67,7 +67,7 @@ export function requireKey(project: Project, name: "ELEVENLABS_API_KEY" | "OPENA
 /** Print the estimate, then require `--yes` or an interactive confirmation (SPEC §13.3). */
 export async function confirmCost(ctx: CommandContext, summary: string): Promise<void> {
   ctx.logger.info(summary);
-  if (ctx.yes) return;
+  if (ctx.confirmed) return;
   if (ctx.interactive) {
     if (await ask.confirm("Proceed with this paid request?", false)) return;
     throw new DemovieError(

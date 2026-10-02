@@ -132,33 +132,52 @@ export const REDACT_SCRIPT = String.raw`(args) => {
     }
     return out;
   };
+  // Every root a screenshot shows: the document, open shadow roots and same-origin iframes.
+  const roots = [];
+  const collect = (root) => {
+    roots.push(root);
+    for (const el of root.querySelectorAll("*")) {
+      if (el.shadowRoot) collect(el.shadowRoot);
+      if (el.tagName === "IFRAME") { try { const doc = el.contentDocument; if (doc && doc.body) collect(doc); } catch {} }
+    }
+  };
+  collect(document);
   if (args.patterns.length) {
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    for (const node of nodes) {
-      const parent = node.parentElement;
-      if (parent && (parent.tagName === "SCRIPT" || parent.tagName === "STYLE")) continue;
-      const next = apply(node.nodeValue || "");
-      if (next !== node.nodeValue) node.nodeValue = next;
-    }
-    for (const el of document.querySelectorAll("input, textarea")) {
-      if (el.type === "password" || el.type === "hidden") continue;
-      const next = apply(el.value || "");
-      if (next !== el.value) { el.value = next; el.setAttribute("value", next); }
-      const ph = el.getAttribute("placeholder");
-      if (ph) { const np = apply(ph); if (np !== ph) el.setAttribute("placeholder", np); }
-    }
-    for (const el of document.querySelectorAll("[title], img[alt], [aria-label]")) {
-      for (const attr of ["title", "alt", "aria-label"]) {
-        const v = el.getAttribute(attr);
-        if (v) { const nv = apply(v); if (nv !== v) el.setAttribute(attr, nv); }
+    for (const root of roots) {
+      const doc = root.ownerDocument || root;
+      const walker = doc.createTreeWalker(root.body || root, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      for (const node of nodes) {
+        const parent = node.parentElement;
+        if (parent && (parent.tagName === "SCRIPT" || parent.tagName === "STYLE")) continue;
+        const next = apply(node.nodeValue || "");
+        if (next !== node.nodeValue) node.nodeValue = next;
+      }
+      for (const el of root.querySelectorAll("input, textarea")) {
+        if (el.type === "password" || el.type === "hidden") continue;
+        const next = apply(el.value || "");
+        if (next !== el.value) { el.value = next; el.setAttribute("value", next); }
+        const ph = el.getAttribute("placeholder");
+        if (ph) { const np = apply(ph); if (np !== ph) el.setAttribute("placeholder", np); }
+      }
+      // attributes element maps record: titles, alt text, labels and link targets (mailto:, tel:, ?email=…)
+      for (const el of root.querySelectorAll("[title], img[alt], [aria-label], [href]")) {
+        for (const attr of ["title", "alt", "aria-label", "href"]) {
+          const v = el.getAttribute(attr);
+          if (!v) continue;
+          const text = attr === "href" ? (() => { try { return decodeURIComponent(v); } catch { return v; } })() : v;
+          const nv = apply(text);
+          if (nv !== text) el.setAttribute(attr, nv);
+        }
       }
     }
+    if (document.title) { const t = apply(document.title); if (t !== document.title) document.title = t; }
   }
   let masked = 0;
   for (const sel of args.selectors) {
-    for (const el of document.querySelectorAll(sel)) { el.style.setProperty("filter", "blur(8px)", "important"); masked++; }
+    for (const root of roots)
+      for (const el of root.querySelectorAll(sel)) { el.style.setProperty("filter", "blur(8px)", "important"); masked++; }
   }
   if (masked) counts.selector = masked;
   return counts;

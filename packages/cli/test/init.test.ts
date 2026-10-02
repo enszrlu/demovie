@@ -73,4 +73,13 @@ describe("init --yes (static, app not running)", () => {
     expect(data.app.reachable).toBe(false);
     expect(data.next).toContain("capture");
   });
+
+  it("rejects a malformed --url or an unknown agent before touching anything", async () => {
+    const ctx = createContext({ cwd: tmp, yes: true, json: true });
+    await expect(init(ctx, { url: "notaurl" })).rejects.toMatchObject({ code: "E_USAGE" });
+    await expect(init(ctx, { agents: ["claud"] })).rejects.toMatchObject({
+      code: "E_USAGE",
+      fix: expect.stringContaining("claude"),
+    });
+  });
 });

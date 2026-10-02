@@ -156,6 +156,15 @@ html {
   box-shadow: 0 20px 40px -20px rgb(0 0 0 / 0.5);
 }
 
+.dm-screen__status {
+  position: absolute;
+  background: #ffffff;
+}
+
+.dm-screen__status[data-scheme="dark"] {
+  background: #000000;
+}
+
 .dm-screen__island {
   position: absolute;
   left: 50%;
@@ -195,7 +204,7 @@ html {
   top: 0;
   z-index: 50;
   pointer-events: none;
-  will-change: transform;
+  /* no will-change: a promoted layer is rasterized once and then scaled, so a frame would depend on the frames before it */
   filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.28));
 }
 

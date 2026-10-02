@@ -25,8 +25,33 @@
 | `storageState` | OAuth, magic links, 2FA | `npx demovie auth record` opens a real browser; you log in by hand; the session is saved to `.demovie/.auth/state.json` (gitignored). |
 | `script` | Anything else | `.demovie/auth.ts` default-exports `async ({ page, baseURL, env }) => { … }`. |
 
-`npx demovie auth test` checks the login. Credentials live in your environment or `.demovie/.env` (gitignored), never
+`npx demovie auth test` checks the login (and saves a fresh session). Credentials live in your environment or `.demovie/.env` (gitignored), never
 in `config.json` — use `"$env:NAME"` references there. Use a demo account, not a real one.
+
+### Several roles
+
+Captures reuse the saved session in `.demovie/.auth/state.json`. When different screens need different users (an
+employee and a kitchen manager, say), use a `script` login that picks the account from an environment variable,
+then log in again and capture each role's routes in turn. Captures from every run merge into the same index:
+
+```ts
+// .demovie/auth.ts
+export default async ({ page, baseURL, env }) => {
+  const role = env.DEMOVIE_ROLE ?? "employee";
+  await page.goto(`${baseURL}/login`);
+  await page.locator("#email").fill(env[`${role.toUpperCase()}_EMAIL`] ?? "");
+  await page.locator("#password").fill(env[`${role.toUpperCase()}_PASSWORD`] ?? "");
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await page.waitForURL(/\/app/);
+};
+```
+
+```bash
+export DEMOVIE_ROLE=employee
+npx demovie auth test && npx demovie capture --route "/app/orders/**"
+export DEMOVIE_ROLE=manager
+npx demovie auth test && npx demovie capture --route "/app/reports/**"
+```
 
 ## Capturing
 

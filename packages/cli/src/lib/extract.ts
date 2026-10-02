@@ -8,6 +8,7 @@ import {
   buildGlossary,
   type Config,
   checkUrl,
+  DemovieError,
   type Detection,
   detectProject,
   discoverRoutes,
@@ -16,6 +17,7 @@ import {
   extractStaticBrand,
   type Glossary,
   logger,
+  normalizeSvg,
   type Project,
   type ProjectPaths,
   parseGlossaryMd,
@@ -98,10 +100,20 @@ export async function runExtraction(options: ExtractOptions): Promise<ExtractSum
   const reach = options.staticOnly
     ? null
     : await checkUrl(config.app.url, { headers: config.app.headers, timeoutMs: 4000 });
-  if (reach?.ok) {
+  // Chromium may not be installed yet (a fresh machine): extract statically and say how to finish the runtime pass.
+  const capture = reach?.ok ? await import("@demovie/capture") : null;
+  const browser = capture
+    ? await capture.launchChromium().catch((error: unknown) => {
+        if (error instanceof DemovieError && error.code.startsWith("E_PREREQ")) return null;
+        throw error;
+      })
+    : null;
+  if (reach?.ok && !browser) {
+    summary.runtime.note =
+      "Chromium isn't installed yet: used static extraction only — run `npx demovie doctor --fix`, then `npx demovie extract`";
+  }
+  if (capture && browser) {
     summary.runtime.reachable = true;
-    const capture = await import("@demovie/capture");
-    const browser = await capture.launchChromium();
     try {
       const base = config.app.url;
       const visited = new Set<string>();
@@ -183,7 +195,7 @@ export async function runExtraction(options: ExtractOptions): Promise<ExtractSum
     } finally {
       await browser.close();
     }
-  } else if (!options.staticOnly) {
+  } else if (!options.staticOnly && !reach?.ok) {
     summary.runtime.note = `app not reachable at ${config.app.url}${reach?.error ? ` (${reach.error})` : ""}; used static extraction only — run \`npx demovie up\` then \`npx demovie extract\` to confirm tokens at runtime`;
   }
 
@@ -193,7 +205,9 @@ export async function runExtraction(options: ExtractOptions): Promise<ExtractSum
     for (const copy of staticBrand.copies) {
       const dest = path.join(paths.dir, copy.to);
       await ensureDir(path.dirname(dest));
-      await copyFile(copy.from, dest);
+      // SVG logos are normalized so they scale (viewBox) and render as drawn (JSX attribute names fixed).
+      if (dest.endsWith(".svg")) await writeFileAtomic(dest, normalizeSvg(await readFile(copy.from, "utf8")));
+      else await copyFile(copy.from, dest);
     }
     await writeJson(paths.brandJson, brand);
     summary.brand = {

@@ -37,6 +37,10 @@ export const TOOLS = {
       flows: z.array(z.string()).optional().describe("flow names from .demovie/flows"),
       viewports: z.array(z.string()).optional().describe("viewport names, e.g. desktop, mobile"),
       changedSince: z.string().optional().describe("git ref: only recapture routes affected by changes since it"),
+      allowRemote: z
+        .boolean()
+        .optional()
+        .describe("capture an app URL that isn't local (staging, production): only after the user approved it"),
     },
   },
   get_elements: {
@@ -160,7 +164,7 @@ export function createMcpServer(handlers: ToolHandlers, o: { version: string }):
           const handler = handlers[name] as (a: unknown, c: ToolContext) => Promise<ToolOutput>;
           const out = await handler(args, { progress });
           const content: CallToolResult["content"] = [
-            { type: "text", text: JSON.stringify({ ok: true, ...(out.data as object) }, null, 2) },
+            { type: "text", text: JSON.stringify(logger.maskDeep({ ok: true, ...(out.data as object) }), null, 2) },
           ];
           for (const file of (out.images ?? []).slice(0, MAX_IMAGES))
             content.push({ type: "image", data: (await readFile(file)).toString("base64"), mimeType: "image/png" });
@@ -169,7 +173,9 @@ export function createMcpServer(handlers: ToolHandlers, o: { version: string }):
           const err = toDemovieError(error);
           return {
             isError: true,
-            content: [{ type: "text", text: JSON.stringify({ ok: false, error: err.toJSON() }, null, 2) }],
+            content: [
+              { type: "text", text: JSON.stringify(logger.maskDeep({ ok: false, error: err.toJSON() }), null, 2) },
+            ],
           };
         } finally {
           stop();

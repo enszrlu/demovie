@@ -1,4 +1,4 @@
-import { type DemovieError, ExitCode, toDemovieError } from "@demovie/core";
+import { type DemovieError, ExitCode, logger, toDemovieError } from "@demovie/core";
 import type { CommandContext } from "./context.ts";
 
 export interface CommandResult<T extends object = object> {
@@ -8,15 +8,23 @@ export interface CommandResult<T extends object = object> {
   human?: string | string[];
   /** Non-zero for "completed but failed" outcomes such as QA errors. */
   exitCode?: number;
+  /** The command already wrote its output (e.g. a long-running server's `--json` document): don't print again. */
+  emitted?: boolean;
 }
 
+// Every result and error is masked: secrets from .demovie/.env and `$env:` references never reach stdout (SPEC §17).
 export function emitResult(ctx: CommandContext, result: CommandResult): void {
   const exitCode = result.exitCode ?? ExitCode.ok;
+  if (result.emitted) {
+    process.exitCode = exitCode;
+    return;
+  }
   if (ctx.json) {
-    process.stdout.write(`${JSON.stringify({ ok: exitCode === ExitCode.ok, ...result.data }, null, 2)}\n`);
+    const data = logger.maskDeep({ ok: exitCode === ExitCode.ok, ...result.data });
+    process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
   } else if (result.human !== undefined) {
     const lines = Array.isArray(result.human) ? result.human : [result.human];
-    if (lines.length > 0) process.stdout.write(`${lines.join("\n")}\n`);
+    if (lines.length > 0) process.stdout.write(`${logger.mask(lines.join("\n"))}\n`);
   }
   process.exitCode = exitCode;
 }
@@ -24,12 +32,11 @@ export function emitResult(ctx: CommandContext, result: CommandResult): void {
 export function emitError(ctx: CommandContext | undefined, error: unknown): void {
   const err: DemovieError = toDemovieError(error);
   if (ctx?.json) {
-    process.stdout.write(`${JSON.stringify({ ok: false, error: err.toJSON() }, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(logger.maskDeep({ ok: false, error: err.toJSON() }), null, 2)}\n`);
   } else {
-    const log = ctx?.logger;
-    const message = log ? log.mask(err.message) : err.message;
-    process.stderr.write(`error: ${message}\nfix: ${err.fix}\n`);
-    if (ctx?.verbose && err.cause instanceof Error && err.cause.stack) process.stderr.write(`${err.cause.stack}\n`);
+    process.stderr.write(`error: ${logger.mask(err.message)}\nfix: ${logger.mask(err.fix)}\n`);
+    if (ctx?.verbose && err.cause instanceof Error && err.cause.stack)
+      process.stderr.write(`${logger.mask(err.cause.stack)}\n`);
   }
   process.exitCode = err.exitCode;
 }

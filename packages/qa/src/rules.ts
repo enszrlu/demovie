@@ -659,8 +659,19 @@ export const RULES: Rule[] = [
       const loaded = new Set(last.fonts.loaded.map((f) => f.toLowerCase()));
       const out: Occurrence[] = [];
       for (const f of last.fonts.failed) out.push({ t: 0, detail: `font ${f} failed to load` });
+      // A missing font that text renders in is a silent fallback (error); one no text uses only warns.
+      const used = new Set(nonUiTexts(input).map(({ text }) => text.fontFamily.toLowerCase()));
       for (const f of last.fonts.declared)
-        if (!loaded.has(f.toLowerCase())) out.push({ t: 0, detail: `declared font ${f} is not loaded` });
+        if (!loaded.has(f.toLowerCase()))
+          out.push(
+            used.has(f.toLowerCase())
+              ? { t: 0, detail: `declared font ${f} is not loaded` }
+              : {
+                  t: 0,
+                  detail: `declared font ${f} is not loaded, but no text in this video uses it, so nothing falls back (fine to leave)`,
+                  severity: "warn",
+                },
+          );
       const reported = new Set<string>();
       for (const { text, t } of nonUiTexts(input)) {
         const fam = text.fontFamily.toLowerCase();
@@ -725,8 +736,9 @@ export const RULES: Rule[] = [
     id: "DM-R01",
     severity: "error",
     title: "Determinism",
-    measurement: "5 sampled frames rendered twice, in different seek orders, are pixel-identical",
-    fix: "derive everything from t: no Date/timers/real randomness, put tweens in v.timeline, make onSeek pure",
+    measurement:
+      "5 sampled frames rendered twice — in a different seek order, the second time right after the frame before each — are pixel-identical",
+    fix: "derive everything from t: no Date/timers/real randomness, put tweens in v.timeline, make onSeek pure, and avoid will-change on animated elements",
     check(input) {
       if (!input.determinism) return { occurrences: [], skipped: "not checked" };
       return {

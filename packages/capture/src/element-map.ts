@@ -197,8 +197,19 @@ export const STABILITY_SCRIPT = `() => new Promise((resolve) => {
 })`;
 
 /** Resolve after fonts are ready and every image has decoded. */
+/**
+ * Fonts ready and the images on screen decoded, within 10 s. Only images in the viewport: a lazy image below the fold
+ * never loads, and its decode() would never settle.
+ */
 export const DECODE_SCRIPT = `async () => {
-  await document.fonts.ready;
-  await Promise.all([...document.images].map((img) => (img.complete && img.naturalWidth > 0 ? Promise.resolve() : img.decode().catch(() => {}))));
-  return true;
+  const onScreen = (img) => {
+    const r = img.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth;
+  };
+  const work = (async () => {
+    await document.fonts.ready;
+    await Promise.all([...document.images].filter(onScreen).map((img) => (img.complete && img.naturalWidth > 0 ? Promise.resolve() : img.decode().catch(() => {}))));
+    return true;
+  })();
+  return Promise.race([work, new Promise((resolve) => setTimeout(() => resolve(false), 10000))]);
 }`;

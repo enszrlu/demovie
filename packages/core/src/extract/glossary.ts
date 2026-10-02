@@ -92,23 +92,25 @@ export interface GlossaryInputs {
   features?: { term: string; source: string }[];
 }
 
-/** README bullets under a "Features" heading. */
+/** README bullets under a "Features" heading, including its sub-headings (`## Features` › `### Billing`). */
 export function readmeFeatures(readme: string): { term: string; source: string }[] {
   const out: { term: string; source: string }[] = [];
   const lines = readme.split(/\r?\n/);
-  let inFeatures = false;
+  let featuresLevel = 0; // heading level of the Features section we are in, 0 when outside
   for (const line of lines) {
-    const heading = line.match(/^#{1,4}\s+(.*)$/);
+    const heading = line.match(/^(#{1,4})\s+(.*)$/);
     if (heading) {
-      inFeatures = /features|what you get|highlights/i.test(heading[1]!);
+      const level = heading[1]!.length;
+      if (featuresLevel && level > featuresLevel) continue;
+      featuresLevel = /features|what you get|highlights/i.test(heading[2]!) ? level : 0;
       continue;
     }
-    if (!inFeatures) continue;
-    const item = line.match(/^\s*[-*]\s+(?:\*\*([^*]+)\*\*|([^:—–-]+?))(?:\s*[:—–-]|$)/);
-    if (item) {
-      const term = (item[1] ?? item[2] ?? "").trim().replace(/[.:]$/, "");
-      if (term && term.length <= 40) out.push({ term, source: "README features" });
-    }
+    if (!featuresLevel) continue;
+    // `- **Term:** text` or `- **Term** — text`, else `- Term: text`
+    const bold = line.match(/^\s*[-*]\s+\*\*([^*]+)\*\*/);
+    const plain = bold ? null : line.match(/^\s*[-*]\s+([^:—–*\s-][^:—–-]*?)(?:\s*[:—–-]|$)/);
+    const term = (bold?.[1] ?? plain?.[1] ?? "").trim().replace(/[.:]$/, "");
+    if (term && term.length <= 40) out.push({ term, source: "README features" });
   }
   return out;
 }

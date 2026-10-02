@@ -11,3 +11,10 @@
   - **Audio:** a deterministic music synthesizer with `beats.json`, 12 CC0 SFX, ElevenLabs/OpenAI voiceover with your key, captions, ducking and loudness normalization.
   - **Agent layer:** an Agent Skill, a Claude Code plugin and marketplace, an MCP server with 15 tools, and `make` adapters for Claude Code, Codex, Cursor and custom agents.
   - **Changelog mode:** `changes` with import-graph route mapping, `capture --changed`, a GitHub Action and `ci init`.
+  - **Safety:**
+    - compositions render in a network sandbox;
+    - secrets are masked in every output, and headers and saved logins stay scoped to the app;
+    - redaction covers shadow DOM, iframes, links and titles;
+    - `make` keeps the agent away from config, credentials and nested runs;
+    - paid calls need an explicit `--yes`.
+  - **Types:** `demovie/flow` exports `defineFlow` with types, for TypeScript flows.

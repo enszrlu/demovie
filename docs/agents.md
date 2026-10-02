@@ -20,9 +20,9 @@ the runtime API, motion and pacing guides, templates, flows, audio, QA rules and
 
 Other ways to install it:
 
-- **Claude Code plugin:** `/plugin marketplace add <owner>/demovie`, then `/plugin install demovie@demovie`. The
+- **Claude Code plugin:** `/plugin marketplace add enszrlu/demovie`, then `/plugin install demovie@demovie`. The
   plugin bundles the skill and registers the MCP server.
-- **skills.sh:** `npx skills add <owner>/demovie`.
+- **skills.sh:** `npx skills add enszrlu/demovie`.
 
 ## MCP server
 

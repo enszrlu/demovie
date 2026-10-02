@@ -12,9 +12,21 @@ import {
 } from "@demovie/core";
 import type { Page } from "playwright-core";
 import { DECODE_SCRIPT, ELEMENT_MAP_SCRIPT, STABILITY_SCRIPT } from "./element-map.ts";
-import { REDACT_SCRIPT, type RedactArgs, type RedactionPattern, serializePatterns } from "./redact.ts";
+import { REDACT_SCRIPT, type RedactArgs, type RedactionPattern, redactText, serializePatterns } from "./redact.ts";
 
 const MAX_FULL_PAGE = 10_000;
+
+/** How much taller the biggest inner scroller (overflow-y auto/scroll, at least half the viewport) is than its box. */
+export const INNER_SCROLL_SCRIPT = `() => {
+  let extra = 0;
+  for (const el of document.querySelectorAll("body *")) {
+    const overflow = getComputedStyle(el).overflowY;
+    if (overflow !== "auto" && overflow !== "scroll") continue;
+    if (el.clientHeight < innerHeight * 0.5) continue;
+    extra = Math.max(extra, el.scrollHeight - el.clientHeight);
+  }
+  return Math.round(extra);
+}`;
 
 /** Tracks in-flight requests so we can wait for 500 ms of network quiet (capped). */
 export function trackNetwork(page: Page): {
@@ -85,7 +97,8 @@ export async function settle(
       .waitForSelector(selector, { state: "visible", timeout: 15_000 })
       .catch(() => warnings.push(`waitFor selector ${selector} not visible after 15s`));
   }
-  await page.evaluate(`(${DECODE_SCRIPT})()`).catch(() => warnings.push("fonts/images did not settle"));
+  const decoded = await page.evaluate(`(${DECODE_SCRIPT})()`).catch(() => false);
+  if (!decoded) warnings.push("fonts/images did not settle after 10s");
   const started = Date.now();
   let stable = false;
   while (Date.now() - started < 3000) {
@@ -149,21 +162,48 @@ export async function snapshotState(page: Page, options: CaptureStateOptions): P
       width: number;
       height: number;
     };
-    const height = Math.min(size.height, MAX_FULL_PAGE);
-    if (size.height > MAX_FULL_PAGE)
-      warnings.push(`full page clipped to ${MAX_FULL_PAGE}px (page is ${size.height}px)`);
-    full = await page.screenshot({
-      animations: "disabled",
-      caret: "hide",
-      scale: "device",
-      type: "png",
-      fullPage: true,
-      clip: { x: 0, y: 0, width: size.width, height },
-    });
-    fullSize = { width: size.width, height };
+    const viewport = page.viewportSize();
+    // An app shell (fixed nav, a scrolling <main>) never scrolls the document: grow the viewport by the inner
+    // scroller's overflow for the full-page shot, so its content is laid out on one tall page, then restore it.
+    const extra =
+      viewport && size.height <= viewport.height + 1
+        ? ((await page.evaluate(`(${INNER_SCROLL_SCRIPT})()`).catch(() => 0)) as number)
+        : 0;
+    if (viewport && extra > 0) {
+      const height = Math.min(viewport.height + extra, MAX_FULL_PAGE);
+      if (viewport.height + extra > MAX_FULL_PAGE)
+        warnings.push(`full page clipped to ${MAX_FULL_PAGE}px (page is ${viewport.height + extra}px)`);
+      await page.setViewportSize({ width: viewport.width, height });
+      await page.waitForTimeout(300);
+      full = await page.screenshot({ animations: "disabled", caret: "hide", scale: "device", type: "png" });
+      fullSize = { width: viewport.width, height };
+      await page.setViewportSize(viewport);
+      await page.waitForTimeout(150);
+    } else {
+      const height = Math.min(size.height, MAX_FULL_PAGE);
+      if (size.height > MAX_FULL_PAGE)
+        warnings.push(`full page clipped to ${MAX_FULL_PAGE}px (page is ${size.height}px)`);
+      full = await page.screenshot({
+        animations: "disabled",
+        caret: "hide",
+        scale: "device",
+        type: "png",
+        fullPage: true,
+        clip: { x: 0, y: 0, width: size.width, height },
+      });
+      fullSize = { width: size.width, height };
+    }
   }
   const raw = (await page.evaluate(`(${ELEMENT_MAP_SCRIPT})()`)) as Omit<ElementMap, "captureId" | "url">;
-  const url = page.url();
+  // The URL can't be redacted in the page (that would navigate): redact it here, with the same patterns.
+  const mask = options.config.demo.mask;
+  const url = mask.enabled
+    ? redactText(page.url(), {
+        patterns: mask.patterns as RedactionPattern[],
+        allow: mask.allow.map((g) => simpleGlobToRegExp(g)),
+        mode: mask.replacement,
+      })
+    : page.url();
   const elements = ElementMapSchema.parse({ captureId: options.id, url, ...raw });
   const viewport = page.viewportSize() ?? { width: 0, height: 0 };
   const dpr = elements.viewport.deviceScaleFactor;

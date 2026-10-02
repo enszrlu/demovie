@@ -4,6 +4,13 @@
   "type": "module",
   "description": "Accurate, on-brand motion-graphics videos of your real web app, made by your AI coding agent. Your agent animates. demovie makes it true.",
   "license": "MIT",
+  "homepage": "https://github.com/enszrlu/demovie#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enszrlu/demovie.git",
+    "directory": "packages/cli"
+  },
+  "bugs": "https://github.com/enszrlu/demovie/issues",
   "keywords": [
     "video",
     "product-video",
@@ -21,7 +28,10 @@
     "demovie": "./dist/index.js"
   },
   "exports": {
-    ".": "./dist/index.js",
+    "./flow": {
+      "types": "./dist/flow.d.ts",
+      "default": "./dist/flow.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

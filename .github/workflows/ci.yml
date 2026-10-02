@@ -23,13 +23,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -51,10 +52,31 @@ jobs:
       - name: Verify
         run: pnpm verify
 
+      - name: Generated files are committed (skill copy, plugin and docs)
+        run: git diff --exit-code -- packages/skill plugins .claude-plugin docs
+
       - name: Upload verify logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: verify-logs-${{ matrix.os }}
           path: .tmp/verify/
           retention-days: 7
+
+  # The minimum supported Node (package.json "engines"): build, then pack and run the CLI via npx.
+  node-20:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20.19
+          cache: pnpm
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright-core install --with-deps chromium chromium-headless-shell
+      - run: pnpm verify --only build,tarball

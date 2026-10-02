@@ -7,7 +7,9 @@ import type { StaticServer } from "./server.ts";
  * - sRGB output and no LCD/subpixel text, so colors and glyph edges don't depend on the display;
  * - software raster (`--disable-gpu`) and no runtime-specific Skia paths, so pixels are reproducible;
  * - all compositor stages run before a frame is drawn, images decode before raster (no checkerboarding);
- * - no background throttling, hidden scrollbars, muted audio.
+ * - no background throttling, hidden scrollbars, muted audio;
+ * - a network sandbox below the request router: no name resolution except the server's 127.0.0.1 and no UDP outside a
+ *   proxy, so WebRTC/STUN, DNS prefetch and preconnect can't reach other hosts either.
  */
 export const RENDER_CHROMIUM_ARGS = [
   "--force-color-profile=srgb",
@@ -27,6 +29,8 @@ export const RENDER_CHROMIUM_ARGS = [
   "--disable-background-timer-throttling",
   "--disable-renderer-backgrounding",
   "--disable-backgrounding-occluded-windows",
+  "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1",
+  "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
 ];
 
 export async function launchRenderer(): Promise<Browser> {
@@ -79,6 +83,18 @@ export async function openComposition(
     if (url.startsWith(`${server.origin}/`) || url === server.origin) return route.continue();
     blocked.push(url);
     return route.abort("blockedbyclient");
+  });
+  // WebSockets bypass the request router: answer every one here, never connecting to the real server.
+  await context.routeWebSocket(/.*/, (ws) => {
+    blocked.push(ws.url());
+    ws.close({ code: 1008, reason: "blocked by the demovie render sandbox" });
+  });
+  // WebRTC sends UDP straight from the browser; compositions have no use for it.
+  await context.addInitScript(() => {
+    for (const name of ["RTCPeerConnection", "webkitRTCPeerConnection", "RTCDataChannel", "RTCSessionDescription"])
+      try {
+        delete (globalThis as Record<string, unknown>)[name];
+      } catch {}
   });
   const page = await context.newPage();
   const consoleMessages: { type: string; text: string }[] = [];

@@ -55,6 +55,20 @@ export function voiceCacheKey(provider: string, model: string, voice: string, te
   return sha256(JSON.stringify([provider, model, voice, text])).slice(0, 32);
 }
 
+/** A line is cached when both its metadata and its audio are in the cache (the same test synthesis uses). */
+export function isVoiceCached(
+  cacheDir: string,
+  provider: Pick<VoiceProvider, "id" | "extension">,
+  model: string,
+  voice: string,
+  text: string,
+): boolean {
+  const key = voiceCacheKey(provider.id, model, voice, text);
+  return (
+    existsSync(path.join(cacheDir, `${key}.json`)) && existsSync(path.join(cacheDir, `${key}.${provider.extension}`))
+  );
+}
+
 /** Synthesize through the cache in `.demovie/.cache/voice/` keyed by hash(provider, model, voice, text). */
 export async function synthesizeCached(
   provider: VoiceProvider,
@@ -70,7 +84,7 @@ export async function synthesizeCached(
     keyOf.set(line.id, key);
     const meta = path.join(o.cacheDir, `${key}.json`);
     const file = path.join(o.cacheDir, `${key}.${provider.extension}`);
-    if (existsSync(meta) && existsSync(file)) {
+    if (isVoiceCached(o.cacheDir, provider, o.model, o.voice, line.text)) {
       const m = JSON.parse(await readFile(meta, "utf8")) as Omit<VoiceResult, "lineId" | "file">;
       results.set(line.id, { ...m, lineId: line.id, file });
     } else if (!todo.some((t) => keyOf.get(t.id) === key)) {

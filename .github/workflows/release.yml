@@ -1,5 +1,10 @@
-# Prepared for maintainers; it runs only on pushes to main of the published repository.
-# It opens a "Version packages" PR from changesets, and publishes `demovie` and `@demovie/runtime` when that PR merges.
+# Prepared for maintainers. Runs on pushes to main of the published repository, and only when the DEMOVIE_RELEASES
+# repository variable is "enabled". The verify job has read-only permissions and no persisted credentials; the release
+# job then opens the "Version packages" PR (changesets), and when that PR merges publishes `demovie` and
+# `@demovie/runtime` to npm with provenance, creates the GitHub releases and moves the action's v0 tag.
+# npm auth: trusted publishing (OIDC, no stored secret). Add this workflow (release.yml) as the trusted publisher of
+# both packages on npmjs.com. Until a package exists there, or if you prefer a token, set the NPM_TOKEN secret to a
+# granular access token; npm tries OIDC first and falls back to it. Needs the @demovie npm organization.
 name: release
 
 on:
@@ -9,37 +14,65 @@ on:
 concurrency: release-${{ github.ref }}
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write # npm provenance
+  contents: read
 
 jobs:
-  release:
-    if: github.repository_owner != '' && vars.DEMOVIE_RELEASES == 'enabled'
+  verify:
+    if: vars.DEMOVIE_RELEASES == 'enabled'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright-core install --with-deps chromium chromium-headless-shell
+      - run: pnpm verify
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - run: pnpm build
-      - run: node packages/cli/dist/index.js doctor --fix
-      - run: pnpm verify
-      - uses: changesets/action@v1
+      # Trusted publishing needs npm >= 11.5.1 (pnpm 9 publishes through the npm CLI).
+      - run: npm install --global npm@^11.5.1
+      # changesets/action v2 works with @changesets/cli v3; a token, if any, reaches npm through setup-node's .npmrc.
+      - id: changesets
+        uses: changesets/action@v2.1.2
         with:
-          version: pnpm changeset version
-          publish: pnpm changeset publish
-          title: Version packages
-          commit: "chore: version packages"
+          version-script: pnpm version-packages
+          publish-script: pnpm changeset publish
+          pr-title: Version packages
+          commit-message: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+      # `demovie ci init` references enszrlu/demovie/packages/action@v0: keep v0 on the latest 0.x release.
+      - name: Move the action's v0 tag
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          git tag -f v0
+          git push -f origin v0

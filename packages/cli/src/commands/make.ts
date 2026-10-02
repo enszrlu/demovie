@@ -54,7 +54,16 @@ function findBinary(adapter: AgentAdapter): string | null {
 }
 
 /** `demovie make` (SPEC §14.4): launch the user's own, already signed-in agent CLI with the demovie skill. */
+/** Set for the agent `make` starts, so that agent can't start another one (or any command via --agent-cmd). */
+export const MAKE_ENV = "DEMOVIE_MAKE_SESSION";
+
 export async function run(ctx: CommandContext, options: MakeOptions): Promise<CommandResult> {
+  if (process.env[MAKE_ENV])
+    throw new DemovieError(
+      "E_USAGE",
+      "demovie make is already running: an agent it started can't start another agent",
+      "make the video in this session with the demovie skill instead (capture, new, stills, qa, render)",
+    );
   const root = findProjectRoot(ctx.cwd) ?? ctx.cwd;
   const project = findProjectRoot(ctx.cwd) ? await loadProject(ctx.cwd) : null;
 
@@ -112,7 +121,7 @@ export async function run(ctx: CommandContext, options: MakeOptions): Promise<Co
   const args =
     mode === "interactive"
       ? adapter.interactive(prompt, { model: options.model })
-      : adapter.headless(prompt, { model: options.model });
+      : adapter.headless(prompt, { model: options.model, voice: Boolean(options.voice) });
   const command = [binary, ...args].map(shellQuote).join(" ");
 
   // the agent needs the skill where it looks for skills (project-level only)
@@ -148,6 +157,7 @@ export async function run(ctx: CommandContext, options: MakeOptions): Promise<Co
   ctx.logger.debug(command);
   const child = await execa(binary, args, {
     cwd: root,
+    env: { [MAKE_ENV]: "1" },
     reject: false,
     stdin: "inherit",
     stdout: ctx.json ? process.stderr : "inherit",

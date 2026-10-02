@@ -44,28 +44,41 @@ export async function installChromium(): Promise<{ ok: boolean; output: string }
   return { ok: result.code === 0, output: `${result.stdout}\n${result.stderr}`.trim() };
 }
 
-/** Launch headless Chromium, turning "not installed" into an actionable error. */
+/** Turns a Playwright launch error into an actionable one: not installed, missing Linux libraries, or other. */
+export function launchFailure(error: unknown): DemovieError {
+  const message = (error as Error)?.message ?? String(error);
+  // Linux without Chromium's system libraries (WSL, containers): Playwright installs them with install-deps.
+  if (/missing dependencies|missing system dependencies|error while loading shared libraries/i.test(message))
+    return new DemovieError(
+      "E_PREREQ_CHROMIUM",
+      "Chromium is installed but this system is missing libraries it needs",
+      `run \`sudo npx -y playwright-core@${playwrightVersion()} install-deps chromium\`, then retry`,
+      { cause: error },
+    );
+  if (/Executable doesn't exist|browserType\.launch: .*(not found|install)/i.test(message))
+    return new DemovieError(
+      "E_PREREQ_CHROMIUM",
+      `Chromium for Playwright ${playwrightVersion()} is not installed`,
+      "run `npx demovie doctor --fix` (installs Chromium via Playwright)",
+      { cause: error },
+    );
+  const first = message.split("\n").find((l) => l.trim() && !/^browserType\.launch:\s*$/.test(l.trim())) ?? message;
+  return new DemovieError(
+    "E_PREREQ_CHROMIUM",
+    `could not launch Chromium: ${first.trim()}`,
+    "run `npx demovie doctor` to diagnose",
+    {
+      cause: error,
+    },
+  );
+}
+
+/** Launch headless Chromium, turning launch failures into actionable errors. */
 export async function launchChromium(options: LaunchOptions = {}): Promise<Browser> {
   try {
     return await chromium.launch({ headless: true, ...options });
   } catch (error) {
-    const message = (error as Error).message ?? String(error);
-    if (/Executable doesn't exist|browserType\.launch: .*(not found|install)/i.test(message)) {
-      throw new DemovieError(
-        "E_PREREQ_CHROMIUM",
-        `Chromium for Playwright ${playwrightVersion()} is not installed`,
-        "run `npx demovie doctor --fix` (installs Chromium via Playwright)",
-        { cause: error },
-      );
-    }
-    logger.debug(message);
-    throw new DemovieError(
-      "E_PREREQ_CHROMIUM",
-      `could not launch Chromium: ${message.split("\n")[0]}`,
-      "run `npx demovie doctor` to diagnose",
-      {
-        cause: error,
-      },
-    );
+    logger.debug((error as Error)?.message ?? String(error));
+    throw launchFailure(error);
   }
 }

@@ -64,7 +64,10 @@ export interface QaOptions {
 export async function runQa(project: Project, video: VideoContext, o: QaOptions): Promise<QaFile> {
   const sampleFps = o.sampleFps ?? video.video.qa.sampleFps ?? 10;
   const server = await startServer({ project, video });
-  const browser = await launchRenderer();
+  const browser = await launchRenderer().catch(async (error: unknown) => {
+    await server.close();
+    throw error;
+  });
   const reports: QaReport[] = [];
   try {
     for (const format of o.formats) {

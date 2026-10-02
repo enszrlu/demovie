@@ -43,7 +43,7 @@ export function ProjectCard({
     >
       <div id={ids.details} className="flex items-center justify-between gap-2">
         <span className="truncate text-xs text-muted-foreground">{customer}</span>
-        <HealthBadge health={project.health} />
+        <HealthBadge health={project.health} demovieId={`health-${project.id}`} />
       </div>
       <h3 id={ids.name} className="mt-2 text-sm font-medium leading-5 text-foreground">
         {project.name}

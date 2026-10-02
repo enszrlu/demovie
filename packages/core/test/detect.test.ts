@@ -142,3 +142,34 @@ describe("route discovery", () => {
     expect(routePatternToRegExp("/docs/[[...slug]]").test("/docs")).toBe(true);
   });
 });
+
+describe("route protection with an i18n proxy", () => {
+  it("ignores a matcher that runs on every page, and knows prefixed login and e-mail pages", async () => {
+    const { mkdirSync, rmSync, writeFileSync } = await import("node:fs");
+    const root = path.join(import.meta.dirname, "../../../.tmp/unit-catch-all-proxy");
+    rmSync(root, { recursive: true, force: true });
+    const page = (route: string) => {
+      const dir = path.join(root, "src/app", route);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(path.join(dir, "page.tsx"), "export default function Page() { return null; }\n");
+    };
+    for (const r of ["[locale]", "[locale]/pricing", "app/orders", "auth/employee-login", "auth/verify-email"]) page(r);
+    writeFileSync(path.join(root, "package.json"), JSON.stringify({ name: "x", dependencies: { next: "16.0.0" } }));
+    writeFileSync(
+      path.join(root, "src/proxy.ts"),
+      `import createMiddleware from "next-intl/middleware";
+export default function proxy(request) { return NextResponse.redirect(new URL("/en", request.url)); }
+export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png)$).*)"] };
+`,
+    );
+    const d = detectProject(root);
+    const routes = discoverRoutes(d.appRoot, d.nextjs!);
+    const of = (p: string) => routes.find((r) => r.path === p);
+    expect(of("/[locale]")?.protected).toBe(null);
+    expect(of("/[locale]/pricing")?.protected).toBe(null);
+    expect(of("/app/orders")).toMatchObject({ protected: true, protectedReason: "folder hint app" });
+    expect(of("/auth/employee-login")).toMatchObject({ protected: false, protectedReason: "auth page" });
+    expect(of("/auth/verify-email")).toMatchObject({ protected: false, protectedReason: "auth page" });
+    rmSync(root, { recursive: true, force: true });
+  });
+});

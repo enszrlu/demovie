@@ -7,8 +7,9 @@ import type { NextjsDetection } from "./framework.ts";
 
 const PAGE_FILE = /^page\.(tsx|ts|jsx|js|mdx)$/;
 const PAGES_EXT = /\.(tsx|ts|jsx|js|mdx|md)$/;
+// Login and account-recovery pages, also prefixed ("employee-login") and the e-mail confirmation steps.
 const AUTH_PAGE =
-  /(^|\/)(log-?in|sign-?in|sign-?up|register|forgot[-_]?password|reset[-_]?password|auth\/callback)(\/|$)/i;
+  /(^|\/)([a-z0-9]+-)*(log-?in|sign-?in|sign-?up|register|forgot[-_]?password|reset[-_]?password|verify[-_]?email)(\/|$)|(^|\/)auth\/callback(\/|$)/i;
 const PROTECTED_GROUPS = /^\((dashboard|app|protected|authenticated|private|admin|auth|account|main)\)$/i;
 const PROTECTED_TOP = /^(app|dashboard|admin|account|settings|console|workspace)$/i;
 
@@ -53,6 +54,11 @@ export function readProxy(appRoot: string): ProxyInfo | null {
     }
   }
   return null;
+}
+
+/** A matcher that runs on every ordinary page (an i18n or headers proxy) says nothing about which pages need login. */
+function matchesEveryPage(re: RegExp): boolean {
+  return ["/", "/about", "/pricing", "/blog/hello", "/x/y/z"].every((p) => re.test(p));
 }
 
 /** Convert a Next.js matcher (path-to-regexp syntax) to a RegExp. */
@@ -220,7 +226,8 @@ export function discoverRoutes(appRoot: string, nextjs: NextjsDetection, options
     ...(nextjs.pagesDir ? walkPagesDir(appRoot, nextjs.pagesDir) : []),
   ];
   const proxy = readProxy(appRoot);
-  const matchers = proxy?.matchers?.map((m) => ({ source: m, re: matcherToRegExp(m) })) ?? null;
+  const matchers =
+    proxy?.matchers?.map((m) => ({ source: m, re: matcherToRegExp(m) })).filter((m) => !matchesEveryPage(m.re)) ?? null;
   const basePath = nextjs.basePath ?? "";
   const seen = new Set<string>();
   const routes: Route[] = [];
@@ -238,7 +245,7 @@ export function discoverRoutes(appRoot: string, nextjs: NextjsDetection, options
     if (AUTH_PAGE.test(routePath)) {
       isProtected = false;
       reason = "auth page";
-    } else if (matchers && proxy?.guardsAuth) {
+    } else if (matchers?.length && proxy?.guardsAuth) {
       const sample = basePath + samplePath(routePath);
       const hit = matchers.find((m) => m.re.test(sample) || m.re.test(samplePath(routePath)));
       isProtected = Boolean(hit);

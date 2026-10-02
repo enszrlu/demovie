@@ -62,38 +62,62 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Set up pnpm
-      if: hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) != ''
-      uses: pnpm/action-setup@v4
-      with:
-        run_install: false
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
-        cache: ${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) != '' && 'pnpm' || '' }}
-        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
-    - name: Install dependencies
+        package-manager-cache: false
+    # The lockfile nearest to the app, up to the repository root (monorepos install at the workspace root).
+    - name: Find the package manager
+      id: pm
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      run: node "${{ github.action_path }}/scripts/demovie-action.mjs" detect-pm
+    - name: Set up pnpm
+      if: steps.pm.outputs.manager == 'pnpm'
+      uses: pnpm/action-setup@v6
+      with:
+        version: ${{ steps.pm.outputs.pnpm-version }}
+        package_json_file: ${{ steps.pm.outputs.package-json }}
+        cache: true
+        cache_dependency_path: ${{ steps.pm.outputs.lockfile }}
+    - name: Set up Bun
+      if: steps.pm.outputs.manager == 'bun'
+      uses: oven-sh/setup-bun@v2
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ steps.pm.outputs.dir }}
+      env:
+        MANAGER: ${{ steps.pm.outputs.manager }}
       run: |
-        if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile
-        elif [ -f package-lock.json ]; then npm ci
-        elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
-        else npm install; fi
+        case "$MANAGER" in
+          pnpm) pnpm install --frozen-lockfile ;;
+          npm-ci) npm ci ;;
+          yarn) yarn install --frozen-lockfile ;;
+          yarn-berry) (corepack enable || (npm install --global corepack && corepack enable)) && yarn install --immutable ;;
+          bun) bun install --frozen-lockfile ;;
+          *) npm install ;;
+        esac
     - name: Install the agent CLI (pinned)
       shell: bash
       env:
         AGENT: ${{ inputs.agent }}
         AGENT_VERSION: ${{ inputs.agent-version }}
       run: node "${{ github.action_path }}/scripts/demovie-action.mjs" install-agent
+    # The Chromium build that the app's demovie (its Playwright version) expects, plus its system libraries on Linux.
     - name: Install Chromium
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: npx -y playwright@1.60.0 install --with-deps chromium
+      run: node "${{ github.action_path }}/scripts/demovie-action.mjs" install-browser
     - name: Ensure ffmpeg
       shell: bash
-      run: command -v ffmpeg >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+      run: |
+        command -v ffmpeg >/dev/null && exit 0
+        case "$RUNNER_OS" in
+          macOS) brew install ffmpeg ;;
+          Windows) choco install ffmpeg -y --no-progress ;;
+          *) sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg ;;
+        esac
     - name: Capture changes and make the video
       id: make
       shell: bash
@@ -108,7 +132,7 @@ runs:
       run: node "${{ github.action_path }}/scripts/demovie-action.mjs" run
     - name: Upload the video folder
       if: always() && steps.make.outputs.out-dir != ''
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: demovie-video
         path: ${{ steps.make.outputs.out-dir }}

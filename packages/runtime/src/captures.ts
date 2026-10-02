@@ -11,6 +11,7 @@ interface MetaJson {
   dpr: number;
   image: { width: number; height: number };
   fullPage: { width: number; height: number } | null;
+  colorScheme?: "light" | "dark";
 }
 
 function build(id: string, meta: MetaJson, elements: { elements: CaptureElement[] }): CaptureState {
@@ -24,6 +25,7 @@ function build(id: string, meta: MetaJson, elements: { elements: CaptureElement[
     dpr: meta.dpr,
     image: meta.image,
     fullPage: meta.fullPage,
+    colorScheme: meta.colorScheme === "dark" ? "dark" : "light",
     elements: elements.elements,
     screenUrl: `${base}/screen.png`,
     fullUrl: meta.fullPage ? `${base}/full.png` : null,

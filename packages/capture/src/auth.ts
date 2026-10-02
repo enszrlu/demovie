@@ -180,7 +180,7 @@ export async function ensureAuth(
       await runAuthScript(page, project, baseUrl);
       landing = page.url();
     }
-    await saveState(context, statePath);
+    await saveState(context, statePath, baseUrl);
     return {
       ok: true,
       strategy,
@@ -194,9 +194,34 @@ export async function ensureAuth(
   }
 }
 
-export async function saveState(context: BrowserContext, statePath: string): Promise<void> {
+/** The site of a host: its last two labels (`app.example.com` → `example.com`), or the host itself (localhost, IPs). */
+function siteOf(host: string): string {
+  if (/^[\d.]+$/.test(host) || host.includes(":") || !host.includes(".")) return host;
+  return host.split(".").slice(-2).join(".");
+}
+
+/** Whether a cookie domain or origin host belongs to the app's site (its host, a parent or a sibling subdomain). */
+export function sameSite(host: string, appHost: string): boolean {
+  const h = host.replace(/^\./, "").toLowerCase();
+  const app = appHost.toLowerCase();
+  const site = siteOf(app);
+  return h === app || app.endsWith(`.${h}`) || h === site || h.endsWith(`.${site}`);
+}
+
+/**
+ * Save the logged-in session. With `appUrl`, only the app's own cookies and storage are kept: a manual login through an
+ * identity provider (Google, GitHub…) must not leave the user's real IdP session in .demovie/.auth or in captures.
+ */
+export async function saveState(context: BrowserContext, statePath: string, appUrl?: string): Promise<void> {
   await mkdir(path.dirname(statePath), { recursive: true });
   const state = await context.storageState();
+  if (appUrl) {
+    const appHost = new URL(appUrl).hostname;
+    const dropped = state.cookies.filter((c) => !sameSite(c.domain, appHost)).length;
+    state.cookies = state.cookies.filter((c) => sameSite(c.domain, appHost));
+    state.origins = state.origins.filter((o) => sameSite(new URL(o.origin).hostname, appHost));
+    if (dropped) logger.info(`kept the app's cookies only (${dropped} from other sites not saved)`);
+  }
   await writeFile(statePath, JSON.stringify(state, null, 2), { mode: 0o600 });
 }
 

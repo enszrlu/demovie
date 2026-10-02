@@ -7,6 +7,7 @@ import {
   ensureDir,
   type FontSpec,
   logger,
+  normalizeSvg,
   parseColor,
   slugify,
   toHex,
@@ -295,9 +296,7 @@ export async function mergeRuntimeBrand(
   if (!brand.logo.mark && !brand.logo.wordmark) {
     const logo = samples.map((s) => s.logo).find(Boolean);
     if (logo?.kind === "svg") {
-      const svg = logo.svg.includes("xmlns=")
-        ? logo.svg
-        : logo.svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+      const svg = normalizeSvg(logo.svg);
       await writeFile(path.join(options.demovieDir, "brand", "logo-mark.svg"), `${svg}\n`);
       brand.logo.mark = "brand/logo-mark.svg";
       brand.provenance["logo.mark"] = "runtime: inline SVG in the header/nav";

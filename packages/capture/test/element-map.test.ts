@@ -2,7 +2,8 @@ import type { ElementMap } from "@demovie/core";
 import type { Browser, Page } from "playwright-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { launchChromium } from "../src/browser.ts";
-import { ELEMENT_MAP_SCRIPT } from "../src/element-map.ts";
+import { INNER_SCROLL_SCRIPT } from "../src/capture-state.ts";
+import { DECODE_SCRIPT, ELEMENT_MAP_SCRIPT } from "../src/element-map.ts";
 import { REDACT_SCRIPT, serializePatterns } from "../src/redact.ts";
 
 const HTML = `<!doctype html><html><head><style>body{font-family:Arial;margin:0} .hidden{display:none}</style></head><body>
@@ -32,6 +33,52 @@ describe("element map + in-page redaction (real Chromium)", () => {
 
   const map = async () =>
     (await page.evaluate(`(${ELEMENT_MAP_SCRIPT})()`)) as Pick<ElementMap, "elements" | "viewport" | "document">;
+
+  it("waits for on-screen images only, so a lazy image below the fold can't hang a capture", async () => {
+    await page.setContent(
+      `<p>hi</p><img alt="far" loading="lazy" src="http://127.0.0.1:9/never.png" style="display:block;margin-top:5000px;width:10px;height:10px">`,
+    );
+    const started = Date.now();
+    expect(await page.evaluate(`(${DECODE_SCRIPT})()`)).toBe(true);
+    expect(Date.now() - started).toBeLessThan(3000);
+  });
+
+  it("measures how much an app shell's scrolling main overflows, for full-page shots", async () => {
+    await page.setContent(
+      `<body style="margin:0"><div style="height:100vh;display:flex;flex-direction:column"><main style="flex:1;overflow-y:auto"><div style="height:2000px"></div></main><nav style="height:64px"></nav></div></body>`,
+    );
+    // 2000px of content in a main that is 800 - 64 = 736px tall
+    expect(await page.evaluate(`(${INNER_SCROLL_SCRIPT})()`)).toBe(2000 - 736);
+    await page.setContent(`<body style="margin:0"><div style="height:3000px"></div></body>`);
+    expect(await page.evaluate(`(${INNER_SCROLL_SCRIPT})()`)).toBe(0);
+  });
+
+  it("redacts inside shadow roots and same-origin iframes, the title and mailto links", async () => {
+    await page.setContent(`<title>Invite pat.doe@corp.test</title>
+      <p>light: lee@corp.test</p><div id="host"></div>
+      <a href="mailto:kim@corp.test">Email us</a>
+      <iframe srcdoc="<p>frame: ann@corp.test</p>"></iframe>`);
+    await page.evaluate(() => {
+      const root = document.getElementById("host")!.attachShadow({ mode: "open" });
+      root.innerHTML = "<span>shadow: max@corp.test</span>";
+    });
+    await page.waitForFunction(() =>
+      document.querySelector("iframe")?.contentDocument?.body?.textContent?.includes("ann"),
+    );
+    const counts = (await page.evaluate(
+      `(${REDACT_SCRIPT})(${JSON.stringify({ patterns: serializePatterns(["email"]), allow: ["^lee@corp\\.test$"], mode: "fictional", selectors: [] })})`,
+    )) as Record<string, number>;
+    const seen = await page.evaluate(() => ({
+      title: document.title,
+      href: document.querySelector("a")!.getAttribute("href"),
+      shadow: document.getElementById("host")!.shadowRoot!.textContent,
+      frame: document.querySelector("iframe")!.contentDocument!.body.textContent,
+      light: document.querySelector("p")!.textContent,
+    }));
+    expect(JSON.stringify(seen)).not.toMatch(/pat\.doe@|kim@|max@|ann@/);
+    expect(seen.light).toContain("lee@corp.test"); // allow-listed
+    expect(counts.email).toBe(4);
+  });
 
   it("builds stable ids from roles, names, test ids and data-demovie", async () => {
     await page.setContent(HTML);

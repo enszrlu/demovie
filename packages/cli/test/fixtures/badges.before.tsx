@@ -22,9 +22,18 @@ export const STATUS_DOT: Record<ProjectStatus, string> = {
   launched: "bg-emerald-500",
 };
 
-export function HealthBadge({ health, className }: { health: ProjectHealth; className?: string }) {
+/** `demovieId` becomes a `data-demovie` id, so videos can target one project's badge (e.g. `dm:health-prj_android`). */
+export function HealthBadge({
+  health,
+  className,
+  demovieId,
+}: {
+  health: ProjectHealth;
+  className?: string;
+  demovieId?: string;
+}) {
   return (
-    <Badge variant={HEALTH_VARIANT[health]} className={className}>
+    <Badge variant={HEALTH_VARIANT[health]} className={className} data-demovie={demovieId}>
       <span aria-hidden="true" className={cn("size-1.5 rounded-full", HEALTH_DOT[health])} />
       {HEALTH_LABEL[health]}
     </Badge>

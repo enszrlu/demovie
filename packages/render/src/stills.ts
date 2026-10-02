@@ -62,7 +62,10 @@ export async function renderStills(
   const scale = o.scale ?? 0.5;
   const report: StillsReport = { stills: [], sheets: [], ms: 0 };
   const server = await startServer({ project, video });
-  const browser = await launchRenderer();
+  const browser = await launchRenderer().catch(async (error: unknown) => {
+    await server.close();
+    throw error;
+  });
   try {
     for (const format of o.formats) {
       const dir = path.join(video.outDir, "stills", formatSlug(format));

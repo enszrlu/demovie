@@ -65,6 +65,17 @@ describe("glossary", () => {
     expect(readmeFeatures("## Features\n- **Plant journal**: log every watering.\n")).toEqual([
       { term: "Plant journal", source: "README features" },
     ]);
+    // the label's colon inside the bold, sub-headings inside Features, a plain item, then the next section
+    const readme = [
+      "## 🚀 Features",
+      "### Accounts",
+      "- **Robust Authentication:** email and SSO.",
+      "### Core Application Features",
+      "- Theming: light and dark.",
+      "## Getting Started",
+      "- **Install:** run it.",
+    ].join("\n");
+    expect(readmeFeatures(readme).map((f) => f.term)).toEqual(["Robust Authentication", "Theming"]);
   });
 
   it("round-trips through glossary.md", () => {

@@ -10,10 +10,10 @@ The generated workflow runs on `release: published` and `workflow_dispatch` (and
 `deployment_status` for Vercel previews). It uses the composite action in `packages/action`:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
   with:
     fetch-depth: 0                       # tags and history for `demovie changes`
-- uses: <owner>/demovie/packages/action@v0
+- uses: enszrlu/demovie/packages/action@v0
   with:
     agent: claude                        # or codex
     type: changelog
@@ -30,12 +30,16 @@ Inputs: `agent`, `agent-version` (pin it), `type`, `formats`, `since` (default: 
 
 What it does:
 
-1. Sets up Node and pnpm (with cache) and installs your dependencies.
+1. Sets up Node, finds the lockfile nearest to `working-directory` (up to the repository root, so a monorepo app
+   installs at the workspace root), sets up pnpm (with its store cached) or Bun when that's what the lockfile says,
+   and installs your dependencies (`pnpm install --frozen-lockfile`, `npm ci`, `yarn install`, `bun install`).
+   pnpm's version comes from `packageManager` in `package.json`, else from the lockfile's format.
 2. Installs the agent CLI at the pinned version.
-3. Installs Chromium (`npx -y playwright@1.60.0 install --with-deps chromium`) and ffmpeg if missing.
+3. Installs the Chromium build that your demovie's Playwright version expects (read from `demovie --json doctor`;
+   with its system libraries on Linux), and ffmpeg if missing.
 4. `demovie doctor`, then `demovie capture --changed --since <ref>`.
 5. `demovie changes --since <ref>` for the story, then `demovie make --agent … --type changelog --yes`.
-6. Uploads `out/` as a workflow artifact.
+6. Uploads `out/` as a workflow artifact. The `videos` and `out-dir` outputs are relative to the repository root.
 7. Comments on the pull request (or writes the job summary) with the poster, links and the QA summary.
 8. On releases, attaches the MP4s and posters to the release (`gh release upload`).
 

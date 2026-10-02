@@ -3,7 +3,7 @@ import { codex } from "./codex.ts";
 import { cursor } from "./cursor.ts";
 import type { AgentAdapter } from "./types.ts";
 
-export { CLAUDE_ALLOWED_TOOLS } from "./claude.ts";
+export { CLAUDE_ALLOWED_TOOLS, claudeDeniedTools } from "./claude.ts";
 export { customAdapter, splitCommand } from "./custom.ts";
 export * from "./types.ts";
 

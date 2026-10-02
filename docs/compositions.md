@@ -288,7 +288,11 @@ interface ScreenHandle {
     o: { at: number; duration?: number; scale?: number; padding?: number; ease?: string },
   ): void;
   reset(o: { at: number; duration?: number; ease?: string }): void;
-  highlight(elementId: string, o: { at: number; duration?: number; style?: "ring" | "glow" | "dim-others" }): void;
+  /**
+   * Ring, glow or spotlight an element — or a Rect in stage px at the base transform (the space of rect()), e.g. a row
+   * framed from two element rects when the row itself has no element.
+   */
+  highlight(target: string | Rect, o: { at: number; duration?: number; style?: "ring" | "glow" | "dim-others" }): void;
   swap(
     capture: string,
     o: { at: number; duration?: number; transition?: "cut" | "crossfade" | "slide-left" | "slide-up" },
@@ -385,6 +389,8 @@ interface CaptureState {
   dpr: number;
   image: { width: number; height: number };
   fullPage: { width: number; height: number } | null;
+  /** The color scheme the page was captured in (phone frames match their status bar to it). */
+  colorScheme: "light" | "dark";
   elements: CaptureElement[];
   screenUrl: string;
   fullUrl: string | null;

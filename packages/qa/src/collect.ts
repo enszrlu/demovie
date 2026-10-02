@@ -143,7 +143,8 @@ export async function collect(project: Project, video: VideoContext, o: CollectO
       const at = await inspectAt(comp, c.at);
       clicks.push(at.clicks.find((x) => x.at === c.at && x.elementId === c.elementId) ?? c);
     }
-    // DM-R01: five frames, rendered again on a fresh page in a different order.
+    // DM-R01: five frames, rendered again on a fresh page in a different order, each right after the frame before it
+    // (the render path), so state carried between seeks (e.g. a cached layer raster) can't hide.
     const times = [0.15, 0.35, 0.55, 0.75, 0.92].map((f) => Math.round(f * v.duration * v.fps) / v.fps);
     const first: Pixels[] = [];
     for (const t of times) {
@@ -155,6 +156,7 @@ export async function collect(project: Project, video: VideoContext, o: CollectO
       await seek(other.page, v.duration - 1 / v.fps);
       const mismatches: { t: number; diffRatio: number }[] = [];
       for (let i = times.length - 1; i >= 0; i--) {
+        await seek(other.page, Math.max(0, times[i]! - 1 / v.fps));
         await seek(other.page, times[i]!);
         const ratio = diffRatio(first[i]!, await pixelsOf(other, pixelScale));
         if (ratio > 0) mismatches.push({ t: times[i]!, diffRatio: ratio });

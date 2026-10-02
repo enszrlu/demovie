@@ -3,7 +3,9 @@
  *  - dist/runtime.js, dist/clock.js, dist/runtime.css, dist/styles/*  for npm consumers (`gsap` stays a bare import)
  *  - dist/served/…  what the renderer serves at /__demovie/* (GSAP imported from /__demovie/gsap/index.js)
  */
-import { cpSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
@@ -66,6 +68,23 @@ cpSync(path.join(root, "styles", "runtime.css"), path.join(served, "runtime.css"
 for (const style of ["clean", "bold", "soft", "editorial", "terminal"]) {
   cpSync(path.join(root, "styles", `${style}.css`), path.join(dist, "styles", `${style}.css`));
   cpSync(path.join(root, "styles", `${style}.css`), path.join(served, "styles", `${style}.css`));
+}
+
+// Type declarations for npm consumers (dist/types), so their compiler never type-checks the runtime's sources.
+execFileSync(
+  process.execPath,
+  [createRequire(import.meta.url).resolve("typescript/bin/tsc"), "-p", "tsconfig.types.json"],
+  {
+    cwd: root,
+    stdio: "inherit",
+  },
+);
+
+// Declarations keep the sources' `./x.ts` specifiers: point them at the emitted `./x.js` modules.
+for (const file of readdirSync(path.join(dist, "types"))) {
+  if (!file.endsWith(".d.ts")) continue;
+  const full = path.join(dist, "types", file);
+  writeFileSync(full, readFileSync(full, "utf8").replace(/(["'])(\.{1,2}\/[^"']+)\.ts\1/g, "$1$2.js$1"));
 }
 
 // The published package ships the repository's MIT license (listed in "files").

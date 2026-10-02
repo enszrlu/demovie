@@ -1,5 +1,5 @@
 import { VERSION } from "@demovie/core";
-import { Command, Option } from "commander";
+import { Command, InvalidArgumentError, Option } from "commander";
 import { type CommandName, commandLoaders } from "./commands/index.ts";
 import { type CommandContext, createContext, type GlobalOptions } from "./context.ts";
 import { type CommandResult, emitError, emitResult } from "./output.ts";
@@ -35,11 +35,16 @@ const commaList = (value: string, previous: string[] = []): string[] => [
     .map((v) => v.trim())
     .filter(Boolean),
 ];
-const number = (value: string): number => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) throw new Error(`expected a number, got "${value}"`);
-  return n;
-};
+/** A numeric option within [min, max]; commander reports a violation as a usage error (exit 2). */
+const numberIn =
+  (min: number, max: number, integer = false) =>
+  (value: string): number => {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < min || n > max || (integer && !Number.isInteger(n)))
+      throw new InvalidArgumentError(`expected ${integer ? "a whole number" : "a number"} from ${min} to ${max}`);
+    return n;
+  };
+const seconds = numberIn(1, 600);
 
 const load =
   (name: CommandName): Loader =>
@@ -52,6 +57,12 @@ export function buildProgram(): Command {
   program.exitOverride((err) => {
     if (err.code === "commander.helpDisplayed" || err.code === "commander.version" || err.code === "commander.help") {
       process.exit(0);
+    }
+    // With --json, a usage error is still one JSON document on stdout (commander already explained it on stderr).
+    if (process.argv.includes("--json")) {
+      const message = err.message.replace(/^error:\s*/, "");
+      const usage = { ok: false, error: { code: "E_USAGE", message, fix: "run `demovie <command> --help` for usage" } };
+      process.stdout.write(`${JSON.stringify(usage, null, 2)}\n`);
     }
     process.exit(2);
   });
@@ -82,7 +93,7 @@ export function buildProgram(): Command {
   program
     .command("init")
     .description("detect the app, extract brand/glossary/routes, set up demo mode + login, install the agent skill")
-    .option("--url <url>", "app URL (generic mode when no framework is detected)")
+    .option("--url <url>", "app URL; selects generic mode unless --framework nextjs is given")
     .addOption(new Option("--framework <name>", "force a framework").choices(["nextjs", "generic"]))
     .option("--app <path>", "app folder inside a monorepo")
     .option("--agents <list>", "agents to set up: claude,codex,cursor", commaList)
@@ -94,6 +105,7 @@ export function buildProgram(): Command {
     .option("--success-path <path>", "path reached after login")
     .option("--no-extract", "skip brand/glossary/routes extraction")
     .option("--no-skill", "skip installing the agent skill")
+    .option("--force", "regenerate an existing .demovie/config.json")
     .action(action(load("init")));
 
   program
@@ -187,7 +199,7 @@ export function buildProgram(): Command {
         .choices(["launch", "feature", "changelog", "teaser", "walkthrough", "hero-loop"])
         .makeOptionMandatory(),
     )
-    .option("--duration <seconds>", "duration in seconds", number)
+    .option("--duration <seconds>", "duration in seconds", seconds)
     .option("--format <list>", "formats: 16:9,9:16,1:1,4:5", commaList)
     .addOption(
       new Option("--style <style>", "style preset").choices(["clean", "bold", "soft", "editorial", "terminal"]),
@@ -200,7 +212,7 @@ export function buildProgram(): Command {
     .command("preview")
     .description("preview player with scrubbing, safe areas and QA overlay")
     .argument("<slug>", "video slug or path")
-    .option("--port <port>", "port", number, 4400)
+    .option("--port <port>", "port", numberIn(1, 65535, true), 4400)
     .option("--no-open", "do not open the browser")
     .action(action(load("preview")));
 
@@ -209,10 +221,10 @@ export function buildProgram(): Command {
     .description("render still frames and a contact sheet")
     .argument("<slug>", "video slug or path")
     .option("--at <times>", "times in seconds, comma separated", commaList)
-    .option("--every <seconds>", "one still every N seconds", number)
+    .option("--every <seconds>", "one still every N seconds", numberIn(0.1, 600))
     .option("--format <format>", "format (default: the first format)")
     .option("--sheet", "also write a contact sheet")
-    .option("--scale <n>", "render scale", number, 0.5)
+    .option("--scale <n>", "render scale (0.1–4)", numberIn(0.1, 4), 0.5)
     .action(action(load("stills")));
 
   program
@@ -221,7 +233,7 @@ export function buildProgram(): Command {
     .argument("<slug>", "video slug or path")
     .option("--format <format>", "format or `all`", "all")
     .option("--strict", "treat warnings as errors")
-    .option("--fps <n>", "sampling rate", number)
+    .option("--fps <n>", "sampling rate", numberIn(1, 60, true))
     .action(action(load("qa")));
 
   const audio = program.command("audio").description("music, SFX, voice and mixing");
@@ -229,7 +241,7 @@ export function buildProgram(): Command {
     .command("music")
     .description("synthesize music plus beats.json")
     .argument("<slug>", "video slug or path")
-    .option("--bpm <n>", "tempo (80–140)", number)
+    .option("--bpm <n>", "tempo (80–140)", numberIn(80, 140))
     .addOption(new Option("--mood <mood>", "mood").choices(["uplifting", "tech", "calm", "energetic", "minimal"]))
     .addOption(
       new Option("--provider <provider>", "music provider (file = a track imported with add --licensed)").choices([
@@ -267,11 +279,11 @@ export function buildProgram(): Command {
     .argument("<slug>", "video slug or path")
     .option("--format <format>", "format or `all`", "all")
     .addOption(new Option("--quality <quality>", "quality").choices(["draft", "final"]).default("final"))
-    .option("--scale <n>", "render scale", number)
-    .option("--fps <n>", "frames per second", number)
+    .option("--scale <n>", "render scale (0.1–4)", numberIn(0.1, 4))
+    .option("--fps <n>", "frames per second", numberIn(1, 120, true))
     .option("--gif", "also write preview.gif")
     .option("--webm", "also write a VP9 WebM")
-    .option("--workers <n>", "parallel browser pages", number)
+    .option("--workers <n>", "parallel browser pages", numberIn(1, 32, true))
     .action(action(load("render")));
 
   program
@@ -290,7 +302,7 @@ export function buildProgram(): Command {
         "hero-loop",
       ]),
     )
-    .option("--duration <seconds>", "duration in seconds", number)
+    .option("--duration <seconds>", "duration in seconds", seconds)
     .option("--format <list>", "formats", commaList)
     .option("--about <text>", "what the video is about")
     .option("--resources <files>", "resource files", commaList)

@@ -143,6 +143,8 @@ export interface CaptureState {
   dpr: number;
   image: { width: number; height: number };
   fullPage: { width: number; height: number } | null;
+  /** The color scheme the page was captured in (phone frames match their status bar to it). */
+  colorScheme: "light" | "dark";
   elements: CaptureElement[];
   screenUrl: string;
   fullUrl: string | null;

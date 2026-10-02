@@ -51,7 +51,8 @@ Rules:
 ## TypeScript flows
 
 For logic YAML can't express, write a TypeScript flow (`npx demovie flow new <name> --ts` scaffolds
-`.demovie/flows/<name>.flow.ts`):
+`.demovie/flows/<name>.flow.ts`). `capture` and `flow run` load it as is; for types in the editor, add demovie as a dev
+dependency (`npm i -D demovie`), which provides `demovie/flow`:
 
 ```ts
 import { defineFlow } from "demovie/flow";

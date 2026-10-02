@@ -53,6 +53,19 @@ export class Logger {
     return out;
   }
 
+  /** Mask every string inside a value (objects, arrays), leaving keys and structure alone: safe for JSON output. */
+  maskDeep<T>(value: T): T {
+    if (this.secrets.size === 0) return value;
+    if (typeof value === "string") return this.mask(value) as T;
+    if (Array.isArray(value)) return value.map((v) => this.maskDeep(v)) as T;
+    if (value && typeof value === "object" && Object.getPrototypeOf(value) === Object.prototype) {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value)) out[k] = this.maskDeep(v);
+      return out as T;
+    }
+    return value;
+  }
+
   /** Observe every message (masked, uncolored), whatever the level; e.g. to forward progress over MCP. */
   listen(fn: LogListener): () => void {
     this.listeners.add(fn);

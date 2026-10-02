@@ -4,7 +4,13 @@ import path from "node:path";
 import { which } from "@demovie/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { syntheticProject } from "../../render/test/synthetic.ts";
-import { ADAPTERS, CLAUDE_ALLOWED_TOOLS, customAdapter, splitCommand } from "../src/adapters/index.ts";
+import {
+  ADAPTERS,
+  CLAUDE_ALLOWED_TOOLS,
+  claudeDeniedTools,
+  customAdapter,
+  splitCommand,
+} from "../src/adapters/index.ts";
 import { run as make, makePrompt, shellQuote } from "../src/commands/make.ts";
 import { createContext } from "../src/context.ts";
 
@@ -30,7 +36,15 @@ describe("agent adapters (argument construction)", () => {
       "sonnet",
       "--allowedTools",
       CLAUDE_ALLOWED_TOOLS,
+      "--disallowedTools",
+      claudeDeniedTools(),
     ]);
+    // deny rules win over the allow list: no nested agent, no app start, no setup, no paid voice without --voice
+    const denied = claudeDeniedTools().split(",");
+    for (const rule of ["Bash(npx demovie make:*)", "Bash(npx -y demovie up:*)", "Bash(npx demovie audio voice:*)"])
+      expect(denied).toContain(rule);
+    expect(denied).toContain("Edit(./.demovie/config.json)");
+    expect(claudeDeniedTools({ voice: true })).not.toContain("audio voice");
   });
 
   it("codex: `codex <prompt>` interactive; `codex exec --json` in a networked workspace-write sandbox", () => {
@@ -139,7 +153,7 @@ describe("demovie make", () => {
     const script = path.join(p.root, "fake-agent.mjs");
     writeFileSync(
       script,
-      `import { writeFileSync } from "node:fs";\nwriteFileSync("args.json", JSON.stringify(process.argv.slice(2)));\nprocess.exit(3);\n`,
+      `import { writeFileSync } from "node:fs";\nwriteFileSync("args.json", JSON.stringify(process.argv.slice(2)));\nwriteFileSync("session.txt", process.env.DEMOVIE_MAKE_SESSION ?? "");\nprocess.exit(3);\n`,
     );
     const ctx = createContext({ cwd: path.join(p.root, "video"), yes: true, json: true });
     const result = await make(ctx, { agentCmd: `${process.execPath} ${script} --task {prompt}`, about: "Shapes" });
@@ -147,5 +161,13 @@ describe("demovie make", () => {
     const args = JSON.parse(readFileSync(path.join(p.root, "args.json"), "utf8"));
     expect(args[0]).toBe("--task");
     expect(args[1]).toMatch(/^Use the demovie skill to make a launch video \(35s, 16:9, 9:16\) about: Shapes\./);
+    // the agent knows it runs under make, and make refuses to start another agent from inside it
+    expect(readFileSync(path.join(p.root, "session.txt"), "utf8")).toBe("1");
+    process.env.DEMOVIE_MAKE_SESSION = "1";
+    try {
+      await expect(make(ctx, { agentCmd: "curl https://example.invalid" })).rejects.toMatchObject({ code: "E_USAGE" });
+    } finally {
+      delete process.env.DEMOVIE_MAKE_SESSION;
+    }
   });
 });

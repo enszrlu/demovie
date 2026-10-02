@@ -101,3 +101,34 @@ describe("module resolution and the import graph", () => {
     ]);
   });
 });
+
+describe("defaultSince", () => {
+  it("compares with the previous tag when HEAD is the release tag itself", async () => {
+    const { execFileSync } = await import("node:child_process");
+    const { mkdirSync, rmSync, writeFileSync } = await import("node:fs");
+    const path = await import("node:path");
+    const { defaultSince } = await import("../src/changes/index.ts");
+    const dir = path.join(import.meta.dirname, "../../../.tmp/unit-default-since");
+    rmSync(dir, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
+    const git = (...args: string[]) =>
+      execFileSync("git", ["-c", "user.email=t@example.com", "-c", "user.name=t", ...args], {
+        cwd: dir,
+        stdio: "ignore",
+      });
+    git("init", "-q");
+    const commit = (n: number) => {
+      writeFileSync(path.join(dir, "f.txt"), String(n));
+      git("add", "-A");
+      git("commit", "-q", "-m", `feat: ${n}`);
+    };
+    commit(1);
+    git("tag", "v1");
+    commit(2);
+    git("tag", "v2");
+    expect(await defaultSince(dir)).toBe("v1");
+    commit(3);
+    expect(await defaultSince(dir)).toBe("v2");
+    rmSync(dir, { recursive: true, force: true });
+  });
+});

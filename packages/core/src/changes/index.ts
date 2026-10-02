@@ -36,6 +36,9 @@ const tryGit = async (cwd: string, args: string[]) => {
 /** Default range: the latest tag reachable from HEAD, else the last 20 commits (SPEC §15.1). */
 export async function defaultSince(cwd: string): Promise<string | null> {
   const tag = await tryGit(cwd, ["describe", "--tags", "--abbrev=0"]);
+  // Right after tagging a release HEAD *is* the tag: compare with the tag before it.
+  const atTag = tag ? await tryGit(cwd, ["describe", "--tags", "--exact-match", "HEAD"]) : null;
+  if (tag && atTag) return (await tryGit(cwd, ["describe", "--tags", "--abbrev=0", "HEAD^"])) ?? tag;
   if (tag) return tag;
   const count = Number((await tryGit(cwd, ["rev-list", "--count", "HEAD"])) ?? "0");
   return count > 20 ? "HEAD~20" : null;
@@ -110,7 +113,14 @@ export async function analyzeChanges(project: Project, o: AnalyzeChangesOptions 
   const appRel = toPosix(path.relative(top, root));
   // git runs in the app folder: pathspecs are relative to it, while diff/status/--full-name paths are top-relative
   const scope = appRel ? ["--", "."] : [];
-  const head = (await git(root, ["rev-parse", "HEAD"])).trim();
+  const headSha = await tryGit(root, ["rev-parse", "--verify", "HEAD"]);
+  if (!headSha)
+    throw new DemovieError(
+      "E_GIT",
+      "this repository has no commits yet, so there are no changes to describe",
+      "commit your app first, then run `npx demovie changes`",
+    );
+  const head = headSha.trim();
   const since = o.since === undefined || o.since === null ? await defaultSince(root) : o.since;
   const sinceSha = since ? (await git(root, ["rev-parse", "--verify", `${since}^{commit}`])).trim() : "";
 

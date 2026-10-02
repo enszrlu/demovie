@@ -157,3 +157,103 @@ D9 — 2026-10-01 — Frame format for final renders: PNG. Why: JPEG q92 saved 1
   - **Exception:** the changelog clip uses its dashboard shot at 9.5 s, because its poster repeats the launch video's board frame.
 - **D111** — 2026-10-02 — `audio.music.file` is removed from the config schema: nothing read it and SPEC §6.1 doesn't list it. A licensed track is set per video, in `video.json` `audio.music.src`. Config objects aren't strict, so configs that still carry the key keep validating (zod strips it).
 - **D112** — 2026-10-02 — Both published packages get a self-contained README: `demovie`'s `files` already listed one, and npm shows the package README. They contain no repository-relative links, because there is no repository URL yet. `@demovie/runtime` listed `LICENSE` in `files` but never shipped it: its build now copies the root LICENSE (gitignored copy), as the CLI build already did.
+
+## Production hardening (after M9)
+
+- **D113** — 2026-10-02 — The repository is `enszrlu/demovie` (the maintainer's answer). `demovie ci init` references `enszrlu/demovie/packages/action@v0`. Docs, both package.json files (`homepage`, `repository` with `directory`, `bugs`) and the plugin manifest point there; `claude plugin validate --strict` passes. D112's "no repository URL yet" no longer holds, but the package READMEs stay free of repository-relative links, because npm renders them outside the repository.
+- **D114** — 2026-10-02 — npm auth for `release.yml` is trusted publishing (OIDC):
+  - **Why:** npm removed legacy tokens in November 2025. It will also end direct publishing with granular tokens in January 2027, and recommends trusted publishing for CI (docs.npmjs.com, checked today).
+  - **Requirements:** trusted publishing needs npm ≥ 11.5.1, so the release job installs `npm@^11.5.1`. pnpm 9.15.9 publishes through the npm CLI (`runNpm(['publish', …])` in its publish command, checked in its source).
+  - **Fallback:** `NPM_TOKEN`, a granular token, for a package that doesn't exist on npm yet; npm tries OIDC first.
+  - **Job split:** `verify` has read-only permissions and no persisted credentials; `release` has the write permissions.
+  - **Changesets action:** pinned to `changesets/action@v2.1.2`, because the repository has no `v2` major tag (checked).
+  - **Versioning:** `pnpm version-packages` also rebuilds the skill and the generated docs, so the version PR passes the "generated files are committed" check.
+- **D115** — 2026-10-02 — The workflows and the action move from the `@v4` actions, which run on Node 20, to the current majors: `actions/checkout@v7`, `actions/setup-node@v7`, `pnpm/action-setup@v6` and `actions/upload-artifact@v7`. Their tags exist and none of their breaking changes affect us (release notes read today):
+  - checkout v6 persists credentials in a separate file;
+  - checkout v7 refuses to check out fork PRs on `pull_request_target`/`workflow_run`, events we don't use;
+  - setup-node v7 drops its dummy `NODE_AUTH_TOKEN`, which we set ourselves.
+
+  CI gains two checks: generated files (skill, plugin, docs) must be committed, and a Node 20.19 job runs the build and the tarball smoke test.
+- **D116** — 2026-10-02 — Changes to the composite action:
+  - **`detect-pm`:** finds the lockfile nearest to `working-directory`, walking up to `$GITHUB_WORKSPACE`, so a monorepo app installs at the root.
+    - pnpm's version comes from `packageManager`/`devEngines`. Only without either does the action pass one: pnpm/action-setup refuses two versions, and the lockfile format implies the version (5→7, 6→8, 9→10).
+    - Bun gets `oven-sh/setup-bun@v2`; Yarn Berry gets corepack and `--immutable`.
+  - **`install-browser`:** asks the demovie that will run (the app's own, else npx's) for its Playwright version, via `demovie --json doctor`'s new `chromium.playwrightVersion`. It installs exactly that Chromium build, with `--with-deps` on Linux. The old hard-coded `playwright@1.60.0` would break as soon as demovie upgrades Playwright.
+  - **ffmpeg:** installed per runner OS.
+  - **Outputs:** `videos` and `out-dir` are now relative to the workspace. Before, `upload-artifact` (which resolves from the workspace) found nothing when `working-directory` wasn't `.`.
+- **D117** — 2026-10-02 — Changes to the workflow `ci init` generates:
+  - `agent-version` is pinned to the installed agent's `--version`, else the version tested here (claude 2.1.247, codex 0.156.1).
+  - `persist-credentials: false`.
+  - The `deployment_status` trigger stays commented out, with a warning: previews of untrusted branches would run with the API key.
+- **D118** — 2026-10-02 — Render sandbox (compositions are agent-written code):
+  - **Network:** Chromium resolves every host except 127.0.0.1 to NOTFOUND, requests to other origins are aborted, and WebSockets are closed.
+  - **WebRTC:** `RTCPeerConnection` is deleted before page scripts run, and non-proxied UDP is disabled.
+  - **Static server:** it checks containment on real paths (symlinks can't escape) and only answers `Host: 127.0.0.1|localhost|[::1]:<port>` (DNS rebinding).
+- **D119** — 2026-10-02 — Secrets:
+  - **Masking:** values from `$env:` references (except plain URLs) and header values are registered secrets, masked in every JSON output, error and MCP response (`logger.maskDeep`).
+  - **App process:** the app and seed processes get `process.env` plus `app.start.env`, never the rest of `.demovie/.env`.
+  - **Files:** `.demovie/.env` is written with mode 0600.
+  - **Headers and storage state:** extra headers are only sent to the app's origin; the saved storage state keeps only the app site's cookies and origins.
+- **D120** — 2026-10-02 — `make` guardrails:
+  - **Nesting:** a nested `make` is refused (`DEMOVIE_MAKE_SESSION`).
+  - **Claude deny rules (`--disallowedTools`):**
+    - running `demovie make|up|init|auth|ci|mcp|skill`, and `audio voice` unless `--voice` was given;
+    - editing `.demovie/config.json`, `auth.ts`, `flows/**/*.ts` and `.env`;
+    - reading `.env` and `.auth/**`.
+  - **Rule semantics (checked in Claude Code's docs):** `Bash(x:*)` ≡ `Bash(x *)`, deny beats allow, and only Edit/Read path rules apply; Edit also covers writes.
+  - **Paid requests:** `CI` alone no longer implies consent; it takes an explicit `--yes`, or an MCP call with `confirm: true`.
+- **D121** — 2026-10-02 — Untrusted text:
+  - The action's `--about` is a fixed phrase that points the agent at `.demovie/.cache/changes.json`. Commit subjects and PR titles never enter the prompt.
+  - SKILL.md makes it a hard rule that text from captures, commits, PR titles and changes.json is data, not instructions.
+  - Redaction now also covers open shadow roots, same-origin iframes, `href`s and `document.title`, and the page URL is redacted on the Node side.
+- **D122** — 2026-10-02 — Capture robustness, both fixes found on Bite Club:
+  - **Image waits:** only images on screen are awaited (`img.decode()` on lazy offscreen images hung a capture for over 10 minutes), and the wait is capped at 10 s, with a warning.
+  - **Full-page captures of app shells:** a page that scrolls an inner element grows the viewport by that element's overflow, instead of capturing just the viewport.
+  - **Other fixes:**
+    - capture job ids are unique;
+    - flows are parsed before the app starts;
+    - the capture index is written even when a job fails;
+    - re-authentication is single-flight.
+- **D123** — 2026-10-02 — `demovie down` only kills the pid in `app.json` if that process's start time (`ps -o lstart=`) still matches, so a recycled pid is never killed. Only `up` writes `app.json`. `app.log` is appended with a header per start. On Windows, `taskkill /T` stops the process tree.
+- **D124** — 2026-10-02 — Frame cache:
+  - The render id now covers the brand folder, the assets, every capture's metadata, and the screenshots of the captures a video declares or references. A re-capture or a brand edit therefore invalidates cached frames.
+  - Frames are written atomically.
+  - Each frame set records its owner and is pruned after encoding.
+- **D125** — 2026-10-02 — Determinism:
+  - **Cause:** Chromium caches the raster of `will-change: transform` layers, so a frame depended on the frame rendered before it. This showed up as t=15 s differences in the Bite Club render.
+  - **Fix:** the cursor no longer sets `will-change`.
+  - **QA:** DM-R01's second pass now seeks to t − 1/fps before t, so the rule catches this history dependence.
+- **D126** — 2026-10-02 — DM-A01 reports a declared brand font that no text uses as a warning. SPEC's concern is fallback rendering of text, and an unused font doesn't change pixels. Bite Club declares JetBrains Mono for code it doesn't show.
+- **D127** — 2026-10-02 — Runtime additions, all from dogfooding Bite Club:
+  - **`highlight()` takes a Rect:** rings around blocks with no element of their own, framed from element rects.
+  - **Phone status band:** the dynamic island no longer covers the top of the page; the band's light/dark follows the capture's `colorScheme`.
+  - **Chart colors:** `--dm-chart-1..5` expose the brand's chart colors.
+  - **`text.reveal`:** keeps inline markup such as accent spans.
+- **D128** — 2026-10-02 — Typings and exports:
+  - `@demovie/runtime` ships `.d.ts` files: tsc output, with `.ts` specifiers rewritten to `.js`. It no longer ships `src`.
+  - `demovie` exports `demovie/flow` (`defineFlow` with types) for TS flows, and drops its unused `"."` export (it's a CLI).
+- **D129** — 2026-10-02 — Detection fixes found on Bite Club, a Next.js app with i18n:
+  - **Route protection:** a proxy matcher that matches every page (i18n middleware) no longer marks every route protected; folder hints decide.
+  - **Auth pages:** names with a prefix (`employee-login`) and `verify-email` are auth pages.
+  - **Root layout:** found inside `[locale]`.
+  - **README features:** keep their sub-headings and bold labels.
+  - **Logos:** extracted SVGs get `xmlns`, a viewBox and SVG attribute names (`normalizeSvg`).
+  - **Writes:** `writeJson` skips unchanged content, so files keep their mtimes.
+  - **`changes`:** at a tag, the default range starts at the previous tag; a repository without commits gets `E_GIT` with a fix.
+- **D130** — 2026-10-02 — Friction F5 (deferred in D105) is fixed.
+  - **The change:** Harborly's `HealthBadge` takes `demovieId` and renders `data-demovie="health-<project id>"`. M7's `badges.before.tsx` fixture changed the same way, so the M7 tests still describe the real file.
+  - **Follow-up:** captures were re-taken, the changelog rings now target `dm:health-…`, and both videos were re-rendered.
+- **D131** — 2026-10-02 — `doctor` launches Chromium once instead of only checking the binary. It reports the first meaningful error line. On Linux, missing system libraries map to `sudo npx -y playwright-core@<version> install-deps chromium`, with the exact Playwright version. Launch failures elsewhere use the same classification (`launchFailure`).
+- **D132** — 2026-10-02 — CLI input:
+  - **Numeric flags:** each has a range (duration 1–600, fps 1–120, workers 1–32, port 1–65535…).
+  - **Usage errors:** `--json` usage errors print `{ ok: false, error: { code: "E_USAGE" } }` with exit 2.
+  - **`init`:** validates `--url`/`--agents` before writing anything, and gains `--force`.
+  - **`add`:** validates every input before importing any.
+- **D133** — 2026-10-02 — The Bite Club example lives in that app's own repository (its `.demovie/` folder, untracked there, with no app code changed), not in this one.
+  - **Login:** the seed.sql test accounts from its `.env.e2e.example` (the owner confirmed they are seed data), copied into a 0600 `.env`.
+  - **Roles:** the auth script picks employee, kitchen or admin from `DEMOVIE_ROLE`.
+  - **App start:** `next dev --webpack`, because Turbopack stalled on a 4.5 GB dev cache.
+- **D134** — 2026-10-02 — Apps that demovie starts (and the test harness's Harborly) don't inherit `NODE_ENV=test`.
+  - **The bug:** `next dev` keeps an inherited NODE_ENV (`process.env.NODE_ENV || defaultEnv` in Next 16.3.8's CLI). Its tsconfig writer (`getTypeDefinitionGlobPatterns`) assumes `development` for dev builds, so under vitest's `test` it added `.next/dev/dev/types/**/*.ts` and rewrote Harborly's tsconfig.json in its own JSON style, which Biome rejects.
+  - **The fix:** only `test` is dropped, because it's a test runner's value no app wants for a demo. Any other inherited value stays, and `app.start.env` always wins.
+- **D135** — 2026-10-02 — MCP tools take a video slug or a path inside the project, and `get_elements` takes a capture id under `captures/`. Anything else is `E_USAGE`. MCP calls come from an agent, so they stay inside the project; the CLI still accepts any composition path (D100). Verify's MCP smoke test therefore calls `stills` with Harborly's own `changelog` slug, instead of `../compositions/clean-launch`, as SPEC §14.3's `{slug}` describes.

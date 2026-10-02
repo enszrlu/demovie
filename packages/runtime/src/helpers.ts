@@ -56,30 +56,44 @@ type RevealFrom = "below" | "fade" | "blur" | "mask";
 
 function split(target: HTMLElement, by: "char" | "word" | "line"): HTMLElement[] {
   const text = target.textContent ?? "";
-  target.textContent = "";
   target.dataset.dmText = "1";
   target.setAttribute("aria-label", text);
-  const words = text.split(/(\s+)/);
   const pieces: HTMLElement[] = [];
-  for (const part of words) {
-    if (/^\s+$/.test(part)) {
-      target.appendChild(document.createTextNode(part));
-      continue;
-    }
-    const word = el("span", "dm-word", target);
-    word.dataset.dmSplit = "1";
-    if (by === "char") {
-      for (const ch of part) {
-        const span = el("span", "dm-char", word);
-        span.dataset.dmSplit = "1";
-        span.textContent = ch;
-        pieces.push(span);
+  // Inline markup survives: `by <span class="dm-accent">40%</span>` keeps its span, with the word spans inside it.
+  const walk = (from: Node, into: HTMLElement) => {
+    for (const node of [...from.childNodes]) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const shell = node.cloneNode(false) as HTMLElement;
+        into.appendChild(shell);
+        walk(node, shell);
+        continue;
       }
-    } else {
-      word.textContent = part;
-      pieces.push(word);
+      if (node.nodeType !== Node.TEXT_NODE) continue;
+      for (const part of (node.textContent ?? "").split(/(\s+)/)) {
+        if (!part) continue;
+        if (/^\s+$/.test(part)) {
+          into.appendChild(document.createTextNode(part));
+          continue;
+        }
+        const word = el("span", "dm-word", into);
+        word.dataset.dmSplit = "1";
+        if (by === "char") {
+          for (const ch of part) {
+            const span = el("span", "dm-char", word);
+            span.dataset.dmSplit = "1";
+            span.textContent = ch;
+            pieces.push(span);
+          }
+        } else {
+          word.textContent = part;
+          pieces.push(word);
+        }
+      }
     }
-  }
+  };
+  const source = target.cloneNode(true);
+  target.textContent = "";
+  walk(source, target);
   if (by !== "line") return pieces;
   // Group words into lines by their offsetTop (fonts are loaded before setup runs).
   const lines: HTMLElement[][] = [];

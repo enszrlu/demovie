@@ -40,6 +40,11 @@ describe("new + add", () => {
     expect(readFileSync(path.join(dir, "brief.md"), "utf8")).toMatch(/^---\ntype: launch\nduration: 35/);
     await expect(newVideo(ctx, "launch", { type: "launch" })).rejects.toMatchObject({ code: "E_USAGE" });
     await expect(newVideo(ctx, "short", { type: "launch", duration: 5 })).rejects.toThrow(/25–50/);
+    // a bad option is a usage error that leaves no half-written folder behind
+    await expect(newVideo(ctx, "wide", { type: "launch", format: ["16:10"] as never })).rejects.toMatchObject({
+      code: "E_USAGE",
+    });
+    expect(existsSync(path.join(p.root, ".demovie/videos/wide"))).toBe(false);
   });
 
   it("starts from the capture that matches --about, and points $schema at unpkg when demovie isn't installed", async () => {

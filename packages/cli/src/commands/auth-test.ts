@@ -12,7 +12,10 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
     };
   }
   const app = await capture.ensureApp(project, { yes: ctx.yes, seed: false });
-  const browser = await capture.launchChromium();
+  const browser = await capture.launchChromium().catch(async (error: unknown) => {
+    if (app.started) await app.stop();
+    throw error;
+  });
   try {
     const outcome = await capture.ensureAuth(browser, project, app.url, {
       force: project.resolved.auth.strategy !== "storageState",

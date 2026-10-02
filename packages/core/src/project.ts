@@ -3,7 +3,7 @@ import path from "node:path";
 import { DemovieError } from "./errors.ts";
 import { logger } from "./logger.ts";
 import { type Config, ConfigSchema } from "./schemas/config.ts";
-import { loadDotEnv, resolveEnvRefs } from "./util/env.ts";
+import { isPlainUrl, loadDotEnv, resolveEnvRefs } from "./util/env.ts";
 import { readJson, sha256, toPosix, writeJson } from "./util/fs.ts";
 import { VERSION } from "./version.ts";
 
@@ -105,8 +105,16 @@ export async function loadProject(cwd: string): Promise<Project> {
   );
   const env = { ...loadDotEnv(paths.env), ...process.env };
   const missing = new Set<string>();
-  const resolved = applyEnvOverrides(resolveEnvRefs(config, env, missing), env);
+  // Secrets: everything in .demovie/.env, every value a `$env:` reference pulls in (except plain URLs, which status and
+  // errors need to show) and every request header value. Output, logs and MCP responses mask them.
+  const resolved = applyEnvOverrides(
+    resolveEnvRefs(config, env, missing, (value) => {
+      if (!isPlainUrl(value)) logger.addSecret(value);
+    }),
+    env,
+  );
   for (const value of Object.values(loadDotEnv(paths.env))) logger.addSecret(value);
+  for (const value of Object.values(resolved.app.headers)) logger.addSecret(value);
   return { paths, config, resolved, env, missingEnv: [...missing] };
 }
 

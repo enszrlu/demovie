@@ -76,15 +76,19 @@ export async function ensureCompositionAudio(
 export const CLI = "packages/cli/dist/index.js";
 export const FIXTURE_ENV = { DEMOVIE_USER: "demo@harborly.demo", DEMOVIE_PASSWORD: "harborly-demo" };
 
-/** Captures are gitignored: regenerate Harborly's when a composition needs states that don't exist yet. */
+/**
+ * Captures are gitignored: regenerate Harborly's when a video needs states that don't exist yet. `video` is a
+ * reference composition's name, or a repository-relative path to a video.json.
+ */
 export async function ensureHarborlyCaptures(
   ctx: CheckContext,
-  composition: string,
+  video: string,
 ): Promise<{ ok: boolean; detail: string }> {
-  const video = JSON.parse(
-    readFileSync(path.join(repoRoot, "examples/compositions", composition, "video.json"), "utf8"),
-  ) as { captures: string[] };
-  const missingIds = video.captures.filter(
+  const file = video.endsWith("video.json")
+    ? path.join(repoRoot, video)
+    : path.join(repoRoot, "examples/compositions", video, "video.json");
+  const { captures } = JSON.parse(readFileSync(file, "utf8")) as { captures: string[] };
+  const missingIds = captures.filter(
     (id) => !existsSync(path.join(repoRoot, "examples/harborly/.demovie/captures", id, "screen.png")),
   );
   if (missingIds.length === 0) return { ok: true, detail: "captures present" };
@@ -117,10 +121,7 @@ export const verifyChecks: Check[] = [
         : fail(`${errors} type errors`);
     },
   },
-  {
-    name: "Unit tests",
-    run: (ctx) => vitest(ctx, "unit"),
-  },
+  // The build comes before unit tests: some of them serve the built runtime (packages/runtime/dist).
   {
     name: "Build",
     run: async (ctx) => {
@@ -131,6 +132,10 @@ export const verifyChecks: Check[] = [
         ? pass(`all packages built; demovie --version → ${v.stdout.trim()}`)
         : fail("built CLI does not run");
     },
+  },
+  {
+    name: "Unit tests",
+    run: (ctx) => vitest(ctx, "unit"),
   },
   {
     name: "License check",
@@ -273,14 +278,15 @@ export const verifyChecks: Check[] = [
     name: "MCP smoke test",
     pendingReason: () => missing("packages/cli/src/commands/mcp.ts", "MCP server (M6)"),
     run: async (ctx) => {
-      const ready = await ensureHarborlyCaptures(ctx, "clean-launch");
+      // MCP tools take a video slug inside the project (SPEC §14.3): Harborly's own changelog clip.
+      const ready = await ensureHarborlyCaptures(ctx, "examples/harborly/.demovie/videos/changelog/video.json");
       if (!ready.ok) return fail(ready.detail);
       const { EXPECTED_TOOLS, runMcpSmoke } = await import("../../packages/mcp/test/smoke.ts");
       const r = await runMcpSmoke({
         command: process.execPath,
         args: [path.join(repoRoot, CLI), "mcp"],
         cwd: path.join(repoRoot, "examples/harborly"),
-        stillsSlug: "../compositions/clean-launch",
+        stillsSlug: "changelog",
         format: "16:9",
       });
       if (r.tools.join(",") !== EXPECTED_TOOLS.join(","))

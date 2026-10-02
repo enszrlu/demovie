@@ -1,5 +1,5 @@
-import { spawn } from "node:child_process";
-import { closeSync, existsSync, openSync, readFileSync } from "node:fs";
+import { spawn, spawnSync } from "node:child_process";
+import { appendFileSync, closeSync, existsSync, openSync, readFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import path from "node:path";
 import { checkUrl, DemovieError, ensureDir, isSafeAppUrl, logger, type Project, writeJson } from "@demovie/core";
@@ -56,7 +56,7 @@ export async function runSeed(project: Project): Promise<boolean> {
   const result = await execa(seed, {
     shell: true,
     cwd,
-    env: { ...project.env, ...project.resolved.app.start?.env },
+    env: childEnv(project),
     reject: false,
     all: true,
   });
@@ -108,16 +108,19 @@ export async function ensureApp(project: Project, options: EnsureAppOptions = {}
   const seeded = options.seed === false ? false : await runSeed(project);
   await ensureDir(project.paths.cacheDir);
   const log = project.paths.appLog;
-  const fd = openSync(log, "w");
+  // append: an `up` app and a capture's own app may share the log; neither run erases the other's output
+  appendFileSync(log, `\n--- ${new Date().toISOString()} ${app.start.command}\n`);
+  const fd = openSync(log, "a");
   const cwd = path.resolve(project.paths.root, app.start.cwd);
   logger.step(`Starting the app: ${app.start.command}`);
   // Long-running process: plain spawn with a shell, in its own process group so `down` can kill the whole tree.
   const child = spawn(app.start.command, {
     shell: true,
     cwd,
-    env: { ...process.env, ...stringEnv(project.env), ...app.start.env, FORCE_COLOR: "0", BROWSER: "none" },
+    env: { ...childEnv(project), FORCE_COLOR: "0", BROWSER: "none" },
     stdio: ["ignore", fd, fd],
     detached: true,
+    windowsHide: true,
   });
   closeSync(fd);
   const pid = child.pid ?? null;
@@ -132,11 +135,13 @@ export async function ensureApp(project: Project, options: EnsureAppOptions = {}
     exited = code ?? 1;
   });
   const state: AppState = { pid, command: app.start.command, url, startedAt: new Date().toISOString(), log };
-  await writeJson(project.paths.appState, state);
-  // If this process dies before `stop()` runs, take the app's process group with it (not for `up`).
+  // Only `up` leaves the app running for `down` to find; a capture's own app lives and dies with the capture.
+  if (options.detach) await writeJson(project.paths.appState, state);
+  // If this process dies before `stop()` runs, take the app's process tree with it (not for `up`).
   const killGroup = () => {
     try {
-      process.kill(-pid, "SIGTERM");
+      if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore" });
+      else process.kill(-pid, "SIGTERM");
     } catch {
       /* already gone */
     }
@@ -183,7 +188,18 @@ export async function ensureApp(project: Project, options: EnsureAppOptions = {}
   return { url, started: true, reused: false, seeded, pid, stop };
 }
 
-function stringEnv(env: Record<string, string | undefined>): Record<string, string> {
+/**
+ * Environment for the user's app and seed: the shell's environment plus `app.start.env` (whose values may be `$env:`
+ * references into .demovie/.env). demovie's own secrets — the demo password, provider keys — are not passed on.
+ */
+/**
+ * The app's environment: ours plus `app.start.env`. A test runner's `NODE_ENV=test` (vitest, jest) is dropped: `next
+ * dev` keeps an inherited NODE_ENV, then misbehaves (it even rewrites tsconfig.json), so the app's tooling picks its own.
+ */
+export function childEnv(project: Pick<Project, "resolved">): Record<string, string> {
+  const inherited = { ...process.env };
+  if (inherited.NODE_ENV === "test") delete inherited.NODE_ENV;
+  const env = { ...inherited, ...project.resolved.app.start?.env };
   return Object.fromEntries(Object.entries(env).filter((e): e is [string, string] => typeof e[1] === "string"));
 }
 
@@ -203,10 +219,28 @@ export async function stopPid(project: Pick<Project, "paths">, pid: number): Pro
   return wasAlive;
 }
 
-/** `demovie down`: stop what `up` started. */
-export async function stopApp(project: Pick<Project, "paths">): Promise<{ stopped: boolean; pid: number | null }> {
+/**
+ * Whether `pid` is still the process `up` started: on macOS and Linux its start time must match app.json's
+ * `startedAt` (a pid can be reused by an unrelated process after the app exits). Windows has no cheap check.
+ */
+export function sameProcess(pid: number, startedAt: string): boolean {
+  if (process.platform === "win32") return true;
+  const r = spawnSync("ps", ["-o", "lstart=", "-p", String(pid)], { encoding: "utf8" });
+  if (r.status !== 0 || !r.stdout.trim()) return false;
+  const started = Date.parse(r.stdout.trim());
+  return Number.isNaN(started) || Math.abs(started - Date.parse(startedAt)) < 10_000;
+}
+
+/** `demovie down`: stop what `up` started — never a process that merely reuses its pid. */
+export async function stopApp(
+  project: Pick<Project, "paths">,
+): Promise<{ stopped: boolean; pid: number | null; stale: boolean }> {
   const state = readAppState(project);
-  if (!state) return { stopped: false, pid: null };
+  if (!state) return { stopped: false, pid: null, stale: false };
+  if (alive(state.pid) && !sameProcess(state.pid, state.startedAt)) {
+    await rm(project.paths.appState, { force: true });
+    return { stopped: false, pid: state.pid, stale: true };
+  }
   const stopped = await stopPid(project, state.pid);
-  return { stopped, pid: state.pid };
+  return { stopped, pid: state.pid, stale: !stopped };
 }

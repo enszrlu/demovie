@@ -94,7 +94,7 @@ export default async function ProjectPage({ params }: PageProps) {
           <div className="min-w-0 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={project.status} />
-              <HealthBadge health={project.health} />
+              <HealthBadge health={project.health} demovieId={`health-${project.id}`} />
             </div>
             <h1 id="project-title" className="mt-3 text-2xl font-semibold tracking-tight">
               {project.name}

@@ -82,4 +82,15 @@ describe("demovie status", () => {
     expect(data.warnings.join("\n")).toContain("no demovie skill in this project for claude");
     expect(data.next).toContain("npx demovie make --type launch");
   });
+
+  it("reports a broken video.json as a warning instead of failing", async () => {
+    const p = syntheticProject("unit-status-broken", "");
+    const dir = path.join(p.root, ".demovie/videos/broken");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, "video.json"), '{ "slug": "broken", ');
+    const ctx = createContext({ cwd: p.root, yes: true, json: true });
+    const data = (await status(ctx)).data as { warnings: string[]; videos: unknown[] };
+    expect(data.videos).toEqual([]);
+    expect(data.warnings.join("\n")).toContain(".demovie/videos/broken/video.json is not valid JSON");
+  });
 });

@@ -8,8 +8,10 @@ export async function run(ctx: CommandContext): Promise<CommandResult> {
   const result = await stopApp(project);
   return {
     data: result,
-    human: result.pid
+    human: result.stopped
       ? `stopped the app (pid ${result.pid})`
-      : "nothing to stop: `demovie up` didn't start an app here",
+      : result.pid
+        ? `the app demovie started (pid ${result.pid}) is no longer running; cleared .demovie/.cache/app.json`
+        : "nothing to stop: `demovie up` didn't start an app here",
   };
 }
