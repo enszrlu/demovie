@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import type { Check, CheckContext, CheckOutcome } from "../verify.ts";
+import { checkDocs } from "./docs-check.ts";
 import { assertVideo, describeMedia, loudness, summarize } from "./media.ts";
 import { listRepoFiles, repoRoot } from "./repo.ts";
 import { tarballSmoke } from "./smoke.ts";
@@ -326,7 +327,10 @@ export const verifyChecks: Check[] = [
   {
     name: "Docs check",
     pendingReason: () => missing("docs/getting-started.md", "docs (M9)"),
-    run: async () => fail("not wired yet"),
+    run: async () => {
+      const docs = checkDocs(CLI);
+      return docs.ok ? pass(docs.detail) : fail(docs.detail);
+    },
   },
   {
     name: "Package tarball smoke test",

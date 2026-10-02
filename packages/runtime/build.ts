@@ -68,6 +68,9 @@ for (const style of ["clean", "bold", "soft", "editorial", "terminal"]) {
   cpSync(path.join(root, "styles", `${style}.css`), path.join(served, "styles", `${style}.css`));
 }
 
+// The published package ships the repository's MIT license (listed in "files").
+cpSync(path.join(root, "..", "..", "LICENSE"), path.join(root, "LICENSE"));
+
 // SPEC §10: runtime under 60 KB min+gz, excluding GSAP.
 const size =
   gzipSync(readFileSync(path.join(served, "runtime.js"))).length +

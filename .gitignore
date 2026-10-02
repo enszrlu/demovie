@@ -42,3 +42,4 @@ packages/cli/schema/
 packages/cli/assets/
 packages/cli/skill/
 packages/cli/LICENSE
+packages/runtime/LICENSE

@@ -12,8 +12,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | M5 Audio | done | `83e76e6` |
 | M6 Agent layer | done | `5ed6603` |
 | M7 Changelog & CI | done | `90013e4` |
-| M8 Dogfood | done | see `git log` (`feat(m8)`) |
-| M9 Docs & release readiness | not started | |
+| M8 Dogfood | done | `446f247` |
+| M9 Docs & release readiness | done | see `git log` (`feat(m9)`) |
 
 ## M0 — Scaffold
 - [x] Git repo initialized; monorepo per SPEC §5 (pnpm, TS strict, Biome, vitest, tsdown) — `pnpm-workspace.yaml` (packages/* + examples/harborly), `tsconfig.base.json` (strict, `noUncheckedIndexedAccess`), `biome.json`, `vitest.config.ts` (unit + integration projects), `packages/cli/tsdown.config.ts`
@@ -87,7 +87,7 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - **F9** — Runtime: every composition hand-rolled a `union()` of rects to frame a heading plus its cards. **Fixed:** `screen.rect(...ids)` returns the box around several elements; the six compositions use it (QA unchanged, stills identical) — `runtime.test.ts`.
 
 ## M9 — Docs & release readiness
-- [ ] All docs (SPEC §19); README with the GIF; generated config + QA-rule docs
-- [ ] changesets configured; `release.yml` prepared (not run); version 0.1.0
-- [ ] Tarball smoke test via npx (and bunx if available)
-- [ ] `pnpm verify` + `pnpm verify:dogfood` pass; `git status` clean
+- [x] All docs (SPEC §19); README with the GIF; generated config + QA-rule docs — `README.md` (hero GIF → MP4, pitch, 3-command quickstart, mermaid "how it works", features, supported-agents table, examples gallery from `pnpm gallery:build`, the four FAQ answers, docs index, contributing, license); `docs/` getting-started, concepts (grounding levels L0–L3, also reported by `status`), config (generated), capture-and-auth, demo-data, compositions (generated runtime API), styles, qa-rules (generated), audio, agents, ci, licensing-and-terms (GSAP and Remotion terms checked 2026-10-02), troubleshooting, faq; `LICENSE` (MIT), `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `CONTRIBUTING.md` (setup, verify, regenerating the examples, adding a QA rule / style / agent adapter), `SECURITY.md`, issue + PR templates, `CHANGELOG.md`. `pnpm docs:build` regenerates config.md (every field described in the zod schema), qa-rules.md and compositions.md; verify check 13 → 16 docs, 50 links resolve, 22 CLI commands mentioned (all in `--help`), generated docs up to date
+- [x] changesets configured; `release.yml` prepared (not run); version 0.1.0 — `@changesets/cli` 3.0.3 with `.changeset/config.json` (`demovie` + `@demovie/runtime` fixed, public; private workspace packages not versioned) and `pnpm changeset`; `changeset status` reads the config; `CHANGELOG.md` → `packages/cli/CHANGELOG.md` and `packages/runtime/CHANGELOG.md` (0.1.0); `.github/workflows/release.yml` (verify, then changesets/action with npm provenance) only runs on main when the `DEMOVIE_RELEASES` repository variable is `enabled`, and never ran (no remote); every package is 0.1.0 and `demovie --version` → 0.1.0
+- [x] Tarball smoke test via npx (and bunx if available) — verify check 14: `demovie-0.1.0.tgz` unpacked 2.5 MB (< 15 MB); `npx demovie --version` → 0.1.0, `doctor --json` ok, `init --yes` on a Harborly copy ok; `bunx demovie --version` → 0.1.0 and `doctor` with bun 1.2.4
+- [x] `pnpm verify` + `pnpm verify:dogfood` pass; `git status` clean — after the last change: `pnpm verify` → `VERIFY OK (14 checks)`, none pending, the only skips being the 2 live paid-API tests without keys; `pnpm verify:dogfood` → `VERIFY DOGFOOD OK (8 checks)` with ffprobe summaries and 0 QA errors for launch (16:9, 9:16) and changelog (16:9, 1:1); `git status --porcelain` empty; `git log --oneline` shows `feat(m0)` … `feat(m9)`

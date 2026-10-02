@@ -19,10 +19,14 @@
     "verify:dogfood": "tsx scripts/verify-dogfood.ts",
     "sfx:generate": "tsx scripts/generate-sfx.ts",
     "skill:build": "tsx scripts/build-skill.ts",
-    "comparison:build": "tsx scripts/build-comparison.ts"
+    "docs:build": "tsx scripts/build-docs.ts",
+    "comparison:build": "tsx scripts/build-comparison.ts",
+    "gallery:build": "tsx scripts/build-gallery.ts",
+    "changeset": "changeset"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@changesets/cli": "3.0.3",
     "@types/node": "^22.15.0",
     "@types/pngjs": "^6.0.5",
     "playwright-core": "1.60.0",

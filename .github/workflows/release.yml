@@ -1,0 +1,45 @@
+# Prepared for maintainers; it runs only on pushes to main of the published repository.
+# It opens a "Version packages" PR from changesets, and publishes `demovie` and `@demovie/runtime` when that PR merges.
+name: release
+
+on:
+  push:
+    branches: [main]
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write # npm provenance
+
+jobs:
+  release:
+    if: github.repository_owner != '' && vars.DEMOVIE_RELEASES == 'enabled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: pnpm build
+      - run: node packages/cli/dist/index.js doctor --fix
+      - run: pnpm verify
+      - uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm changeset publish
+          title: Version packages
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

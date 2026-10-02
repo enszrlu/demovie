@@ -1,0 +1,13 @@
+# demovie
+
+## 0.1.0
+
+### Minor Changes
+
+- Initial release.
+  - **Ground:** `init` detects Next.js or a generic app and extracts brand, glossary and routes. `capture` takes screenshots and element maps of routes and multi-step flows, with seeded demo data, a frozen clock, login strategies, redaction and freshness tracking.
+  - **Make:** a GSAP motion runtime with five style presets. Stills and contact sheets, a preview player, and a deterministic renderer to H.264 MP4s in 16:9, 9:16, 1:1 and 4:5.
+  - **Check:** a QA engine with 30 rules, waivers and `--strict`.
+  - **Audio:** a deterministic music synthesizer with `beats.json`, 12 CC0 SFX, ElevenLabs/OpenAI voiceover with your key, captions, ducking and loudness normalization.
+  - **Agent layer:** an Agent Skill, a Claude Code plugin and marketplace, an MCP server with 15 tools, and `make` adapters for Claude Code, Codex, Cursor and custom agents.
+  - **Changelog mode:** `changes` with import-graph route mapping, `capture --changed`, a GitHub Action and `ci init`.

@@ -133,3 +133,27 @@ D9 — 2026-10-01 — Frame format for final renders: PNG. Why: JPEG q92 saved 1
   - Matched against the route path and the capture's heading names.
   - Each matching word outweighs the other criteria (tagged elements, static routes, shallow paths).
 - **D105** — 2026-10-02 — `screen.rect()` takes one or more element ids and returns the box around them (F9), instead of adding a separate rect-union export; all six compositions dropped their hand-rolled `union()`. Friction F5 (Harborly's health badges have no element id) stays deferred: adding a `data-demovie` id is an app change, the skill already tells agents to propose rather than make it, and changing the fixture would alter the M7 test branch and invalidate the dogfood captures.
+- **D106** — 2026-10-02 — Docs: eleven hand-written pages plus three generated ones, written by `pnpm docs:build`.
+  - `docs/config.md` comes from the config JSON Schema. Every config field now has a zod `.describe()`, which editors also show on hover.
+  - `docs/qa-rules.md` comes from the rule registry.
+  - `docs/compositions.md` comes from the runtime exports, through the same generator as the skill's runtime-api.md.
+
+  Verify check 13 fails when:
+  - a generated doc is stale;
+  - a relative link in README, CONTRIBUTING or docs/ doesn't resolve;
+  - code in them invokes a `demovie` command that `--help` doesn't list. An invocation is a code line or inline span starting with `demovie`, or `npx`/`bunx demovie` anywhere, so prose inside code isn't counted.
+- **D107** — 2026-10-02 — Licensing facts, checked today for docs/licensing-and-terms.md and the README FAQ:
+  - **GSAP:** the Standard "No Charge" GSAP License (effective 2025-04-30) makes GSAP and all its plugins free for commercial use. It excludes no-code visual animation builders that compete with Webflow.
+  - **Remotion:** its LICENSE.md makes it free for individuals, for-profit organizations with up to 3 employees, non-profits and evaluation; everyone else needs a company license.
+- **D108** — 2026-10-02 — Changesets: `@changesets/cli` 3.0.3 (MIT; its config package, 4.0.1, adds `format` to the schema).
+  - `demovie` and `@demovie/runtime` are `fixed` (versioned together), with `access: public`.
+  - The private workspace packages are bundled into `demovie`, so `privatePackages` are neither versioned nor tagged.
+  - Changesets writes CHANGELOG.md inside each published package (`packages/cli`, `packages/runtime`); the root CHANGELOG.md links to both.
+  - The 0.1.0 entries are hand-written in changesets' format, because 0.1.0 is the first version and `changeset version` would bump past it.
+- **D109** — 2026-10-02 — `.github/workflows/release.yml` runs on pushes to main, and only when the repository variable `DEMOVIE_RELEASES` is `enabled`. It runs `pnpm verify` first, then `changesets/action` (a version PR, then `changeset publish` with npm provenance). It has never run: this repository has no remote and nothing is published.
+- **D110** — 2026-10-02 — README media:
+  - **Hero:** the comparison GIF, linking to the MP4, because GitHub doesn't play repository MP4s inline (SPEC §19).
+  - **Gallery:** `pnpm gallery:build` takes one 16:9 still per reference composition and per dogfood video, at its poster time, as a 960×540 PNG (55–186 KB).
+  - **Exception:** the changelog clip uses its dashboard shot at 9.5 s, because its poster repeats the launch video's board frame.
+- **D111** — 2026-10-02 — `audio.music.file` is removed from the config schema: nothing read it and SPEC §6.1 doesn't list it. A licensed track is set per video, in `video.json` `audio.music.src`. Config objects aren't strict, so configs that still carry the key keep validating (zod strips it).
+- **D112** — 2026-10-02 — Both published packages get a self-contained README: `demovie`'s `files` already listed one, and npm shows the package README. They contain no repository-relative links, because there is no repository URL yet. `@demovie/runtime` listed `LICENSE` in `files` but never shipped it: its build now copies the root LICENSE (gitignored copy), as the CLI build already did.
