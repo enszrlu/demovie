@@ -117,9 +117,10 @@ Each folder holds the brief, storyboard, `video.json` and composition. Captures,
 features, numbers and customers, or spends most of its run hunting for footage of your UI. demovie gives it your real
 app and checks the result.
 
-**Why not brag?** brag is great for a quick, fun launch post. It renders your components with sample data it writes
-itself, one format per run, and doesn't cover logins, personal data or releases. demovie shows your running app with
-your demo data, in every format, checked by QA, and again on every release. See [the comparison](docs/comparison.md).
+**Why not brag?** brag is great for a quick, fun launch post. It renders your components outside the app (with sample
+data when it can't load yours), one format per run, and doesn't cover logins, personal data or releases. demovie shows
+your running app with your demo data, in every format, checked by QA, and again on every release. See [the
+comparison](docs/comparison.md), with both made from the same app.
 
 **Why not Remotion?** Remotion is free only for individuals, non-profits and companies of up to three people; larger
 companies need a paid license. demovie is MIT. Compositions are plain HTML + GSAP rendered by demovie's own renderer.

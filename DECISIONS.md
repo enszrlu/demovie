@@ -293,3 +293,9 @@ D9 — 2026-10-01 — Frame format for final renders: PNG. Why: JPEG q92 saved 1
   - **Testing:** the by-hand guide's code was rendered and QA'd on Harborly before publishing (0 errors).
   - **Comparison page:** facts about brag, Remotion, HyperFrames and the course harness were checked on 2026-10-02. The real-app test is reported anonymously, as "a private Next.js app", with no frames from it.
 - **D143** — 2026-10-02 — The README hero caption now says the left half is a recreation of a typical one-prompt result (D100), not a recorded run. A "How it compares" section and FAQ entry say plainly when brag, Remotion or HyperFrames is the better choice.
+- **D144** — 2026-10-03 — The comparison page has a public side-by-side of Harborly, one command each: `/brag` with its defaults and `npx demovie make --type teaser --format 16:9 --yes`. The page discloses the differences between the two runs:
+  - **Starting point:** demovie's project already had `init` and `capture` done; brag started from the bare repository.
+  - **Effort:** brag ran at maximum effort, demovie at the default effort.
+  - **Data:** on Harborly brag used the app's demo data, because it's a local JSON file. On the private app it wrote sample data, because the data sits behind a database. The table and the README FAQ now say exactly that, instead of "brag invents data".
+
+  The media has no audio, so no music license question arises.

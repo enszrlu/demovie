@@ -161,3 +161,7 @@ Decisions D138–D143.
   - **Outputs shown:** the `make` output in the docs comes from the real run.
 - [x] Comparison with brag, Remotion, HyperFrames and plain prompting: facts checked 2026-10-02; four approaches measured on a private Next.js app (reported anonymously).
 - [x] README: an honest hero caption, "How it compares", a brag FAQ entry, the reorganized docs list and the teaser example; npm keywords added.
+- [x] Public side-by-side on Harborly (`docs/media/comparison/harborly-brag-vs-demovie.{gif,mp4}`):
+  - **brag:** 39 min, 108 turns, $12.26 for 21.5 s, from the bare repository at maximum effort.
+  - **demovie `make`:** 3 min 21 s, 43 turns, $1.06 for 12 s, in a project already set up, at the default effort.
+  - **Disclosed on the page (D144):** both run differences, and that brag used Harborly's real demo data.

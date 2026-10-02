@@ -21,7 +21,7 @@ where we could measure, and where another tool is the better choice. Facts about
 |---|---|---|---|---|---|
 | **What it is** | Captures + a motion runtime + QA + renderer, driven by your agent | A Claude Code skill: reads your code, writes and renders a launch video | React framework for video | HTML framework for video, built for agents | Your agent writes a `seek(t)` page and renders it frame by frame |
 | **Where the product UI comes from** | Screenshots of your running app, with element maps | Your real components rendered outside the app, or your live site | Whatever you bring | Whatever you bring | What the agent finds: often your marketing site |
-| **Data on screen** | Your demo data | Sample data the agent writes | Yours | Yours | Whatever it finds |
+| **Data on screen** | Your demo data | Your demo data when it can load it outside the app; otherwise sample data the agent writes | Yours | Yours | Whatever it finds |
 | **Pages behind a login** | Built in: form, recorded session, script, several roles | Not in its docs | Up to you | Up to you | Up to you |
 | **Personal data on screen** | Masked before each screenshot | Not in its docs | Up to you | Up to you | Up to you |
 | **Checks before rendering** | 30 QA rules: legibility, contrast, timing, safe areas, invented words and numbers, loudness | The agent's judgment (plus HyperFrames' linter in its full mode) | Your review | `hyperframes check` | The agent's self-critique |
@@ -52,6 +52,26 @@ What we took from it:
 - **Every run spent most of its time getting at the product's UI.** brag built a component harness from scratch; the
   course harness hunted for footage. demovie keeps its captures, so the next video starts from them.
 - **No agent could hear its soundtrack.** All of them mixed by measurement. Listen before posting, whichever you use.
+
+## The same app, side by side
+
+Our example app, Harborly, made with one command each: `/brag` with its defaults, and
+`npx demovie make --type teaser --format 16:9 --yes`.
+
+[![Left: brag's video of Harborly. Right: demovie's teaser of Harborly.](media/comparison/harborly-brag-vs-demovie.gif)](media/comparison/harborly-brag-vs-demovie.mp4)
+
+| | brag | demovie |
+|---|---|---|
+| Starting point | The repository, nothing set up | `init` and `capture` already done (a few minutes, once per project) |
+| Agent time · turns · reported cost | 39 min · 108 turns · $12.26 | 3 min 21 s · 43 turns · $1.06 |
+| The video | 21.5 s, 16:9, music and sound effects | 12 s, 16:9, music |
+| The product on screen | Harborly's real components and demo data, rendered in a harness it built for the run | Screenshots of the running app with its demo data |
+| Checked by | Its own review of its frames | QA: 0 errors, 0 warnings |
+
+Both runs used Claude Opus 5.5, brag at maximum effort and demovie at the default effort, so read the cost difference
+as a direction, not a precise ratio. Harborly keeps its demo data in a local file, so brag could load it; on the
+private app above, whose data sits behind a database, it wrote sample data instead. brag's story is the stronger one
+here; demovie's run was the cheap part of a project that was already set up.
 
 ## When another tool is the better choice
 
