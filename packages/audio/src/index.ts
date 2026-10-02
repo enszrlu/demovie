@@ -1,2 +1,12 @@
-/** Implemented in a later milestone (see PROGRESS.md). */
-export {};
+export * from "./captions.ts";
+export * from "./dsp.ts";
+export * from "./ffmpeg.ts";
+export * from "./mix.ts";
+export * from "./music.ts";
+export * from "./music-provider.ts";
+export * from "./onsets.ts";
+export * from "./provenance.ts";
+export * from "./random.ts";
+export * from "./sfx.ts";
+export * from "./voice/index.ts";
+export * from "./wav.ts";

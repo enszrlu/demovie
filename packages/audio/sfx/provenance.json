@@ -1,0 +1,148 @@
+{
+  "files": [
+    {
+      "file": "click.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "UI mouse click",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "d14af3436822825ea4f75b009b5ef17cc4c76479d2b4def4ff099613b363e7af"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "impact.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "low impact for logo hits and big reveals",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "cb4d09f2deadfbaad66057b03d854277f8460fd9e1ea13d67394a3fe53158b8d"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "notification.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "two-note chime",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "23a0407cf3c159e4d7c061ba44ed791ab890d4fde4fea2028d272766e6cf8ad7"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "pop.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "pop for elements appearing",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "031219c65b86fc040cf162bccc231f507e2685fc62fbbe38b49850eaa05c6997"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "riser-2s.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "2 s noise riser ending on its last sample",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "f83576e83a3f33e838dde9fc57cd0f57986c392ede31565ed0eaf5a32d9a97be"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "shimmer.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "airy bell shimmer for logos and success states",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "6b3e39013f04aeb1e3e0def0c0a7012f2eff797c35aaa5072da6f2f33c89af2e"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "soft-click.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "softer, lower UI click",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "4185d95b9c2458aa97cf9616128deb0ac4ccdc6f206e9447f8f5ad9cf23ada10"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "swipe.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "quick bright swipe for slides and swaps",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "47902890e0e5808c5871498f2034a97818288b124eaf3f9467398f066bb12a6c"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "tick.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "tiny tick for counters and toggles",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "e098163c11f3c95638fc146e3cb7086577a148e744e8448caf58e499b39778f9"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "type-key.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "one keyboard key press (cue one per typed character)",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "c9c12507ee6d1e05c36291dfe2dbf9698c8d0364d35a9d6a8ee9182eb693420f"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "whoosh-long.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "longer whoosh for slow camera moves and wipes",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "7baacc17d50aeefb2d01075127e219d3c6cb8dc5c1c2f866aa2caf1cfa5baf1b"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    },
+    {
+      "file": "whoosh-short.wav",
+      "kind": "sfx",
+      "generator": "demovie-sfx",
+      "license": "CC0-1.0",
+      "details": {
+        "description": "short air whoosh for cuts and pushes",
+        "script": "scripts/generate-sfx.ts",
+        "sha256": "78b03958f5409f8aec653aa986ed3e45a9dbb5818b9171d185d53c4585f82961"
+      },
+      "createdAt": "2026-10-02T00:15:12.436Z"
+    }
+  ]
+}

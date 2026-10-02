@@ -1,3 +1,4 @@
+import { type CaptionCue, captionCues } from "./cues.ts";
 import { asInternal, easeFn, type ScreenHandle } from "./screen.ts";
 import { clamp01, el, internal, requireVideo } from "./state.ts";
 import type { Rect, Shot, Video } from "./types.ts";
@@ -242,26 +243,33 @@ export function captions(
   if (cfg.enabled === false || lines.length === 0) return;
   const burnIn = cfg.burnIn ?? ["9:16"];
   if (!burnIn.includes(v.format)) return;
+  const cues = captionCues(lines);
   const style = o.style ?? "clean";
   const box = el("div", `dm-captions dm-captions--${style} dm-captions--${o.position ?? "bottom"}`, v.stage);
   box.dataset.dmCaption = "1";
   const textEl = el("div", "dm-captions__text", box);
   textEl.dataset.dmCaption = "1";
+  let shown: CaptionCue | null = null;
   internal.updaters.push((t) => {
-    const line = lines.find((l) => t >= l.start && t < l.start + l.duration);
-    box.style.visibility = line ? "inherit" : "hidden";
-    if (!line) return;
-    if (style === "karaoke" && line.words.length) {
-      textEl.innerHTML = "";
-      for (const w of line.words) {
-        const span = el("span", "dm-captions__word", textEl);
-        span.dataset.dmCaption = "1";
-        span.textContent = `${w.text} `;
-        if (t >= line.start + w.start) span.classList.add("is-spoken");
+    const cue = cues.find((c) => t >= c.start && t < c.end) ?? null;
+    box.style.visibility = cue ? "inherit" : "hidden";
+    if (!cue) return;
+    if (style === "karaoke" && cue.words.length) {
+      if (shown !== cue) {
+        textEl.innerHTML = "";
+        for (const w of cue.words) {
+          const span = el("span", "dm-captions__word", textEl);
+          span.dataset.dmCaption = "1";
+          span.textContent = `${w.text} `;
+        }
       }
-    } else if (textEl.textContent !== line.text) {
-      textEl.textContent = line.text;
+      cue.words.forEach((w, i) => {
+        (textEl.children[i] as HTMLElement | undefined)?.classList.toggle("is-spoken", t >= w.start);
+      });
+    } else if (shown !== cue) {
+      textEl.textContent = cue.text;
     }
+    shown = cue;
   });
 }
 

@@ -8,8 +8,8 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 | M1 Core & init | done | `3a8d7f2` |
 | M2 Capture | done | `068532d` |
 | M3 Runtime, renderer, preview, stills | done | `5d43820` |
-| M4 QA | done | see `git log` (`feat(m4)`) |
-| M5 Audio | not started | |
+| M4 QA | done | `35fa823` |
+| M5 Audio | done | see `git log` (`feat(m5)`) |
 | M6 Agent layer | not started | |
 | M7 Changelog & CI | not started | |
 | M8 Dogfood | not started | |
@@ -50,10 +50,11 @@ This checklist mirrors SPEC §20; if they conflict, SPEC wins. Tick a box only o
 - [x] `clean-launch` passes with 0 errors; each `bad-*` fixture triggers its intended rules — `pnpm verify` check 7: clean-launch 0 errors / 0 warnings in 16:9 and 9:16; 9 fixtures (bad-text, bad-layout, bad-pacing, bad-truth, bad-assets, bad-determinism, bad-ai-look, bad-loop, bad-audio) trigger all 30 intended rules (run with `--strict` so warn-level targets count)
 
 ## M5 — Audio
-- [ ] Music synth + `beats.json`; SFX generation script + bundled set
-- [ ] Voice providers (mocked HTTP tests), cache, cost estimate
-- [ ] Captions (VTT/SRT + runtime), mix + ducking + loudnorm, provenance + DM-A04
-- [ ] `clean-launch` renders with music + SFX; loudness within target ± 1 LU (measured: ___ LUFS)
+- [x] Music synth + `beats.json`; SFX generation script + bundled set — `packages/audio/src/music.ts`: pure-TS DSP (kick, clap, hats/shaker, saw/sine bass, detuned-saw pad, pluck arp, riser/crash/boom, reverb, ping-pong delay, look-ahead limiter), 5 moods, sections from the storyboard with the ending hit on a bar line; 35 s of 48 kHz stereo in ~0.9 s; `demovie audio music` writes music.wav + beats.json + provenance and wires video.json. `scripts/generate-sfx.ts` (`pnpm sfx:generate`) → 12 CC0 SFX in `packages/audio/sfx` (1.6 MB). Unit tests: duration, sample rate, peak level, determinism per seed, beat grid, per-mood arrangement, bundled SFX == generator output. Spectrograms of every mood and the SFX set reviewed.
+- [x] Voice providers (mocked HTTP tests), cache, cost estimate — ElevenLabs (with-timestamps → word timings) and OpenAI (WAV, estimated words) behind `VoiceProvider`; `packages/audio/test/voice.test.ts` checks request URLs/headers/bodies, alignment → words, cost tables, 401 → fix hint without the key, cache hits; `audio.int.test.ts` runs `audio voice` with a stubbed fetch (no key → exit 2 with fix; no `--yes` → exit 2; cached re-run makes no requests). Live tests (`voice.live.int.test.ts`) skip with "skipped unless ELEVENLABS_API_KEY / OPENAI_API_KEY is set".
+- [x] Captions (VTT/SRT + runtime), mix + ducking + loudnorm, provenance + DM-A04 — shared cue splitting (runtime `cues.ts` ↔ `audio/captions.ts`, parity test); `audio voice` writes captions.vtt/srt, render copies them to out/; `audio mix`: −8 dB duck (150 ms / 400 ms), 1 s fade-out, two-pass linear loudnorm, 48 kHz stereo; every generator appends provenance (idempotent, sha256); DM-A04 also checks licensed asset music
+- [x] `clean-launch` renders with music + SFX; loudness within target ± 1 LU (measured: −15.8 LUFS integrated, −2.3 dBTP true peak in both MP4s; mix.wav −15.7 LUFS) — `pnpm verify` check 8 asserts it; clean-launch has uplifting synth music at 112 BPM plus 16 SFX cues (whooshes on cuts, clicks, key presses, a shimmer on the logo)
+- Audio timings: `audio music` 35 s synth in 1.1 s wall (0.9 s DSP); `audio mix` (16 cues, two-pass loudnorm) in 2.4 s
 
 ## M6 — Agent layer
 - [ ] SKILL.md + references + 5 style docs; one reference composition per style, all passing QA

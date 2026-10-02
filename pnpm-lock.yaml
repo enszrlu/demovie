@@ -246,6 +246,9 @@ importers:
 
   packages/render:
     dependencies:
+      '@demovie/audio':
+        specifier: workspace:*
+        version: link:../audio
       '@demovie/capture':
         specifier: workspace:*
         version: link:../capture

@@ -62,12 +62,23 @@ function filesUnder(dir: string, base = dir): string[] {
   return out;
 }
 
-export async function audioFacts(video: VideoContext): Promise<AudioFacts> {
+export async function audioFacts(video: VideoContext, project?: Pick<Project, "paths">): Promise<AudioFacts> {
   const files = filesUnder(video.audioDir).filter((f) => AUDIO.test(f));
   const provFile = path.join(video.audioDir, "provenance.json");
   const provenance = existsSync(provFile)
     ? ProvenanceSchema.parse(JSON.parse(readFileSync(provFile, "utf8"))).files
     : [];
+  // music imported into .demovie/assets (`add --licensed`) is judged by the assets' provenance
+  const src = video.video.audio.music?.src.replace(/^\/+/, "");
+  if (project && src?.startsWith("assets/")) {
+    const assetsProv = path.join(project.paths.assetsDir, "provenance.json");
+    const entries = existsSync(assetsProv)
+      ? ProvenanceSchema.parse(JSON.parse(readFileSync(assetsProv, "utf8"))).files
+      : [];
+    files.push(src);
+    const entry = entries.find((e) => e.file === path.basename(src));
+    if (entry) provenance.push({ ...entry, file: src });
+  }
   const mix = path.join(video.audioDir, "mix.wav");
   const voiceFile = path.join(video.audioDir, "voice.json");
   return {
@@ -179,6 +190,6 @@ export async function collect(project: Project, video: VideoContext, o: CollectO
     determinism,
     loop,
     vocabulary: await vocabularyFor(project, video, captureIds),
-    audio: await audioFacts(video),
+    audio: await audioFacts(video, project),
   };
 }

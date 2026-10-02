@@ -1,27 +1,10 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { DemovieError, which } from "@demovie/core";
+import { FFMPEG_FIX, ffmpegBin, ffprobeBin } from "@demovie/audio";
+import { DemovieError } from "@demovie/core";
 import { execa } from "execa";
 
-const FFMPEG_FIX =
-  process.platform === "darwin"
-    ? "brew install ffmpeg"
-    : process.platform === "win32"
-      ? "winget install ffmpeg"
-      : "sudo apt-get install -y ffmpeg";
-
-export function ffmpegBin(): string {
-  const bin = which("ffmpeg");
-  if (!bin)
-    throw new DemovieError("E_PREREQ_FFMPEG", "ffmpeg not found on PATH (demovie uses your system ffmpeg)", FFMPEG_FIX);
-  return bin;
-}
-
-export function ffprobeBin(): string {
-  const bin = which("ffprobe");
-  if (!bin) throw new DemovieError("E_PREREQ_FFMPEG", "ffprobe not found on PATH", FFMPEG_FIX);
-  return bin;
-}
+export { ffmpegBin, ffprobeBin, measureLoudness } from "@demovie/audio";
 
 export type H264Encoder = "libx264" | "h264_videotoolbox" | "libopenh264";
 let encoderCache: H264Encoder | null = null;
@@ -217,33 +200,3 @@ export async function probe(file: string): Promise<ProbeResult> {
 }
 
 /** Integrated loudness (LUFS) and true peak (dBTP) via ffmpeg's EBU R128 scanner. */
-export async function measureLoudness(file: string): Promise<{ integrated: number; truePeak: number; range: number }> {
-  const result = await execa(
-    ffmpegBin(),
-    ["-hide_banner", "-nostats", "-i", file, "-filter_complex", "ebur128=peak=true:framelog=quiet", "-f", "null", "-"],
-    {
-      reject: false,
-      all: true,
-    },
-  );
-  const text = String(result.all ?? "");
-  const summary = text.slice(text.lastIndexOf("Summary:"));
-  const num = (re: RegExp) => {
-    const m = summary.match(re);
-    return m ? Number(m[1]) : Number.NaN;
-  };
-  const integrated = num(/I:\s+(-?[\d.]+|-inf)\s+LUFS/);
-  const truePeak = num(/True peak:[\s\S]*?Peak:\s+(-?[\d.]+|-inf)\s+dBFS/);
-  const range = num(/LRA:\s+(-?[\d.]+)\s+LU/);
-  if (!Number.isFinite(integrated))
-    throw new DemovieError(
-      "E_AUDIO",
-      `could not measure loudness of ${file}`,
-      "check that the file is a valid audio file",
-    );
-  return {
-    integrated,
-    truePeak: Number.isFinite(truePeak) ? truePeak : -120,
-    range: Number.isFinite(range) ? range : 0,
-  };
-}

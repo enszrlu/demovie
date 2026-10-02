@@ -1,5 +1,5 @@
 /** ffprobe helpers shared by verify and verify:dogfood. */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 
 export interface MediaSummary {
   file: string;
@@ -59,4 +59,29 @@ export function assertVideo(
 
 export function describeMedia(s: MediaSummary): string {
   return `${s.file.split("/").pop()}: ${s.codec} ${s.profile} ${s.pixFmt} ${s.width}x${s.height} ${s.fps}fps ${s.duration.toFixed(3)}s · audio ${s.audio ?? "none"} · ${s.colors} · ${s.sizeMb.toFixed(1)} MB`;
+}
+
+/** EBU R128 integrated loudness and true peak of a file's audio (ffmpeg ebur128). */
+export function loudness(file: string): { integrated: number; truePeak: number } {
+  const res = spawnSync(
+    "ffmpeg",
+    [
+      "-hide_banner",
+      "-nostats",
+      "-i",
+      file,
+      "-vn",
+      "-filter_complex",
+      "ebur128=peak=true:framelog=quiet",
+      "-f",
+      "null",
+      "-",
+    ],
+    { encoding: "utf8" },
+  );
+  const text = `${res.stdout}${res.stderr}`;
+  const summary = text.slice(text.lastIndexOf("Summary:"));
+  const integrated = Number(summary.match(/I:\s+(-?[\d.]+)\s+LUFS/)?.[1] ?? Number.NaN);
+  const truePeak = Number(summary.match(/True peak:[\s\S]*?Peak:\s+(-?[\d.]+)\s+dBFS/)?.[1] ?? Number.NaN);
+  return { integrated, truePeak };
 }

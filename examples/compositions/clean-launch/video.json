@@ -1,6 +1,6 @@
 {
   "slug": "clean-launch",
-  "title": "Harborly — Projects board",
+  "title": "Harborly \u2014 Projects board",
   "type": "launch",
   "fps": 30,
   "duration": 35,
@@ -9,9 +9,94 @@
   "poster": 12.5,
   "status": "rendered",
   "audio": {
-    "music": null,
+    "music": {
+      "src": "audio/music.wav",
+      "gain": -14,
+      "beats": "audio/beats.json"
+    },
     "voice": null,
-    "sfx": [],
+    "sfx": [
+      {
+        "name": "whoosh-short",
+        "at": 3.05,
+        "gain": -16
+      },
+      {
+        "name": "click",
+        "at": 9.85,
+        "gain": -14
+      },
+      {
+        "name": "click",
+        "at": 11.3,
+        "gain": -14
+      },
+      {
+        "name": "type-key",
+        "at": 11.45,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.521,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.593,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.664,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.736,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.807,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.879,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 11.95,
+        "gain": -22
+      },
+      {
+        "name": "type-key",
+        "at": 12.021,
+        "gain": -22
+      },
+      {
+        "name": "click",
+        "at": 13.05,
+        "gain": -14
+      },
+      {
+        "name": "whoosh-short",
+        "at": 20.05,
+        "gain": -16
+      },
+      {
+        "name": "whoosh-short",
+        "at": 26.05,
+        "gain": -16
+      },
+      {
+        "name": "shimmer",
+        "at": 30.55,
+        "gain": -18
+      }
+    ],
     "loudness": {
       "targetLufs": -16,
       "truePeak": -1.5

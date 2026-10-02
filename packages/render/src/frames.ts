@@ -37,12 +37,15 @@ export async function renderId(
     if (existsSync(file)) parts.push(`${path.basename(file)}:${sha256(await readFile(file))}`);
   };
   for (const f of filesUnder(video.compositionDir)) await add(f);
-  // video.json without `status`: a final render marks it "rendered", which must not invalidate the frames.
-  const { status: _status, ...videoWithoutStatus } = JSON.parse(await readFile(video.videoFile, "utf8")) as Record<
+  // video.json without `status` (a final render marks it "rendered") and without soundtrack-only settings (SFX cues,
+  // gains, loudness): neither changes a frame. The beats/voice manifests themselves are hashed below.
+  const { status: _status, ...videoForFrames } = JSON.parse(await readFile(video.videoFile, "utf8")) as Record<
     string,
     unknown
   >;
-  parts.push(`video.json:${sha256(JSON.stringify(videoWithoutStatus))}`);
+  const audio = (videoForFrames.audio ?? {}) as { music?: { beats?: string | null } | null; voice?: unknown };
+  videoForFrames.audio = { beats: audio.music?.beats ?? null, voice: audio.voice ?? null };
+  parts.push(`video.json:${sha256(JSON.stringify(videoForFrames))}`);
   await add(project.paths.brandJson);
   await add(project.paths.glossaryJson);
   for (const f of ["beats.json", "voice.json"]) await add(path.join(video.audioDir, f));

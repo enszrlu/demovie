@@ -16,7 +16,8 @@
     "format": "biome check --write .",
     "check-licenses": "tsx scripts/check-licenses.ts",
     "verify": "tsx scripts/verify.ts",
-    "verify:dogfood": "tsx scripts/verify-dogfood.ts"
+    "verify:dogfood": "tsx scripts/verify-dogfood.ts",
+    "sfx:generate": "tsx scripts/generate-sfx.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

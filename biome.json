@@ -15,7 +15,10 @@
       "!**/.tmp",
       "!**/*.min.js",
       "!plugins/demovie/skills",
-      "!**/goldens"
+      "!**/goldens",
+      "!**/audio/beats.json",
+      "!**/audio/voice.json",
+      "!**/provenance.json"
     ]
   },
   "formatter": {

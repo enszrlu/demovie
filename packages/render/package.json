@@ -9,6 +9,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@demovie/audio": "workspace:*",
     "@demovie/capture": "workspace:*",
     "@demovie/core": "workspace:*",
     "@demovie/runtime": "workspace:*",

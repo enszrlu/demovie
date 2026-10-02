@@ -8,6 +8,7 @@ export * from "./extract/glossary.ts";
 export * from "./logger.ts";
 export * from "./project.ts";
 export * from "./schemas/index.ts";
+export * from "./storyboard.ts";
 export * from "./util/color.ts";
 export * from "./util/env.ts";
 export * from "./util/frontmatter.ts";

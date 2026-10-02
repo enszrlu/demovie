@@ -26,6 +26,9 @@ examples/*/.data/
 **/.demovie/videos/*/qa.json
 examples/compositions/*/out/
 examples/compositions/*/qa.json
+# reference compositions' generated audio (deterministic; `pnpm verify` regenerates it)
+examples/compositions/*/audio/*.wav
+!examples/compositions/bad-audio/audio/*.wav
 
 # generated into the demovie package at build time
 packages/cli/schema/

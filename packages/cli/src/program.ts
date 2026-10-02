@@ -231,8 +231,15 @@ export function buildProgram(): Command {
     .argument("<slug>", "video slug or path")
     .option("--bpm <n>", "tempo (80–140)", number)
     .addOption(new Option("--mood <mood>", "mood").choices(["uplifting", "tech", "calm", "energetic", "minimal"]))
-    .addOption(new Option("--provider <provider>", "music provider").choices(["synth", "elevenlabs"]))
-    .option("--seed <seed>", "random seed")
+    .addOption(
+      new Option("--provider <provider>", "music provider (file = a track imported with add --licensed)").choices([
+        "synth",
+        "elevenlabs",
+        "file",
+      ]),
+    )
+    .option("--seed <seed>", "random seed (default: the video slug)")
+    .option("--key <key>", 'musical key, e.g. C, "F#m", "Eb major" (default: from the seed)')
     .action(action(load("audio-music")));
   audio
     .command("sfx")
@@ -246,6 +253,7 @@ export function buildProgram(): Command {
     .addOption(new Option("--provider <provider>", "TTS provider").choices(["elevenlabs", "openai"]))
     .option("--voice <id>", "voice id")
     .option("--model <id>", "model id")
+    .option("--script <file>", "VO script instead of the storyboard (one line per VO line, optional `[12.5]` start)")
     .action(action(load("audio-voice")));
   audio
     .command("mix")
