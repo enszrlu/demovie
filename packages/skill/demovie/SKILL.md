@@ -66,9 +66,13 @@ Types: `launch` (25–50 s), `feature` (20–35 s), `changelog` (10–20 s), `te
 `hero-loop` (6–15 s, muted, seamless). This creates `.demovie/videos/<slug>/` with `brief.md`, `storyboard.md`,
 `video.json` and `composition/` (index.html, main.js, styles.css).
 
-Fill `brief.md` ([template](references/brief-template.md)): the audience, **one** message, at most 3 key points (each
-provable with a real capture) and a CTA. In interactive sessions, confirm the brief with the user in one short message.
-Skip the confirmation when the user said `--yes`, asked you to work autonomously, or you run in CI.
+Find the angle before any shot: what it is, for whom, what changes for them, and the tension it resolves, in the
+product's own voice (its landing page, README and glossary). Then fill `brief.md`
+([template](references/brief-template.md)): the audience, **one** message, the angle, the **hook** (the exact words of
+the first 2 seconds, at most 6, or the most striking real UI moment), at most 3 key points (each a moment of the
+product in use, provable with a real capture) and a CTA. Arc: hook → product in use → proof → logo and CTA.
+In interactive sessions, confirm the brief with the user in one short message. Skip the confirmation when the user said
+`--yes`, asked you to work autonomously, or you run in CI.
 
 ### 3. Capture plan
 
@@ -118,6 +122,10 @@ Build the full timeline in `composition/main.js` with the runtime helpers ([runt
 `Math.random` (use `v.random(seed)`), and call `v.ready()` last. `npx demovie preview <slug>` serves a player with
 scrubbing, safe-area and QA overlays for the user.
 
+Open on the hook: the brief's hook words as big type (8–12% of the short side), one word or phrase per beat, each with
+its own motion (`text.reveal` by word plus GSAP scale, rotation or tracking on `v.timeline`), then cut on the beat to
+the product. Spend the energy in type and transitions; product shots stay crisp and readable.
+
 Audio ([audio.md](references/audio.md)):
 
 ```bash
@@ -164,6 +172,9 @@ Tell the user, briefly:
 
 ## Hard rules
 
+- Run `capture`, `qa`, `render` and other long commands in the foreground and wait for them. Never end your turn while
+  one runs in the background: headless sessions (`demovie make`, CI) stop when your turn ends, and the job dies with
+  them.
 - **Never draw, re-create or mock product UI.** Always use `screen()` with real captures. If a state isn't captured,
   capture it by writing a flow, or ask the user.
 - **Never invent** product names, features, customers, people, metrics or prices. Use only the glossary, the brief,
@@ -199,6 +210,7 @@ Score each item 1–5 from the contact sheets and a preview pass; iterate until 
 
 | Item | 5 means |
 |---|---|
+| Hook | The first 2 s state the tension in at most 6 words, or show the most striking real moment. |
 | Clarity | A first-time viewer can say what the product does after one watch. |
 | Truth | Every product pixel is a real capture; every word and number is in the glossary/brief/captures. |
 | Pacing and legibility | Text holds long enough to read; shots breathe; nothing is too small or too fast. |
