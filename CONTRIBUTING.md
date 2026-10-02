@@ -32,6 +32,23 @@ MPL-2.0, CC0, OFL (fonts) — no GPL/AGPL/LGPL, no Remotion. Fixtures use fictio
 real provider's format (a Stripe-style key, say) gets one character unicode-escaped, or GitHub push protection rejects
 the push.
 
+## Trying your build in another app
+
+Install the packed CLI globally and this checkout's plugin, so that `npx demovie` and Claude Code use your build in
+any project, without changing that project's dependencies:
+
+```bash
+pnpm build && pnpm -C packages/cli pack --pack-destination ../../.tmp/pack
+npm install -g ./.tmp/pack/demovie-0.1.0.tgz      # npx finds globally installed bins
+claude plugin marketplace add ./                   # the demovie marketplace in this checkout
+claude plugin install demovie@demovie              # skill + MCP server for Claude Code
+```
+
+Then, in the app: `npx demovie init`, `npx demovie capture`, and ask Claude Code for a video. Repeat the first two
+lines after changing demovie; after changing the skill, also uninstall and reinstall the plugin (Claude Code keeps a
+copy of it). To undo: `npm uninstall -g demovie`, `claude plugin uninstall demovie@demovie`,
+`claude plugin marketplace remove demovie`.
+
 ## Regenerating the examples
 
 Captures, WAVs and renders are gitignored. With Harborly running (`pnpm --filter harborly dev`):
