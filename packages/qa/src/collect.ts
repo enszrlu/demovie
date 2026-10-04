@@ -21,7 +21,7 @@ import {
 import pixelmatch from "pixelmatch";
 import type { Browser } from "playwright-core";
 import { PNG } from "pngjs";
-import type { AudioFacts, InspectData, Pixels, QaInputs, Sample } from "./types.ts";
+import type { AudioFacts, FrameDiff, InspectData, Pixels, QaInputs, Sample } from "./types.ts";
 import { buildVocabulary } from "./vocabulary.ts";
 
 const AUDIO = /\.(wav|mp3|m4a|aac|ogg|flac|opus)$/i;
@@ -40,6 +40,18 @@ async function pixelsOf(comp: CompositionPage, scale: number): Promise<Pixels> {
 function diffRatio(a: Pixels, b: Pixels): number {
   if (a.width !== b.width || a.height !== b.height) return 1;
   return pixelmatch(a.data, b.data, undefined, a.width, a.height, { threshold: 0 }) / (a.width * a.height);
+}
+
+/** Compare two renders of a frame: any change at all, visible change (pixelmatch's default threshold) and the largest one. */
+export function frameDiff(a: Pixels, b: Pixels): FrameDiff {
+  if (a.width !== b.width || a.height !== b.height) return { diffRatio: 1, visibleRatio: 1, maxDelta: 255 };
+  const pixels = a.width * a.height;
+  const changed = pixelmatch(a.data, b.data, undefined, a.width, a.height, { threshold: 0 });
+  if (changed === 0) return { diffRatio: 0, visibleRatio: 0, maxDelta: 0 };
+  const visible = pixelmatch(a.data, b.data, undefined, a.width, a.height, { threshold: 0.1 });
+  let maxDelta = 0;
+  for (let i = 0; i < a.data.length; i++) maxDelta = Math.max(maxDelta, Math.abs(a.data[i]! - b.data[i]!));
+  return { diffRatio: changed / pixels, visibleRatio: visible / pixels, maxDelta };
 }
 
 /** Sample times at `fps`, plus the last frame of the video. */
@@ -143,29 +155,38 @@ export async function collect(project: Project, video: VideoContext, o: CollectO
       const at = await inspectAt(comp, c.at);
       clicks.push(at.clicks.find((x) => x.at === c.at && x.elementId === c.elementId) ?? c);
     }
-    // DM-R01: five frames, rendered again on a fresh page in a different order, each right after the frame before it
-    // (the render path), so state carried between seeks (e.g. a cached layer raster) can't hide.
+    // DM-R01: five frames, each captured at full size (as the renderer captures them) on two fresh pages: first
+    // jumping from one to the next, then in reverse order, each right after the frame before it, so state carried
+    // between seeks (e.g. a cached layer raster) can't hide. Fresh pages, because a page that took scaled screenshots
+    // carries raster state of its own.
     const times = [0.15, 0.35, 0.55, 0.75, 0.92].map((f) => Math.round(f * v.duration * v.fps) / v.fps);
     const first: Pixels[] = [];
-    for (const t of times) {
-      await seek(comp.page, t);
-      first.push(await pixelsOf(comp, pixelScale));
-    }
-    const other = await openComposition(o.browser, o.server, { format: o.format, scale: 1 });
+    const forward = await openComposition(o.browser, o.server, { format: o.format, scale: 1 });
     try {
-      await seek(other.page, v.duration - 1 / v.fps);
-      const mismatches: { t: number; diffRatio: number }[] = [];
+      for (const t of times) {
+        await seek(forward.page, t);
+        first.push(await pixelsOf(forward, 1));
+      }
+    } finally {
+      blocked.push(...forward.blocked);
+      failed.push(...forward.failed);
+      await forward.close();
+    }
+    const reverse = await openComposition(o.browser, o.server, { format: o.format, scale: 1 });
+    try {
+      await seek(reverse.page, v.duration - 1 / v.fps);
+      const mismatches: NonNullable<QaInputs["determinism"]>["mismatches"] = [];
       for (let i = times.length - 1; i >= 0; i--) {
-        await seek(other.page, Math.max(0, times[i]! - 1 / v.fps));
-        await seek(other.page, times[i]!);
-        const ratio = diffRatio(first[i]!, await pixelsOf(other, pixelScale));
-        if (ratio > 0) mismatches.push({ t: times[i]!, diffRatio: ratio });
+        await seek(reverse.page, Math.max(0, times[i]! - 1 / v.fps));
+        await seek(reverse.page, times[i]!);
+        const diff = frameDiff(first[i]!, await pixelsOf(reverse, 1));
+        if (diff.diffRatio > 0) mismatches.push({ t: times[i]!, ...diff });
       }
       determinism = { times, mismatches };
-      blocked.push(...other.blocked);
-      failed.push(...other.failed);
     } finally {
-      await other.close();
+      blocked.push(...reverse.blocked);
+      failed.push(...reverse.failed);
+      await reverse.close();
     }
     if (v.type === "hero-loop") {
       await seek(comp.page, 0);

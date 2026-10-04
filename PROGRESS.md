@@ -165,6 +165,7 @@ Decisions D138–D143.
   - **brag:** 39 min, 108 turns, $12.26 for 21.5 s, from the bare repository at maximum effort.
   - **demovie `make`:** 3 min 21 s, 43 turns, $1.06 for 12 s, in a project already set up, at the default effort.
   - **Disclosed on the page (D144):** both run differences, and that brag used Harborly's real demo data.
+- [x] DM-R01 no longer fails at random on Linux CI (D145): it compares full-size captures from two fresh pages, the way final renders capture, and fails on visible differences. `bad-determinism` still fails (1.46% of pixels, largest change 234 of 255). clean-launch and terminal-launch pass on macOS and in the Playwright Linux image with three QA runs in parallel. Cost: +0.7 s per format.
 - [x] Final checks, with nothing else running:
-  - `pnpm verify` → `VERIFY OK (14 checks)`: 198 unit tests, 27 integration tests (the only skips are 2 paid-API tests without keys), reference compositions QA 0 errors, 26 docs and 149 links;
+  - `pnpm verify` → `VERIFY OK (14 checks)`: 199 unit tests, 27 integration tests (the only skips are 2 paid-API tests without keys), reference compositions QA 0 errors, 26 docs and 149 links;
   - `pnpm verify:dogfood` → `VERIFY DOGFOOD OK (8 checks)`.

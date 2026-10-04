@@ -3,6 +3,8 @@ import type { InspectData, InspectText, Occurrence, QaInputs, Rule, RuleOutcome,
 import { COMMON, capitalizedTerms, numbers } from "./vocabulary.ts";
 
 const PROVENANCE_OK = new Set(["demovie-synth", "demovie-sfx", "demovie-mix", "elevenlabs", "openai", "user-licensed"]);
+/** DM-R01: share of visibly different pixels a frame may have between renders (Chromium raster noise; D145). */
+export const DETERMINISM_VISIBLE_RATIO = 0.0001;
 const GENERIC_CHIPS =
   /^(done|saved|success|successful|completed|complete|synced|all set|great job|yay|live|ok|okay|confirmed|approved|✓|✔|✅)[.!]?$/i;
 const HUD = [
@@ -736,16 +738,17 @@ export const RULES: Rule[] = [
     id: "DM-R01",
     severity: "error",
     title: "Determinism",
-    measurement:
-      "5 sampled frames rendered twice — in a different seek order, the second time right after the frame before each — are pixel-identical",
+    measurement: `5 sampled frames, rendered at full size on two fresh pages in different seek orders (the second time right after the frame before each), look the same: at most ${DETERMINISM_VISIBLE_RATIO * 100}% of pixels differ visibly (pixelmatch threshold 0.1)`,
     fix: "derive everything from t: no Date/timers/real randomness, put tweens in v.timeline, make onSeek pure, and avoid will-change on animated elements",
     check(input) {
       if (!input.determinism) return { occurrences: [], skipped: "not checked" };
       return {
-        occurrences: input.determinism.mismatches.map((m) => ({
-          t: round(m.t),
-          detail: `frame differs by ${(m.diffRatio * 100).toFixed(3)}% between seek orders`,
-        })),
+        occurrences: input.determinism.mismatches
+          .filter((m) => m.visibleRatio > DETERMINISM_VISIBLE_RATIO)
+          .map((m) => ({
+            t: round(m.t),
+            detail: `frame differs visibly in ${(m.visibleRatio * 100).toFixed(3)}% of pixels between seek orders (largest change ${m.maxDelta} of 255)`,
+          })),
       };
     },
   },

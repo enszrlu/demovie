@@ -299,3 +299,8 @@ D9 — 2026-10-01 — Frame format for final renders: PNG. Why: JPEG q92 saved 1
   - **Data:** on Harborly brag used the app's demo data, because it's a local JSON file. On the private app it wrote sample data, because the data sits behind a database. The table and the README FAQ now say exactly that, instead of "brag invents data".
 
   The media has no audio, so no music license question arises.
+- **D145** — 2026-10-04 — DM-R01 fails on visible differences, not on any changed pixel. This deviates from SPEC §12 ("pixel-identical").
+  - **Why:** on GitHub's Ubuntu runners, DM-R01 failed intermittently on clean reference compositions: 0.007–0.041% of pixels at clean-launch 12.27 s and 32.2 s, and terminal-launch 4.2 s. The same frames match on macOS and in the Playwright Linux image under CPU stress, and the render path's own determinism test (full-size captures, shuffled seek orders) stayed byte-identical on the same runners. The will-change bug that DM-R01 caught on Bite Club (D125) was three pixels one level apart: real history dependence, invisible in a video.
+  - **Capture:** the two passes now run on fresh pages and capture at full size, exactly as final renders do. QA's half-size screenshots go through a scaled DevTools capture, and that page's raster state follows the scaled screenshots taken before.
+  - **Threshold:** a frame fails when more than 0.01% of its pixels differ beyond pixelmatch's default threshold (0.1). The detail reports that share and the largest channel change. `bad-determinism` still fails at 1.46% (largest change 234 of 255).
+  - **Cost:** +0.7 s per format on clean-launch (23.2 s vs 22.5 s).

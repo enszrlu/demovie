@@ -29,7 +29,7 @@ the final render; warnings are reported (`--strict` turns them into errors). Onl
 | DM-A02 | error | Assets | Any 4xx/5xx response, or a broken image or video |
 | DM-A03 | error | Network | Any blocked external request |
 | DM-A04 | error | Audio provenance | An audio file that has no provenance.json entry from a demovie generator, a configured provider, or add --licensed |
-| DM-R01 | error | Determinism | 5 sampled frames rendered twice — in a different seek order, the second time right after the frame before each — are pixel-identical |
+| DM-R01 | error | Determinism | 5 sampled frames, rendered at full size on two fresh pages in different seek orders (the second time right after the frame before each), look the same: at most 0.01% of pixels differ visibly (pixelmatch threshold 0.1) |
 | DM-R02 | warn | Blank frames | Frames that are over 98% one color for more than 0.3 s, outside declared transitions |
 | DM-R03 | error | Stray GSAP tweens | Tweens outside v.timeline |
 | DM-R04 | warn | Unregistered CSS animations | Running CSS animations not registered via v.css |

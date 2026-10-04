@@ -65,6 +65,16 @@ export interface Pixels {
   data: Uint8Array;
 }
 
+/** How two renders of the same frame differ. */
+export interface FrameDiff {
+  /** Share of pixels that differ at all. */
+  diffRatio: number;
+  /** Share of pixels that differ visibly (pixelmatch threshold 0.1). */
+  visibleRatio: number;
+  /** Largest difference in any color channel, 0–255. */
+  maxDelta: number;
+}
+
 export interface Sample {
   t: number;
   inspect: InspectData;
@@ -79,8 +89,8 @@ export interface QaInputs {
   /** inspect() evaluated exactly at each click time (DM-G01). */
   clicks: InspectData["clicks"];
   network: { blocked: string[]; failed: { url: string; status: number | null }[] };
-  /** DM-R01: frames rendered twice in different seek orders. */
-  determinism: { times: number[]; mismatches: { t: number; diffRatio: number }[] } | null;
+  /** DM-R01: frames rendered twice in different seek orders; `mismatches` lists those that aren't pixel-identical. */
+  determinism: { times: number[]; mismatches: ({ t: number } & FrameDiff)[] } | null;
   /** DM-P05 (hero-loop): first vs last frame. */
   loop: { diffRatio: number } | null;
   vocabulary: Vocabulary;

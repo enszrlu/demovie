@@ -1,5 +1,6 @@
 import { VideoSchema } from "@demovie/core";
 import { describe, expect, it } from "vitest";
+import { frameDiff } from "../src/collect.ts";
 import { evaluate } from "../src/engine.ts";
 import { RULES } from "../src/rules.ts";
 import type { InspectData, InspectText, Pixels, QaInputs, Sample } from "../src/types.ts";
@@ -327,7 +328,21 @@ const CASES: Case[] = [
   },
   {
     id: "DM-R01",
-    fail: () => ({ ...clean(), determinism: { times: [1, 2, 3, 4, 5], mismatches: [{ t: 3, diffRatio: 0.01 }] } }),
+    fail: () => ({
+      ...clean(),
+      determinism: {
+        times: [1, 2, 3, 4, 5],
+        mismatches: [{ t: 3, diffRatio: 0.01, visibleRatio: 0.008, maxDelta: 214 }],
+      },
+    }),
+    // Raster noise: a few pixels a few levels apart (as on CI's Linux runners) is not a determinism bug.
+    pass: () => ({
+      ...clean(),
+      determinism: {
+        times: [1, 2, 3, 4, 5],
+        mismatches: [{ t: 3, diffRatio: 0.00022, visibleRatio: 0.00004, maxDelta: 31 }],
+      },
+    }),
   },
   {
     id: "DM-R02",
@@ -463,5 +478,23 @@ describe("QA rules (synthetic inputs)", () => {
     // A 0.2 s dip below the size floor (an entrance) is not a T02 failure.
     const entrance = inputs((t) => ({ texts: t < 4 ? [text("h", "Grows", { fontSize: t < 0.2 ? 10 : 64 })] : [] }));
     expect(status(entrance, "DM-T02").status).toBe("pass");
+  });
+});
+
+describe("frameDiff (DM-R01)", () => {
+  const frame = (fill: (pixel: number) => number): Pixels => {
+    const data = new Uint8Array(100 * 100 * 4);
+    for (let i = 0; i < data.length; i++) data[i] = i % 4 === 3 ? 255 : fill(i >> 2);
+    return { width: 100, height: 100, scale: 1, data };
+  };
+
+  it("tells identical frames, faint noise and visible changes apart", () => {
+    const gray = frame(() => 200);
+    const sameGray = frame(() => 200);
+    const onePixelTwoLevelsDarker = frame((p) => (p === 0 ? 198 : 200));
+    const blackTenByTenBlock = frame((p) => (p % 100 < 10 && p < 1000 ? 0 : 200));
+    expect(frameDiff(gray, sameGray)).toEqual({ diffRatio: 0, visibleRatio: 0, maxDelta: 0 });
+    expect(frameDiff(gray, onePixelTwoLevelsDarker)).toEqual({ diffRatio: 0.0001, visibleRatio: 0, maxDelta: 2 });
+    expect(frameDiff(gray, blackTenByTenBlock)).toEqual({ diffRatio: 0.01, visibleRatio: 0.01, maxDelta: 200 });
   });
 });
