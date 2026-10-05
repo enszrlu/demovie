@@ -1,4 +1,5 @@
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import http from "node:http";
 import path from "node:path";
 import { checkUrl } from "@demovie/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -64,5 +65,61 @@ describe("up / down", () => {
       code: "E_APP_START",
       message: expect.stringContaining("boom"),
     });
+  });
+
+  it("waits for a server that outlives its parent, so the port is free when down returns", async () => {
+    const slow = path.join(dir, "..", "it-lifecycle-slow");
+    rmSync(slow, { recursive: true, force: true });
+    mkdirSync(path.join(slow, ".demovie"), { recursive: true });
+    // Like `next dev`: the parent leaves at once, and its server child takes a moment to shut down.
+    writeFileSync(
+      path.join(slow, "parent.mjs"),
+      'import { fork } from "node:child_process";\nfork("server.mjs", [process.argv[2]]);\nprocess.on("SIGTERM", () => process.exit(0));\n',
+    );
+    writeFileSync(
+      path.join(slow, "server.mjs"),
+      'import http from "node:http";\nhttp.createServer((_, res) => res.end("ok")).listen(Number(process.argv[2]));\nprocess.on("SIGTERM", () => setTimeout(() => process.exit(0), 1500));\n',
+    );
+    writeFileSync(
+      path.join(slow, ".demovie", "config.json"),
+      JSON.stringify({
+        version: 1,
+        project: { name: "X", framework: "generic" },
+        app: { url: "http://localhost:3406", start: { command: "node parent.mjs 3406", timeoutMs: 20_000 } },
+      }),
+    );
+    const ctx = createContext({ cwd: slow, yes: true, json: true });
+    await up(ctx);
+    expect((await checkUrl("http://localhost:3406/")).ok).toBe(true);
+    expect(((await down(ctx)).data as { stopped: boolean }).stopped).toBe(true);
+    expect((await checkUrl("http://localhost:3406/")).status).toBeNull();
+  });
+
+  it("refuses to start next to another server on the app's port instead of waiting for it", async () => {
+    const taken = path.join(dir, "..", "it-lifecycle-taken");
+    rmSync(taken, { recursive: true, force: true });
+    mkdirSync(path.join(taken, ".demovie"), { recursive: true });
+    writeFileSync(
+      path.join(taken, ".demovie", "config.json"),
+      JSON.stringify({
+        version: 1,
+        project: { name: "X", framework: "generic" },
+        app: {
+          url: "http://localhost:3407",
+          start: { command: 'node -e "setInterval(() => {}, 1000)"', timeoutMs: 20_000 },
+        },
+      }),
+    );
+    const other = http.createServer((_, res) => res.writeHead(404).end()).listen(3407);
+    try {
+      const startedAt = Date.now();
+      await expect(up(createContext({ cwd: taken, yes: true, json: true }))).rejects.toMatchObject({
+        code: "E_APP_START",
+        message: expect.stringContaining("something already answers at http://localhost:3407/ (HTTP 404)"),
+      });
+      expect(Date.now() - startedAt).toBeLessThan(5000);
+    } finally {
+      other.close();
+    }
   });
 });

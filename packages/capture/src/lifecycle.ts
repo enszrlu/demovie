@@ -42,6 +42,32 @@ function alive(pid: number): boolean {
   }
 }
 
+/** Whether any process is left in the app's process group (the app is spawned as the leader of its own group). */
+function groupAlive(pid: number): boolean {
+  if (process.platform === "win32") return alive(pid);
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+/** Signal the app's process group, and its process tree for any child that left the group. */
+async function signalApp(pid: number, signal: NodeJS.Signals): Promise<void> {
+  if (process.platform !== "win32")
+    try {
+      process.kill(-pid, signal);
+    } catch {
+      /* group already gone */
+    }
+  await new Promise<void>((resolve) => treeKill(pid, signal, () => resolve()));
+}
+
+async function waitUntil(done: () => boolean, ms: number): Promise<void> {
+  for (const end = Date.now() + ms; !done() && Date.now() < end; ) await new Promise((r) => setTimeout(r, 100));
+}
+
 function lastLines(file: string, n = 40): string {
   if (!existsSync(file)) return "(no log)";
   return readFileSync(file, "utf8").trimEnd().split("\n").slice(-n).join("\n");
@@ -103,6 +129,17 @@ export async function ensureApp(project: Project, options: EnsureAppOptions = {}
       "E_APP_UNREACHABLE",
       `app not reachable at ${url}${reach.error ? ` (${reach.error})` : reach.status ? ` (HTTP ${reach.status})` : ""}`,
       'start your app first, or set "app.start.command" in .demovie/config.json so demovie can start it',
+    );
+  }
+  // Another server holds the port: a second copy of the app couldn't bind it, and the readiness check would only reach
+  // the other server until the timeout.
+  if (reach.status !== null) {
+    throw new DemovieError(
+      "E_APP_START",
+      `something already answers at ${readyUrl} (HTTP ${reach.status}), so demovie can't start "${app.start.command}" there`,
+      reach.ok
+        ? 'stop it, or set "app.reuseRunning" to true to capture the app that is running'
+        : 'stop it (`npx demovie down` stops an app that `up` started) or change "app.url"; if it is your app and that page doesn\'t answer, set "app.start.readyPath"',
     );
   }
   const seeded = options.seed === false ? false : await runSeed(project);
@@ -207,13 +244,20 @@ function startHint(command: string): string {
   return `run \`${command}\` yourself to see the error; check that "app.url" and the port match`;
 }
 
-/** Kill the process tree demovie started (SPEC §9.1). */
+/**
+ * Kill the process tree demovie started and wait until all of it has exited (SPEC §9.1). Waiting for the whole group,
+ * not just the shell: a dev server's child can outlive its parent while it shuts down (Next.js writes its cache
+ * first) and keep the port, so the next start would talk to a server on its way out.
+ */
 export async function stopPid(project: Pick<Project, "paths">, pid: number): Promise<boolean> {
-  const wasAlive = alive(pid);
+  const wasAlive = groupAlive(pid);
   if (wasAlive) {
-    await new Promise<void>((resolve) => treeKill(pid, "SIGTERM", () => resolve()));
-    for (let i = 0; i < 40 && alive(pid); i++) await new Promise((r) => setTimeout(r, 100));
-    if (alive(pid)) await new Promise<void>((resolve) => treeKill(pid, "SIGKILL", () => resolve()));
+    await signalApp(pid, "SIGTERM");
+    await waitUntil(() => !groupAlive(pid), 10_000);
+    if (groupAlive(pid)) {
+      await signalApp(pid, "SIGKILL");
+      await waitUntil(() => !groupAlive(pid), 2000);
+    }
   }
   await rm(project.paths.appState, { force: true });
   return wasAlive;

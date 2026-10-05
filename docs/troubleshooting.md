@@ -9,7 +9,8 @@ creates missing folders.
 |---|---|
 | `no .demovie/config.json found` | Run `npx demovie init` in the app's root folder. |
 | `E_APP_UNREACHABLE` | `npx demovie up`; check `app.url` and `app.start.command`; read `.demovie/.cache/app.log`. |
-| Captures show a different app | Another app is running on your app's port, and demovie reuses whatever answers at `app.url`. Stop it, or set `app.reuseRunning` to `false`. |
+| Captures show a different app | Another app is running on your app's port, and demovie reuses whatever answers at `app.url`. Stop it, or set `app.reuseRunning` to `false` so demovie stops with an error instead of capturing it. |
+| `something already answers at … so demovie can't start …` | Another server holds your app's port (often a dev server that is still running): stop it (`npx demovie down` stops what `up` started; `lsof -i :3000` finds the rest) or change `app.url`. If it is your app and that page returns an error, set `app.start.readyPath` to one that answers. |
 | `E_AUTH` | `npx demovie auth test`; set the env vars named in `auth.usernameEnv` / `auth.passwordEnv`; for OAuth or 2FA use `npx demovie auth record`. |
 | ffmpeg or Chromium missing (exit code 3) | Install ffmpeg; `npx demovie doctor --fix` for Chromium. |
 | Chromium is installed but won't launch on Linux (missing libraries) | `sudo npx -y playwright-core@<version> install-deps chromium`, with the version `doctor` prints. |

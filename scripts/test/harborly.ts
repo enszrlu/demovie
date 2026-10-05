@@ -74,12 +74,20 @@ export async function ensureHarborly(): Promise<{ url: string; started: boolean;
   return {
     url: HARBORLY_URL,
     started: true,
+    // Wait until the whole process group has exited: Next's server child outlives its parent while it shuts down, and
+    // the next step (verify's reference captures) starts its own Harborly on the same port.
     stop: async () => {
-      try {
-        process.kill(-child.pid!, "SIGTERM");
-      } catch {
-        /* already gone */
-      }
+      const signal = (name: NodeJS.Signals | 0) => {
+        try {
+          process.kill(-child.pid!, name);
+          return true;
+        } catch {
+          return false;
+        }
+      };
+      signal("SIGTERM");
+      for (let i = 0; i < 100 && signal(0); i++) await new Promise((r) => setTimeout(r, 100));
+      if (signal(0)) signal("SIGKILL");
     },
   };
 }
