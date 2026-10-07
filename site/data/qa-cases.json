@@ -1,0 +1,351 @@
+[
+  {
+    "slug": "bad-ai-look",
+    "label": "The “AI look”",
+    "at": 0,
+    "image": "media/qa/bad-ai-look.webp",
+    "stage": {
+      "width": 1920,
+      "height": 1080
+    },
+    "summary": {
+      "errors": 0,
+      "warnings": 5,
+      "waived": 0
+    },
+    "findings": [
+      {
+        "id": "DM-T05",
+        "title": "Too much text at once",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: 3 text blocks, 6 words on screen",
+        "fix": "show one idea at a time: at most 2 text blocks and 18 words on screen together",
+        "boxes": []
+      },
+      {
+        "id": "DM-G02",
+        "title": "Invented vocabulary",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: \"BPM\" isn't in the glossary, the brief or captured UI text",
+        "fix": "use the product's own words (.demovie/glossary.md), or add the term to the brief/glossary if it is real",
+        "boxes": [
+          {
+            "x": 153.6,
+            "y": 146,
+            "width": 504,
+            "height": 52
+          }
+        ]
+      },
+      {
+        "id": "DM-G04",
+        "title": "Invented numbers",
+        "severity": "warn",
+        "t": 0,
+        "message": "4 occurrences: \"00\" isn't in the brief, the glossary or captured UI text",
+        "fix": "only show numbers from the brief, seed data or captures; put the source in the brief if it is real",
+        "boxes": [
+          {
+            "x": 153.6,
+            "y": 146,
+            "width": 504,
+            "height": 52
+          }
+        ]
+      },
+      {
+        "id": "DM-R02",
+        "title": "Blank frames",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: frame is more than 98% one color",
+        "fix": "start content earlier, overlap shots with a transition, or add a background element",
+        "boxes": []
+      },
+      {
+        "id": "DM-V01",
+        "title": "\"AI look\" clichés",
+        "severity": "warn",
+        "t": 0,
+        "message": "4 occurrences: timecode: \"00:00:12:08 · 120 BPM\"",
+        "fix": "drop decorative HUD/timecode labels and generic chips; stay with the brand's one or two typefaces",
+        "boxes": [
+          {
+            "x": 153.6,
+            "y": 146,
+            "width": 504,
+            "height": 52
+          },
+          {
+            "x": 792,
+            "y": 545,
+            "width": 197.7,
+            "height": 59
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "bad-truth",
+    "label": "Invented facts",
+    "at": 0,
+    "image": "media/qa/bad-truth.webp",
+    "stage": {
+      "width": 1920,
+      "height": 1080
+    },
+    "summary": {
+      "errors": 3,
+      "warnings": 3,
+      "waived": 0
+    },
+    "findings": [
+      {
+        "id": "DM-G01",
+        "title": "Truthful cursor",
+        "severity": "error",
+        "t": 7,
+        "message": "1 occurrence: click without a target: call cursor.moveTo() before cursor.click()",
+        "fix": "move the cursor to the element (cursor.moveTo(screen, id)) so it arrives before the click, and click while the element is on screen",
+        "boxes": []
+      },
+      {
+        "id": "DM-G02",
+        "title": "Invented vocabulary",
+        "severity": "warn",
+        "t": 0,
+        "message": "2 occurrences: \"Quantum\" isn't in the glossary, the brief or captured UI text",
+        "fix": "use the product's own words (.demovie/glossary.md), or add the term to the brief/glossary if it is real",
+        "boxes": [
+          {
+            "x": 323.8,
+            "y": 492,
+            "width": 1272.4,
+            "height": 83
+          }
+        ]
+      },
+      {
+        "id": "DM-G03",
+        "title": "Product shots use captures",
+        "severity": "error",
+        "t": 3,
+        "message": "1 occurrence: product shot \"fake\" contains no screen()",
+        "fix": "show product UI only with screen(v, { capture: \"<id>\", parent: shot.el }) — never draw or mock it",
+        "boxes": []
+      },
+      {
+        "id": "DM-G04",
+        "title": "Invented numbers",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: \"47%\" isn't in the brief, the glossary or captured UI text",
+        "fix": "only show numbers from the brief, seed data or captures; put the source in the brief if it is real",
+        "boxes": [
+          {
+            "x": 323.8,
+            "y": 492,
+            "width": 1272.4,
+            "height": 83
+          }
+        ]
+      },
+      {
+        "id": "DM-G05",
+        "title": "Upscaled captures",
+        "severity": "error",
+        "t": 5.8,
+        "message": "1 occurrence: routes/app@desktop is shown at 3.07× its pixel density",
+        "fix": "zoom less, show the screen smaller, or capture at a higher deviceScaleFactor",
+        "boxes": []
+      },
+      {
+        "id": "DM-R02",
+        "title": "Blank frames",
+        "severity": "warn",
+        "t": 0,
+        "message": "2 occurrences: frame is more than 98% one color",
+        "fix": "start content earlier, overlap shots with a transition, or add a background element",
+        "boxes": []
+      }
+    ]
+  },
+  {
+    "slug": "bad-text",
+    "label": "Unreadable text",
+    "at": 0,
+    "image": "media/qa/bad-text.webp",
+    "stage": {
+      "width": 1920,
+      "height": 1080
+    },
+    "summary": {
+      "errors": 4,
+      "warnings": 2,
+      "waived": 0
+    },
+    "findings": [
+      {
+        "id": "DM-T01",
+        "title": "Text stays on screen long enough to read",
+        "severity": "error",
+        "t": 1.1,
+        "message": "1 occurrence: \"Plan every launch on one board\" is readable for 0.5 s; 6 words need 2.5 s",
+        "fix": "hold the text longer (or cut words): give it at least 0.5 s + 1/3 s per word, and never less than 1.2 s",
+        "boxes": []
+      },
+      {
+        "id": "DM-T02",
+        "title": "Minimum text size",
+        "severity": "error",
+        "t": 0,
+        "message": "1 occurrence: \"Projects board\" is 18.0 px; minimum is 32.4 px",
+        "fix": "set the font size to at least 3% of the frame's short side (calc(var(--dm-unit) * 3)); captions need 3.8%",
+        "boxes": [
+          {
+            "x": 192,
+            "y": 449,
+            "width": 119.7,
+            "height": 23
+          }
+        ]
+      },
+      {
+        "id": "DM-T03",
+        "title": "No text overflow or clipping",
+        "severity": "error",
+        "t": 0,
+        "message": "1 occurrence: \"Every launch from planning to launched\" is overflowing its box",
+        "fix": "shorten the copy, let it wrap (max-width in ch), or enlarge the container so no glyph is cut",
+        "boxes": [
+          {
+            "x": 192,
+            "y": 647,
+            "width": 1059.9,
+            "height": 73
+          }
+        ]
+      },
+      {
+        "id": "DM-T04",
+        "title": "Contrast",
+        "severity": "error",
+        "t": 0,
+        "message": "1 occurrence: \"Velocity\" contrast 1.48:1 (#d4d4d8 on ~#ffffff)",
+        "fix": "darken/lighten the text or its background (brand fg on bg), or put the text on a solid panel",
+        "boxes": [
+          {
+            "x": 192,
+            "y": 855,
+            "width": 182.1,
+            "height": 62
+          }
+        ]
+      },
+      {
+        "id": "DM-T05",
+        "title": "Too much text at once",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: 4 text blocks, 11 words on screen",
+        "fix": "show one idea at a time: at most 2 text blocks and 18 words on screen together",
+        "boxes": []
+      },
+      {
+        "id": "DM-R02",
+        "title": "Blank frames",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: frame is more than 98% one color",
+        "fix": "start content earlier, overlap shots with a transition, or add a background element",
+        "boxes": []
+      }
+    ]
+  },
+  {
+    "slug": "bad-layout",
+    "label": "Broken layout",
+    "at": 0,
+    "image": "media/qa/bad-layout.webp",
+    "stage": {
+      "width": 1920,
+      "height": 1080
+    },
+    "summary": {
+      "errors": 2,
+      "warnings": 3,
+      "waived": 0
+    },
+    "findings": [
+      {
+        "id": "DM-T05",
+        "title": "Too much text at once",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: 3 text blocks, 5 words on screen",
+        "fix": "show one idea at a time: at most 2 text blocks and 18 words on screen together",
+        "boxes": []
+      },
+      {
+        "id": "DM-L01",
+        "title": "Safe area",
+        "severity": "error",
+        "t": 0,
+        "message": "1 occurrence: \"Harborly\" leaves the 16:9 safe area",
+        "fix": "move it inside the safe area: position with var(--dm-safe-top/right/bottom/left), check with `preview` safe guides",
+        "boxes": [
+          {
+            "x": 8,
+            "y": 61,
+            "width": 229.3,
+            "height": 73
+          }
+        ]
+      },
+      {
+        "id": "DM-L02",
+        "title": "Overlaps",
+        "severity": "error",
+        "t": 0,
+        "message": "1 occurrence: \"Projects board\" overlaps \"Launch checklist\"",
+        "fix": "give each text block its own space, and keep text off the element you highlight",
+        "boxes": [
+          {
+            "x": 576,
+            "y": 546,
+            "width": 449.1,
+            "height": 83
+          }
+        ]
+      },
+      {
+        "id": "DM-L03",
+        "title": "Off-stage leftovers",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: \"Velocity\" is visible but off stage",
+        "fix": "hide or remove elements once they leave the stage (set opacity 0 or end their shot)",
+        "boxes": [
+          {
+            "x": 2400,
+            "y": 485,
+            "width": 219.5,
+            "height": 73
+          }
+        ]
+      },
+      {
+        "id": "DM-R02",
+        "title": "Blank frames",
+        "severity": "warn",
+        "t": 0,
+        "message": "1 occurrence: frame is more than 98% one color",
+        "fix": "start content earlier, overlap shots with a transition, or add a background element",
+        "boxes": []
+      }
+    ]
+  }
+]

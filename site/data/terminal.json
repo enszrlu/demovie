@@ -1,0 +1,157 @@
+{
+  "status": "demovie 0.1.0 · Harborly (nextjs)\napp: http://localhost:3000 ✓ reachable\nauth: form (/login)\ncaptures: 20 (0 stale, updated 2026-10-02T23:02:28.765Z)\ngrounding: L3 (flows captured, with multi-step states)\nvideos: changelog [rendered, QA 0E/0W], launch [rendered, QA 0E/0W], projects-board-teaser [rendered, QA 0E/0W]\nwarn: no demovie skill in this project for claude, codex, cursor: run `npx demovie skill install` (or install the demovie plugin)\nNext: all videos rendered — share them, or make the next one",
+  "qa": "◇ QA launch @ 16:9…\n◇ QA launch @ 9:16…\n16:9: 0 error(s), 0 warning(s), 0 waived\n9:16: 0 error(s), 0 warning(s), 0 waived\nQA passed with 0 errors (0 warning(s)) → .demovie/videos/launch/qa.json",
+  "rules": [
+    {
+      "id": "DM-T01",
+      "title": "Text stays on screen long enough to read",
+      "status": "pass"
+    },
+    {
+      "id": "DM-T02",
+      "title": "Minimum text size",
+      "status": "pass"
+    },
+    {
+      "id": "DM-T03",
+      "title": "No text overflow or clipping",
+      "status": "pass"
+    },
+    {
+      "id": "DM-T04",
+      "title": "Contrast",
+      "status": "pass"
+    },
+    {
+      "id": "DM-T05",
+      "title": "Too much text at once",
+      "status": "pass"
+    },
+    {
+      "id": "DM-L01",
+      "title": "Safe area",
+      "status": "pass"
+    },
+    {
+      "id": "DM-L02",
+      "title": "Overlaps",
+      "status": "pass"
+    },
+    {
+      "id": "DM-L03",
+      "title": "Off-stage leftovers",
+      "status": "pass"
+    },
+    {
+      "id": "DM-P01",
+      "title": "Shot pacing",
+      "status": "pass"
+    },
+    {
+      "id": "DM-P02",
+      "title": "Duration",
+      "status": "pass"
+    },
+    {
+      "id": "DM-P03",
+      "title": "End hold",
+      "status": "pass"
+    },
+    {
+      "id": "DM-P04",
+      "title": "Shots declared",
+      "status": "pass"
+    },
+    {
+      "id": "DM-P05",
+      "title": "Seamless loop (hero-loop only)",
+      "status": "skipped"
+    },
+    {
+      "id": "DM-G01",
+      "title": "Truthful cursor",
+      "status": "pass"
+    },
+    {
+      "id": "DM-G02",
+      "title": "Invented vocabulary",
+      "status": "pass"
+    },
+    {
+      "id": "DM-G03",
+      "title": "Product shots use captures",
+      "status": "pass"
+    },
+    {
+      "id": "DM-G04",
+      "title": "Invented numbers",
+      "status": "pass"
+    },
+    {
+      "id": "DM-G05",
+      "title": "Upscaled captures",
+      "status": "pass"
+    },
+    {
+      "id": "DM-A01",
+      "title": "Fonts",
+      "status": "pass"
+    },
+    {
+      "id": "DM-A02",
+      "title": "Assets",
+      "status": "pass"
+    },
+    {
+      "id": "DM-A03",
+      "title": "Network",
+      "status": "pass"
+    },
+    {
+      "id": "DM-A04",
+      "title": "Audio provenance",
+      "status": "pass"
+    },
+    {
+      "id": "DM-R01",
+      "title": "Determinism",
+      "status": "pass"
+    },
+    {
+      "id": "DM-R02",
+      "title": "Blank frames",
+      "status": "pass"
+    },
+    {
+      "id": "DM-R03",
+      "title": "Stray GSAP tweens",
+      "status": "pass"
+    },
+    {
+      "id": "DM-R04",
+      "title": "Unregistered CSS animations",
+      "status": "pass"
+    },
+    {
+      "id": "DM-R05",
+      "title": "Timers after ready",
+      "status": "pass"
+    },
+    {
+      "id": "DM-S01",
+      "title": "Loudness",
+      "status": "pass"
+    },
+    {
+      "id": "DM-S02",
+      "title": "VO overlap",
+      "status": "skipped"
+    },
+    {
+      "id": "DM-V01",
+      "title": "\"AI look\" clichés",
+      "status": "pass"
+    }
+  ],
+  "render": "◇ 16:9: launch-16x9.mp4 (1050 frames, 67.2s, libx264)\n◇ 9:16: launch-9x16.mp4 (1050 frames, 77.0s, libx264)\n.demovie/videos/launch/out/launch-16x9.mp4 · 1920×1080 · 30 fps · 35.00 s · 5.9 MB · libx264 · 67.2 s\n.demovie/videos/launch/out/launch-9x16.mp4 · 1080×1920 · 30 fps · 35.00 s · 4.5 MB · libx264 · 77.0 s\naudio: .demovie/videos/launch/audio/mix.wav · total 144.5 s"
+}

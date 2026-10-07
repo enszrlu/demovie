@@ -1,0 +1,101 @@
+{
+  "name": "create-project",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 2
+  },
+  "yaml": "# create-project: open the Projects board, create \"Q4 Launch\" through the dialog, land on the new project,\n# then return to the board where it now sits in Planning. Demo data is re-seeded before every capture run.\nname: create-project\nstart: /app/projects\nviewport: desktop\ndescription: Create a project from the Projects board\nsteps:\n  - capture: board\n  - click: { testId: new-project }\n  - waitFor: { role: dialog }\n  - capture: dialog\n  - fill: { label: Project name, value: Q4 Launch }\n  - capture: dialog-filled\n  - click: { role: button, name: Create project }\n  - waitFor: { url: /app/projects/prj_q4-launch }\n  - waitFor: { text: Launch checklist }\n  - capture: created\n  - hover: { testId: project-checklist }\n  - capture: checklist-hover\n  - goto: /app/projects\n  - waitFor: { text: Q4 Launch }\n  - capture: board-after\n",
+  "states": [
+    {
+      "id": "board",
+      "captureId": "flows/create-project@desktop/board",
+      "path": "/app/projects",
+      "image": "media/captures/flow-board.webp"
+    },
+    {
+      "id": "dialog",
+      "captureId": "flows/create-project@desktop/dialog",
+      "path": "/app/projects/new",
+      "image": "media/captures/flow-dialog.webp"
+    },
+    {
+      "id": "dialog-filled",
+      "captureId": "flows/create-project@desktop/dialog-filled",
+      "path": "/app/projects/new",
+      "image": "media/captures/flow-dialog-filled.webp"
+    },
+    {
+      "id": "created",
+      "captureId": "flows/create-project@desktop/created",
+      "path": "/app/projects/prj_q4-launch",
+      "image": "media/captures/flow-created.webp"
+    },
+    {
+      "id": "checklist-hover",
+      "captureId": "flows/create-project@desktop/checklist-hover",
+      "path": "/app/projects/prj_q4-launch",
+      "image": "media/captures/flow-checklist-hover.webp"
+    },
+    {
+      "id": "board-after",
+      "captureId": "flows/create-project@desktop/board-after",
+      "path": "/app/projects",
+      "image": "media/captures/flow-board-after.webp"
+    }
+  ],
+  "steps": [
+    {
+      "action": "click",
+      "description": "click testId new-project",
+      "from": "board",
+      "value": null,
+      "elementId": "link:new-project",
+      "bbox": {
+        "x": 1288.4,
+        "y": 15.5,
+        "width": 119.6,
+        "height": 32
+      }
+    },
+    {
+      "action": "fill",
+      "description": "fill label \"Project name\"",
+      "from": "dialog",
+      "value": "Q4 Launch",
+      "elementId": "textbox:project-name",
+      "bbox": {
+        "x": 489,
+        "y": 357,
+        "width": 462,
+        "height": 36
+      }
+    },
+    {
+      "action": "click",
+      "description": "click button \"Create project\"",
+      "from": "dialog-filled",
+      "value": null,
+      "elementId": "button:create-project",
+      "bbox": {
+        "x": 825.6,
+        "y": 612,
+        "width": 125.4,
+        "height": 36
+      }
+    },
+    {
+      "action": "hover",
+      "description": "hover testId project-checklist",
+      "from": "created",
+      "value": null,
+      "elementId": "generic:project-checklist",
+      "bbox": {
+        "x": 272,
+        "y": 349,
+        "width": 749.3,
+        "height": 328
+      }
+    }
+  ]
+}

@@ -1,0 +1,742 @@
+{
+  "captureId": "routes/app-projects@desktop",
+  "path": "/app/projects",
+  "title": "Projects · Harborly",
+  "capturedAt": "2026-10-02T13:19:45.128Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 2
+  },
+  "image": "media/captures/app-projects.webp",
+  "elements": [
+    {
+      "id": "complementary",
+      "role": "complementary",
+      "name": "",
+      "tag": "aside",
+      "interactive": false,
+      "bbox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 900
+      }
+    },
+    {
+      "id": "link:harborly",
+      "role": "link",
+      "name": "Harborly",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 20,
+        "y": 18,
+        "width": 102.2,
+        "height": 28
+      }
+    },
+    {
+      "id": "navigation:app",
+      "role": "navigation",
+      "name": "App",
+      "tag": "nav",
+      "interactive": false,
+      "bbox": {
+        "x": 0,
+        "y": 134.3,
+        "width": 239,
+        "height": 188
+      }
+    },
+    {
+      "id": "link:dashboard",
+      "role": "link",
+      "name": "Dashboard",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 12,
+        "y": 134.3,
+        "width": 215,
+        "height": 36
+      }
+    },
+    {
+      "id": "link:projects-9",
+      "role": "link",
+      "name": "Projects 9",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 12,
+        "y": 172.3,
+        "width": 215,
+        "height": 36
+      }
+    },
+    {
+      "id": "link:team",
+      "role": "link",
+      "name": "Team",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 12,
+        "y": 210.3,
+        "width": 215,
+        "height": 36
+      }
+    },
+    {
+      "id": "link:reports",
+      "role": "link",
+      "name": "Reports",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 12,
+        "y": 248.3,
+        "width": 215,
+        "height": 36
+      }
+    },
+    {
+      "id": "link:settings",
+      "role": "link",
+      "name": "Settings",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 12,
+        "y": 286.3,
+        "width": 215,
+        "height": 36
+      }
+    },
+    {
+      "id": "link:log-out",
+      "role": "link",
+      "name": "Log out",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 12,
+        "y": 856,
+        "width": 215,
+        "height": 32
+      }
+    },
+    {
+      "id": "banner",
+      "role": "banner",
+      "name": "",
+      "tag": "header",
+      "interactive": false,
+      "bbox": {
+        "x": 240,
+        "y": 0,
+        "width": 1200,
+        "height": 64
+      }
+    },
+    {
+      "id": "heading:projects",
+      "role": "heading",
+      "name": "Projects",
+      "tag": "h1",
+      "interactive": false,
+      "bbox": {
+        "x": 272,
+        "y": 15.5,
+        "width": 91.2,
+        "height": 32
+      }
+    },
+    {
+      "id": "searchbox:search-projects",
+      "role": "searchbox",
+      "name": "Search projects",
+      "tag": "input",
+      "interactive": true,
+      "bbox": {
+        "x": 980.4,
+        "y": 13.5,
+        "width": 256,
+        "height": 36
+      }
+    },
+    {
+      "id": "button:toggle-theme",
+      "role": "button",
+      "name": "Toggle theme",
+      "tag": "button",
+      "interactive": true,
+      "bbox": {
+        "x": 1244.4,
+        "y": 13.5,
+        "width": 36,
+        "height": 36
+      }
+    },
+    {
+      "id": "link:new-project",
+      "role": "link",
+      "name": "New project",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 1288.4,
+        "y": 15.5,
+        "width": 119.6,
+        "height": 32
+      }
+    },
+    {
+      "id": "main",
+      "role": "main",
+      "name": "",
+      "tag": "main",
+      "interactive": false,
+      "bbox": {
+        "x": 240,
+        "y": 64,
+        "width": 1200,
+        "height": 836
+      }
+    },
+    {
+      "id": "dm:projects-board",
+      "role": "generic",
+      "name": "",
+      "tag": "div",
+      "interactive": false,
+      "bbox": {
+        "x": 272,
+        "y": 136,
+        "width": 1136,
+        "height": 654
+      }
+    },
+    {
+      "id": "heading:planning",
+      "role": "heading",
+      "name": "Planning",
+      "tag": "h2",
+      "interactive": false,
+      "bbox": {
+        "x": 288,
+        "y": 148.3,
+        "width": 70.6,
+        "height": 19.5
+      }
+    },
+    {
+      "id": "link:holiday-campaign",
+      "role": "link",
+      "name": "Holiday campaign",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 282,
+        "y": 180,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_holiday-campaign",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 434.1,
+        "y": 195,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:holiday-campaign",
+      "role": "heading",
+      "name": "Holiday campaign",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 297,
+        "y": 225,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:partner-api",
+      "role": "link",
+      "name": "Partner API",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 282,
+        "y": 332,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_partner-api",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 434.1,
+        "y": 347,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:partner-api",
+      "role": "heading",
+      "name": "Partner API",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 297,
+        "y": 377,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:eu-data-residency",
+      "role": "link",
+      "name": "EU data residency",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 282,
+        "y": 484,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_eu-data-residency",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 434.1,
+        "y": 499,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:eu-data-residency",
+      "role": "heading",
+      "name": "EU data residency",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 297,
+        "y": 529,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "heading:in-progress",
+      "role": "heading",
+      "name": "In progress",
+      "tag": "h2",
+      "interactive": false,
+      "bbox": {
+        "x": 576,
+        "y": 148.3,
+        "width": 85.9,
+        "height": 19.5
+      }
+    },
+    {
+      "id": "link:q3-launch",
+      "role": "link",
+      "name": "Q3 Launch",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 570,
+        "y": 180,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_launch",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 722.1,
+        "y": 195,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:q3-launch",
+      "role": "heading",
+      "name": "Q3 Launch",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 585,
+        "y": 225,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:mobile-onboarding",
+      "role": "link",
+      "name": "Mobile onboarding",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 570,
+        "y": 332,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_mobile-onboarding",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 722.1,
+        "y": 347,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:mobile-onboarding",
+      "role": "heading",
+      "name": "Mobile onboarding",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 585,
+        "y": 377,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:android-app-v2",
+      "role": "link",
+      "name": "Android app v2",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 570,
+        "y": 484,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_android-app-v2",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 734.7,
+        "y": 499,
+        "width": 72.3,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:android-app-v2",
+      "role": "heading",
+      "name": "Android app v2",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 585,
+        "y": 529,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:billing-migration",
+      "role": "link",
+      "name": "Billing migration",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 570,
+        "y": 636,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_billing-migration",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 720.6,
+        "y": 651,
+        "width": 86.4,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:billing-migration",
+      "role": "heading",
+      "name": "Billing migration",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 585,
+        "y": 681,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "heading:review",
+      "role": "heading",
+      "name": "Review",
+      "tag": "h2",
+      "interactive": false,
+      "bbox": {
+        "x": 864,
+        "y": 148.3,
+        "width": 61.1,
+        "height": 19.5
+      }
+    },
+    {
+      "id": "link:pricing-page-refresh",
+      "role": "link",
+      "name": "Pricing page refresh",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 858,
+        "y": 180,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_pricing-page-refresh",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 1010.1,
+        "y": 195,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:pricing-page-refresh",
+      "role": "heading",
+      "name": "Pricing page refresh",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 873,
+        "y": 225,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:usage-analytics",
+      "role": "link",
+      "name": "Usage analytics",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 858,
+        "y": 332,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_usage-analytics",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 1022.7,
+        "y": 347,
+        "width": 72.3,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:usage-analytics",
+      "role": "heading",
+      "name": "Usage analytics",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 873,
+        "y": 377,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "heading:launched",
+      "role": "heading",
+      "name": "Launched",
+      "tag": "h2",
+      "interactive": false,
+      "bbox": {
+        "x": 1152,
+        "y": 148.3,
+        "width": 77.1,
+        "height": 19.5
+      }
+    },
+    {
+      "id": "link:projects-board-beta",
+      "role": "link",
+      "name": "Projects board beta",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 1146,
+        "y": 180,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_projects-board-beta",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 1298.1,
+        "y": 195,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:projects-board-beta",
+      "role": "heading",
+      "name": "Projects board beta",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 1161,
+        "y": 225,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:help-center-revamp",
+      "role": "link",
+      "name": "Help center revamp",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 1146,
+        "y": 332,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_help-center-revamp",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 1298.1,
+        "y": 347,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:help-center-revamp",
+      "role": "heading",
+      "name": "Help center revamp",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 1161,
+        "y": 377,
+        "width": 222,
+        "height": 20
+      }
+    },
+    {
+      "id": "link:spring-launch",
+      "role": "link",
+      "name": "Spring Launch",
+      "tag": "a",
+      "interactive": true,
+      "bbox": {
+        "x": 1146,
+        "y": 484,
+        "width": 252,
+        "height": 144
+      }
+    },
+    {
+      "id": "dm:health-prj_spring-launch",
+      "role": "generic",
+      "name": "",
+      "tag": "span",
+      "interactive": false,
+      "bbox": {
+        "x": 1298.1,
+        "y": 499,
+        "width": 84.9,
+        "height": 22
+      }
+    },
+    {
+      "id": "heading:spring-launch",
+      "role": "heading",
+      "name": "Spring Launch",
+      "tag": "h3",
+      "interactive": false,
+      "bbox": {
+        "x": 1161,
+        "y": 529,
+        "width": 222,
+        "height": 20
+      }
+    }
+  ]
+}

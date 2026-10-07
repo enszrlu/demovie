@@ -6,6 +6,8 @@ Accurate, on-brand motion-graphics videos of your real web app — launch videos
 walkthroughs and landing-page hero loops — made by the AI coding agent you already use, from real captures of your
 running app, checked by a QA engine before they render.
 
+**[Website](https://enszrlu.github.io/demovie/)**: the videos, interactive demos of captures, flows and QA, and the docs.
+
 [![Left: a one-prompt video with an imagined dashboard. Right: the same brief made with demovie from real captures.](docs/media/grounded-vs-generic.gif)](docs/media/grounded-vs-generic.mp4)
 
 <sub>Left: a recreation of what one prompt and no captures typically gives you: an imagined dashboard, invented

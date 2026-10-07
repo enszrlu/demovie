@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>demovie</title>
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="#FFB224"/>
+  <path d="M23 13.5v34.6l9.1-8.2 6.1 13.4 6.1-2.7-5.9-13.2h12L23 13.5Z" fill="#14110B" stroke="#14110B" stroke-width="2.2" stroke-linejoin="round"/>
+</svg>
