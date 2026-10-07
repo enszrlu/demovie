@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { escapeHtml, type LinkContext, renderMarkdown, type Section } from "../lib/markdown.ts";
-import { icon, page, REPO_URL } from "../lib/site.ts";
+import { COFFEE_URL, icon, page, REPO_URL } from "../lib/site.ts";
 
 export interface DocLink {
   label: string;
@@ -90,6 +90,7 @@ export function buildDocs(
               .join("")}</ul></div>`,
         )
         .join("")}
+      <a class="docs-coffee" href="${COFFEE_URL}" rel="noopener">${icon.coffee}<span>Like demovie? <b>Buy me a coffee</b></span></a>
     </nav>`;
 
   const addSearch = (title: string, url: string, sections: Section[]) => {

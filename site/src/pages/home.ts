@@ -10,7 +10,7 @@ import {
   markdownSections,
   renderMarkdown,
 } from "../lib/markdown.ts";
-import { DESCRIPTION, icon, page, REPO_URL } from "../lib/site.ts";
+import { COFFEE_URL, DESCRIPTION, icon, page, REPO_URL } from "../lib/site.ts";
 import { posterSrc, type SiteVideo, videoSrc } from "../lib/videos.ts";
 
 export interface HomeInput {
@@ -635,6 +635,7 @@ plan.highlight(<span class="s">"generic:project-checklist"</span>, { at: bar(<sp
       <div class="cmd"><span class="prompt">$</span><span>npx demovie init</span>${copyButton("Copy command")}</div>
       <a class="btn btn-primary" href="docs/tutorial/">Your first video, step by step ${icon.arrow}</a>
     </div>
+    <p class="support">demovie is free and MIT licensed. If it saves you time, <a href="${COFFEE_URL}" rel="noopener">${icon.coffee}buy me a coffee</a>.</p>
   </section>
 </div>`;
 

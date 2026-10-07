@@ -80,6 +80,36 @@
   box-shadow: inset 2px 0 0 var(--accent);
 }
 
+.docs-coffee {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.35;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.docs-coffee:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.docs-coffee svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--accent-text);
+}
+.docs-coffee b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* ── article ──────────────────────────────────────────────────────────────────────────────────────────────────── */
 .docs-article {
   min-width: 0;

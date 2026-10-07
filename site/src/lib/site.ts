@@ -2,6 +2,7 @@
 import path from "node:path";
 
 export const REPO_URL = "https://github.com/enszrlu/demovie";
+export const COFFEE_URL = "https://buymeacoffee.com/enszrlu";
 /** Where the site is published; override with SITE_URL for a fork or a custom domain. */
 export const SITE_URL = (process.env.SITE_URL ?? "https://enszrlu.github.io/demovie/").replace(/\/?$/, "/");
 export const TAGLINE = "Your agent animates. demovie makes it true.";
@@ -10,6 +11,8 @@ export const DESCRIPTION =
 
 /** Inline SVG icons (24×24, stroke = currentColor). */
 export const icon = {
+  coffee:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12v4.5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V10Z"/><path d="M16 11.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5c-.6.8-.6 1.7 0 2.5M12 3.5c-.6.8-.6 1.7 0 2.5"/></svg>',
   github:
     '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>',
   search:
@@ -81,12 +84,13 @@ function header(root: string, section: PageOptions["section"], solid: boolean): 
     <div class="header-actions">
       <button class="search-btn" type="button" data-search-open aria-label="Search the docs">${icon.search}<span class="label">Search docs</span><kbd>⌘K</kbd></button>
       <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">${icon.sun}${icon.moon}</button>
+      <a class="icon-btn coffee-btn" href="${COFFEE_URL}" rel="noopener" aria-label="Buy me a coffee" title="Buy me a coffee">${icon.coffee}</a>
       <a class="gh-btn" href="${REPO_URL}" rel="noopener">${icon.github}<span class="label">GitHub</span></a>
       <button class="icon-btn menu-btn" type="button" data-menu aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">${icon.menu}</button>
     </div>
   </div>
 </header>
-<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">${links}<a href="${REPO_URL}" rel="noopener">GitHub</a></nav>`;
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">${links}<a href="${REPO_URL}" rel="noopener">GitHub</a><a href="${COFFEE_URL}" rel="noopener">Buy me a coffee</a></nav>`;
 }
 
 function footer(root: string): string {
@@ -98,6 +102,7 @@ function footer(root: string): string {
       <div>
         <a class="brand" href="${root || "./"}"><img src="${root}assets/img/logo.svg" alt="" width="28" height="28">demovie</a>
         <p class="footer-tag">${TAGLINE} Open source under the MIT license.</p>
+        <a class="coffee-link" href="${COFFEE_URL}" rel="noopener">${icon.coffee}Buy me a coffee</a>
       </div>
       ${col("Product", [
         ["How it works", `${root}#how`],
@@ -116,6 +121,7 @@ function footer(root: string): string {
         ["Changelog", `${REPO_URL}/blob/main/packages/cli/CHANGELOG.md`],
         ["Contributing", `${REPO_URL}/blob/main/CONTRIBUTING.md`],
         ["Security", `${REPO_URL}/blob/main/SECURITY.md`],
+        ["Buy me a coffee", COFFEE_URL],
       ])}
     </div>
     <div class="footer-note">

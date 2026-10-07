@@ -159,3 +159,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md): `pnpm install && pnpm build && pnpm veri
 ## License
 
 [MIT](LICENSE). Bundled fonts are OFL; bundled sound effects are CC0.
+
+## Support
+
+demovie is free and MIT licensed. If it saves you time, you can [buy me a coffee](https://buymeacoffee.com/enszrlu).

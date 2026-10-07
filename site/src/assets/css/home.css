@@ -2377,7 +2377,11 @@
 .ci-steps code {
   color: var(--ink);
   font-size: 0.86em;
-  white-space: nowrap;
+}
+@media (min-width: 480px) {
+  .ci-steps code {
+    white-space: nowrap;
+  }
 }
 .ci-visual {
   position: relative;
@@ -2683,6 +2687,27 @@
   background: transparent;
   color: #f3f1ec;
   border-color: rgb(255 255 255 / 0.2);
+}
+.final .support {
+  margin-top: 28px;
+  font-size: 0.95rem;
+}
+.final .support a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #f3f1ec;
+  text-decoration: underline;
+  text-decoration-color: rgb(255 178 36 / 0.6);
+  text-underline-offset: 3px;
+}
+.final .support a:hover {
+  text-decoration-color: var(--accent);
+}
+.final .support svg {
+  width: 17px;
+  height: 17px;
+  color: var(--accent);
 }
 .final .btn-primary {
   background: var(--accent);
