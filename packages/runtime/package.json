@@ -1,6 +1,6 @@
 {
   "name": "@demovie/runtime",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Browser runtime for demovie compositions: deterministic time, device frames, camera moves to real elements, a truthful cursor, captions and transitions.",
   "license": "MIT",
