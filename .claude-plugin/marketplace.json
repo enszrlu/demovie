@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "The demovie plugin for Claude Code: the Agent Skill plus the demovie MCP server.",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "name": "demovie",
       "source": "./plugins/demovie",
       "description": "Make accurate, on-brand motion-graphics videos of your real web app: real captures, a motion runtime, QA and rendering, driven by your coding agent.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "license": "MIT"
     }
   ]

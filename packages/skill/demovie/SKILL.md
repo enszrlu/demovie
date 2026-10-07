@@ -3,7 +3,7 @@ name: demovie
 description: Make accurate, on-brand motion-graphics videos of the user's real web app (launch, feature, changelog, teaser, walkthrough, landing-page hero loop) with the demovie CLI. Use when the user asks for a product, launch, demo, promo, explainer or changelog video, motion graphics about their app, or a video per release.
 license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # demovie — accurate product videos of a real app
